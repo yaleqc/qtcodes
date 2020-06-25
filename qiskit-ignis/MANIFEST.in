@@ -1,0 +1,2 @@
+include qiskit/ignis/VERSION.txt
+include README.md

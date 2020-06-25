@@ -1,0 +1,56 @@
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+test/python/*.log
+test/python/*.pdf
+test/python/*.prof
+.stestr/
+
+# Built documentation
+docs/_build/
+docs/stubs/
+docs/api/
+
+# dotenv
+.env
+
+# Jupyter notebooks checkpoints
+qiskit/ignis/examples/.ipynb_checkpoints/
+
+# virtualenv
+.venv
+venv/
+ENV/
+
+#IDE
+.idea
+
+*.pyc
+
+*-checkpoint.ipynb
+.vscode/settings.json
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.DS_Store
