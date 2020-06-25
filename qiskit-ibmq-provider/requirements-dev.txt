@@ -1,0 +1,24 @@
+mypy
+pycodestyle
+pylint>=2.4
+pylintfileheader>=0.0.2
+vcrpy
+pproxy==1.2.2; python_version <= '3.5'
+pproxy==2.1.8; python_version > '3.5'
+Sphinx>=1.8.3,<3.1.0
+sphinx-rtd-theme>=0.4.0
+sphinx-tabs>=1.1.11 
+sphinx-automodapi
+sphinx-autodoc-typehints
+matplotlib>=2.1
+jupyter
+plotly>=4.4
+ipyvuetify>=1.1
+ipython>=5.0.0
+seaborn>=0.9.0
+pyperclip>=1.7
+jupyter-sphinx
+reno>=2.11.0
+scipy>=1.0
+nbformat>=4.4.0
+nbconvert>=5.3.1
