@@ -1,0 +1,37 @@
+# Ignore editor settings
+
+.vscode
+
+# ignore jupyter notebook checkpoints
+
+*-checkpoint.ipynb
+
+# Ignore make and cython build files
+
+*.o
+out/*
+*.so
+rhs*_op.pyx
+*.pyc
+*_skbuild*
+*_cmake_test_compile*
+*.whl
+*.egg*
+build/*
+qiskit/providers/aer/backends/libomp.dylib
+
+# Ignore macOS DS_Store
+.DS_Store
+# Ignore other IDE Files
+contrib/standalone/version.hpp
+*.log
+*.env
+*.idea/
+test/.asv
+
+.tox/
+.stestr/
+
+docs/_build/
+docs/stubs/
+docs/api/
