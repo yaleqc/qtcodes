@@ -105,6 +105,41 @@ class SurfaceCode():
         self.data_x(['1'])
         self.ancilla_H()
         
+    def normal_syndrome_measurement(self):
+        # create code batches;
+        code_patches=[]
+        code_patch_index = 0
+        line_index = 0
+        ancilla_index = 0
+        for j in range(self.d-1):
+            for i in range(self.d-1):
+                code_patch = {}
+                qubit_index = line_index + i
+                code_patch[code_patch_index] = [
+                                                {0:self.data_qubit[qubit_index]}, {1:self.data_qubit[qubit_index+1]}, \
+                                                {2:self.data_qubit[qubit_index+self.d]}, {3:self.data_qubit[qubit_index+self.d+1]}, \
+                                                {4:self.ancilla_qubit[ancilla_index]}
+                                               ]
+                code_patches.append(code_patch)
+                code_patch_index += 1
+                ancilla_index += 1
+            line_index += self.d
+        self.code_patches = code_patches
+        x_sequence = [0,1,2,3]
+        z_sequence = [0,2,1,3]
+
+        for j in range(len(x_sequence)):
+            for i in range(len(code_patches)):
+                ancilla = code_patches[i][i][len(code_patches[i][i])-1][len(code_patches[i][i])-1]
+                if i%2:
+                    qubit = code_patches[i][i][x_sequence[j]][x_sequence[j]]
+                    for log in ['0','1']:
+                        self.circuit[log].cx(ancilla,qubit)
+                else:
+                    qubit = code_patches[i][i][z_sequence[j]][z_sequence[j]]
+                    for log in ['0','1']:
+                        self.circuit[log].cz(ancilla,qubit)
+        
     def readout(self):
         """
         Readout of all code qubits, which corresponds to a logical measurement
