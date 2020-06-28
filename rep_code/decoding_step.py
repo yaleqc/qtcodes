@@ -3,20 +3,8 @@ import sys, os
 import networkx as nx
 import matplotlib.pyplot as plt
 
-sys.path.insert(
-    0,
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            "..",
-            "qiskit-ignis",
-            "qiskit",
-            "ignis",
-            "verification",
-            "topological_codes",
-        )
-    ),
-)
+sys.path.append("../qiskit-ignis/qiskit/ignis/verification/topological_codes")
+
 from qiskit.ignis.verification.topological_codes import RepetitionCode
 from fitters import GraphDecoder
 
