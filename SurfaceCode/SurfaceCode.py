@@ -40,6 +40,8 @@ class SurfaceCode():
         self.qubit_registers = {'data_qubit','ancilla_qubit'}
 
         self.ancilla_bits = []
+        self.code_patches=[]
+        self.side_code_patches=[]
         self.data_bit = ClassicalRegister(self.d**2,'code_bit')
 
         self.circuit = {}
@@ -49,10 +51,12 @@ class SurfaceCode():
         self._preparation()
         
         for _ in range(T-1):
-            self.syndrome_measurement(reset=True,barrier=True)
+            self.x_syndrome_measurement(reset=True,barrier=True)
+            self.z_syndrome_measurement(reset=True,barrier=True)
         
         if T!=0:
-            self.syndrome_measurement(reset=False)
+            self.x_syndrome_measurement(reset=False)
+            self.z_syndrome_measurement(reset=False)
             
     def data_x(self, logs=('0', '1'), barrier=False):
         """
@@ -94,8 +98,7 @@ class SurfaceCode():
         self.data_x(['1'])
         self.ancilla_H()
         
-    def syndrome_measurement(self, reset=True, barrier=False):
-        # create the block code batches;
+    def code_patches_generation(self):
         code_patches=[]
         code_patch_index = 0
         line_index = 0
@@ -157,35 +160,33 @@ class SurfaceCode():
             side_code_patch_index +=1
             ancilla_index +=1
             side_code_patches.append(code_patch)
+        
+        self.code_patches=code_patches
+        self.side_code_patches=side_code_patches
+        
+        
+    def x_syndrome_measurement(self, reset=True, barrier=False):
+        
+        self.code_patches_generation()
             
         x_sequence = [0,1,2,3]
-        z_sequence = [0,2,1,3]
         
         for log in ['0','1']:
             self.circuit[log].add_register(self.ancilla_bits[-1])
             for j in range(len(x_sequence)):
-                for i in range(len(code_patches)):
-                    ancilla = code_patches[i][i][len(code_patches[i][i])-1][len(code_patches[i][i])-1]
+                for i in range(len(self.code_patches)):
+                    ancilla = self.code_patches[i][i][len(self.code_patches[i][i])-1][len(self.code_patches[i][i])-1]
                     if i%2:
-                        qubit = code_patches[i][i][x_sequence[j]][x_sequence[j]]
+                        qubit = self.code_patches[i][i][x_sequence[j]][x_sequence[j]]
                         self.circuit[log].cx(ancilla,qubit)
-                    else:
-                        qubit = code_patches[i][i][z_sequence[j]][z_sequence[j]]
-                        self.circuit[log].cz(ancilla,qubit)
     
-            for i in range(len(side_code_patches)):
-                index_1 = side_code_patches[i][i][0][0].index
-                index_2 = side_code_patches[i][i][1][1].index
-                if (index_1<self.d or index_1>(self.d**2-self.d)) and (index_2<self.d or index_2>(self.d**2-self.d-1)):
-                    qubit_1 = side_code_patches[i][i][0][0]
-                    qubit_2 = side_code_patches[i][i][1][1]
-                    ancilla = side_code_patches[i][i][2][2]
-                    self.circuit[log].cz(ancilla,qubit_1)
-                    self.circuit[log].cz(ancilla,qubit_2)
-                else:
-                    qubit_1 = side_code_patches[i][i][0][0]
-                    qubit_2 = side_code_patches[i][i][1][1]
-                    ancilla = side_code_patches[i][i][2][2]
+            for i in range(len(self.side_code_patches)):
+                index_1 = self.side_code_patches[i][i][0][0].index
+                index_2 = self.side_code_patches[i][i][1][1].index
+                if not ((index_1<self.d or index_1>(self.d**2-self.d)) and (index_2<self.d or index_2>(self.d**2-self.d-1))):
+                    qubit_1 = self.side_code_patches[i][i][0][0]
+                    qubit_2 = self.side_code_patches[i][i][1][1]
+                    ancilla = self.side_code_patches[i][i][2][2]
                     self.circuit[log].cx(ancilla,qubit_1)
                     self.circuit[log].cx(ancilla,qubit_2)
             self.circuit[log].barrier()
@@ -197,6 +198,38 @@ class SurfaceCode():
                 
         self.T +=1
             
+    def z_syndrome_measurement(self, reset=True, barrier=False):
+        
+        self.code_patches_generation()
+            
+        z_sequence = [0,2,1,3]
+        
+        for log in ['0','1']:
+            self.circuit[log].add_register(self.ancilla_bits[-1])
+            for j in range(len(z_sequence)):
+                for i in range(len(self.code_patches)):
+                    ancilla = self.code_patches[i][i][len(self.code_patches[i][i])-1][len(self.code_patches[i][i])-1]
+                    if not (i%2):
+                        qubit = self.code_patches[i][i][z_sequence[j]][z_sequence[j]]
+                        self.circuit[log].cz(ancilla,qubit)
+    
+            for i in range(len(self.side_code_patches)):
+                index_1 = self.side_code_patches[i][i][0][0].index
+                index_2 = self.side_code_patches[i][i][1][1].index
+                if (index_1<self.d or index_1>(self.d**2-self.d)) and (index_2<self.d or index_2>(self.d**2-self.d-1)):
+                    qubit_1 = self.side_code_patches[i][i][0][0]
+                    qubit_2 = self.side_code_patches[i][i][1][1]
+                    ancilla = self.side_code_patches[i][i][2][2]
+                    self.circuit[log].cz(ancilla,qubit_1)
+                    self.circuit[log].cz(ancilla,qubit_2)
+            self.circuit[log].barrier()
+            for i in range(self.d**2-1):
+                self.circuit[log].measure(self.ancilla_qubit[i],self.ancilla_bits[self.T][i])
+                if reset:
+                    self.circuit[log].reset(self.ancilla_qubit[i])
+            self.circuit[log].barrier()
+                
+        self.T +=1
         
     def readout(self):
         """
