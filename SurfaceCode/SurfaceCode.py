@@ -76,7 +76,7 @@ class SurfaceCode():
                 the end.
         """
         for log in logs:
-            for j in range(self.d**2):
+            for j in range(self.d):
                 self.circuit[log].x(self.data_qubit[j])
             if barrier:
                 self.circuit[log].barrier()
