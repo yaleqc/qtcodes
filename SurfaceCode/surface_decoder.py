@@ -4,7 +4,17 @@ Created on Sat Jun 27 18:53:39 2020
 
 @author: Shantanu Jha
 """
+from operator import mul
+from fractions import Fraction
+from functools import reduce
+
 import networkx as nx
+
+
+def nCr(n, r):
+    # https://stackoverflow.com/a/3027128
+    return int(reduce(mul, (Fraction(n - i, i + 1) for i in range(r)), 1))
+
 
 class GraphDecoder:
     """
@@ -32,6 +42,14 @@ class GraphDecoder:
             virtual["Z"].append((-1, j + 0.5, -0.5))
             virtual["Z"].append((-1, j - 0.5, self.d - 0.5))
         return virtual
+
+    def _path_degeneracy(self, a, b):
+        # Need to affine transform coordinates as 1/2 * [[1, 1], [1, -1]]
+        x = a[2] - b[2]
+        y = a[1] - b[1]
+        x_t = int(abs(0.5 * (x + y)))
+        y_t = int(abs(0.5 * (x - y)))
+        return nCr(x_t + y_t, x_t)
 
     def _make_syndrome_graph(self):
         """
