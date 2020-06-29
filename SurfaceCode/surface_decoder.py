@@ -44,12 +44,29 @@ class GraphDecoder:
         return virtual
 
     def _path_degeneracy(self, a, b):
-        # Need to affine transform coordinates as 1/2 * [[1, 1], [1, -1]]
-        x = a[2] - b[2]
-        y = a[1] - b[1]
-        x_t = int(abs(0.5 * (x + y)))
-        y_t = int(abs(0.5 * (x - y)))
-        return nCr(x_t + y_t, x_t)
+        """Calculate the number of shortest error paths that link two syndrome nodes
+        through both space and time.
+
+        Args:
+            a (node): Starting or ending syndrome node (degeneracy is symmetric)
+            b (node): Ending or starting syndrome node (degeneracy is symmetric)
+
+        Raises:
+            nx.exception.NodeNotFound: Nodes not both in X or Z syndrome graph
+
+        Returns:
+            int: Number of degenerate shortest paths matching this syndrome pair
+        """
+        # Check which subgraph node is on. If x + y is even => Z, else X.
+        a_sum, b_sum = a[1] + a[2], b[1] + b[2]
+        if a_sum % 2 == 0 and b_sum % 2 == 0:
+            subgraph = self.S["Z"]
+        elif a_sum % 2 == 1 and b_sum % 2 == 1:
+            subgraph = self.S["X"]
+        else:
+            raise nx.exception.NodeNotFound("Nodes not both in X or Z syndrome graph.")
+
+        return len(list(nx.all_shortest_paths(subgraph, a, b)))
 
     def _make_syndrome_graph(self):
         """
