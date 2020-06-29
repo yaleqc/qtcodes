@@ -63,11 +63,11 @@ def network_plot_3D(G, angle, save=False):
         
         # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
         # Those two points are the extrema of the line to be plotted
-        for i,j in enumerate(G.edges()):
-            print(i, j)
-            x_1, x_2 = pos[j[0]][0], pos[j[1]][0]
-            y_1, y_2 = pos[j[0]][1], pos[j[1]][1]
-            z_1, z_2 = pos[j[0]][2], pos[j[1]][2]
+        for i,edge in enumerate(G.edges()):
+            print(i, edge)
+            x_1, x_2 = pos[edge[0]][0], pos[edge[1]][0]
+            y_1, y_2 = pos[edge[0]][1], pos[edge[1]][1]
+            z_1, z_2 = pos[edge[0]][2], pos[edge[1]][2]
             
             x = np.array((x_1, x_2))
             y = np.array((y_1, y_2))
@@ -97,4 +97,14 @@ def network_plot_3D(G, angle, save=False):
 n=200
 #G = generate_random_3Dgraph(n_nodes=n, radius=0.25, seed=1)
 G = generate_surface_3Dgraph(3, 2, seed=1)
+for node in G.nodes():
+    print(node)
+'''
+G = nx.Graph()
+G.add_node("cool", pos=(0,1,2))
+G.add_node("nice", pos=(2,1,-1))
+G.add_edge("cool", "nice", weight=2)
+for src, tgt in G.edges():
+    print(src, tgt, G[src][tgt]['weight'])
+'''
 network_plot_3D(G, 30, save=False)
