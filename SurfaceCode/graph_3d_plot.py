@@ -63,11 +63,11 @@ def network_plot_3D(G, angle, save=False):
         
         # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
         # Those two points are the extrema of the line to be plotted
-        for i,j in enumerate(G.edges()):
-            print(i, j)
-            x_1, x_2 = pos[j[0]][0], pos[j[1]][0]
-            y_1, y_2 = pos[j[0]][1], pos[j[1]][1]
-            z_1, z_2 = pos[j[0]][2], pos[j[1]][2]
+        for i,edge in enumerate(G.edges()):
+            print(i, edge)
+            x_1, x_2 = pos[edge[0]][0], pos[edge[1]][0]
+            y_1, y_2 = pos[edge[0]][1], pos[edge[1]][1]
+            z_1, z_2 = pos[edge[0]][2], pos[edge[1]][2]
             
             x = np.array((x_1, x_2))
             y = np.array((y_1, y_2))
@@ -94,7 +94,78 @@ def network_plot_3D(G, angle, save=False):
          
     return
 
+def surface_plot_3D(G, angle, save=False):
+    # Get node positions
+    #pos = dict(G.nodes(data='pos'))
+    pos = nx.get_node_attributes(G, 'pos')
+    
+    # Get number of nodes
+    #n = G.number_of_nodes()
+    # Get the maximum number of edges adjacent to a single node
+    #edge_max = max([G.degree(i) for i in range(n)])
+    edge_max = max([G.degree(i) for i in G.nodes()])
+    # Define color range proportional to number of edges adjacent to a single node
+    #colors = [plt.cm.plasma(G.degree(i)/edge_max) for i in range(n)]
+    colors = {i : plt.cm.plasma(G.degree(i)/edge_max) for i in G.nodes()}
+    # 3D network plot
+    with plt.style.context(('ggplot')):
+        
+        fig = plt.figure(figsize=(10,7))
+        ax = Axes3D(fig)
+        
+        # Loop on the pos dictionary to extract the x,y,z coordinates of each node
+        for node in G.nodes():
+            xi, yi, zi = pos[node]
+            
+            # Scatter plot
+            ax.scatter(xi, yi, zi, c=colors[node], s=20+20*G.degree(node), edgecolors='k', alpha=0.7)
+            
+            ax.text(xi, yi, zi, f'({zi}, {xi}, {yi})')
+        
+        # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
+        # Those two points are the extrema of the line to be plotted
+        for src, tgt in G.edges():
+            w = G[src][tgt]['weight']
+            print(src, tgt, w)
+            x_1, y_1, z_1 = pos[src]
+            x_2, y_2, z_2 = pos[tgt]
+            
+            x = np.array((x_1, x_2))
+            y = np.array((y_1, y_2))
+            z = np.array((z_1, z_2))
+            
+            x_mid = (x_1 + x_2)/2
+            y_mid = (y_1 + y_2)/2
+            z_mid = (z_1 + z_2)/2
+            ax.text(x_mid, y_mid, z_mid, w)
+        
+        # Plot the connecting lines
+            ax.plot(x, y, z, c='black', alpha=0.5)
+    
+    # Set the initial view
+    ax.view_init(30, angle)
+    # Hide the axes
+    ax.set_axis_off()
+    
+    if save is not False:
+        plt.savefig("C:/Users/WillSun/Dropbox/Yale/IBM Hackathon/"+str(angle).zfill(3)+".png")
+        plt.close('all')
+    else:
+        plt.show()
+         
+    return
+
 n=200
 #G = generate_random_3Dgraph(n_nodes=n, radius=0.25, seed=1)
 G = generate_surface_3Dgraph(3, 2, seed=1)
+for node in G.nodes():
+    print(node)
 network_plot_3D(G, 30, save=False)
+
+G = nx.Graph()
+G.add_node("cool", pos=(0,1,2))
+G.add_node("nice", pos=(2,1,-1))
+G.add_edge("cool", "nice", weight=2)
+for src, tgt in G.edges():
+    print(src, tgt, G[src][tgt]['weight'])
+surface_plot_3D(G, 30, save=False)
