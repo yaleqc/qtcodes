@@ -1,10 +1,25 @@
+import qiskit
+#from qiskit import IBMQ
+#IBMQ.save_account("API toke")
+from qiskit import QuantumRegister, ClassicalRegister
+import copy
+import warnings
+import networkx as nx
+import numpy as np
+from qiskit import QuantumCircuit, execute
+from random import randrange
+import matplotlib
+try:
+    from qiskit import Aer
+    HAS_AER = True
+except ImportError:
+    from qiskit import BasicAer
+    HAS_AER = False
 # -*- coding: utf-8 -*-
 """
 This qiskit code was created on 29-JUN-20 1:18PM at IBM Hackatthon 2020 (Summer Jam)
 
 @author: Shraddha Singh
-
-
 """
 
 """Generates circuits for quantum error correction."""
@@ -20,6 +35,12 @@ import numpy as np
 from qiskit import QuantumCircuit, execute
 from random import randrange
 import matplotlib
+try:
+    from qiskit import Aer
+    HAS_AER = True
+except ImportError:
+    from qiskit import BasicAer
+    HAS_AER = False
 
 
 class SurfaceCode():
@@ -105,6 +126,7 @@ class SurfaceCode():
         
         order=[]
         for i in range(self.d**2-1):
+            d=data_index
             r=syn_index[i][0]
             c=syn_index[i][1]
             def get_index(j):
@@ -178,12 +200,12 @@ class SurfaceCode():
                             if order[i][0]!=-1 and j!=0:
                                 self.circuit[log].cx(k,l)
 
-            for j in range(d**2 - 1):
+            for j in range(self.d**2 - 1):
                 self.circuit[log].measure(self.ancilla[j], self.output[self.T][j])
                 if reset:
-                    circuit[log].reset(ancilla[j])
+                    self.circuit[log].reset(self.ancilla[j])
             if barrier:
-                circuit[log].barrier()
+                self.circuit[log].barrier()
 
             self.T += 1
 
@@ -206,36 +228,43 @@ class SurfaceCode():
             noise model, etc. The results from these executions should then
             be used to create the input for this method.
         """
-        results = {}
-        for log in raw_results:
-            results[log] = {}
-            for string in raw_results[log]:
-
+        results =[]
+        results=list(raw_results.keys())
+        syn=[]
+        new=[]
+        for i in (results):
+            for j in range(len(i)):
+                if i[j]!=' ':
+                    new.append(int(i[j]))
+                else:
+                    syn.append(new)
+                    new=[]
+        syn.append(new)
             
-                # final syndrome deduced from final code qubit readout
-                full_syndrome = ''
-                for j in range(self.d - 1):
-                    full_syndrome += '0' * (string[j] == string[j + 1]) \
-                        + '1' * (string[j] != string[j + 1])
-                # results from all other syndrome measurements then added
-                full_syndrome = full_syndrome + string[self.d:]
+                        
+        return syn
+    
+    def extract_nodes(self,syn_meas_results):
+        processed_results=[]
+        for i in range(0,len(syn_meas_results)):
+            new=[]
+            if i==0:
+                for j in range(0,len(syn_meas_results[i])):
+                    new.append(syn_meas_results[i][j])
+            else:    
+                for j in range(0,len(syn_meas_results[i])):
+                    new.append((syn_meas_results[i][j]+syn_meas_results[i-1][j])%2)
+            processed_results.append(new)
 
-                # changes between one syndrome and the next then calculated
-                syndrome_list = full_syndrome.split(' ')
-                syndrome_changes = ''
-                for t in range(self.T + 1):
-                    for j in range(self.d - 1):
-                        if t == 0:
-                            change = (syndrome_list[-1][j] != '0')
-                        else:
-                            change = (syndrome_list[-t][j]
-                                      != syndrome_list[-t - 1][j])
-                        syndrome_changes += '0' * (not change) + '1' * change
-                    syndrome_changes += ' '
+        syn,dat=self.lattice()
+        error_nodesX=[]
+        error_nodesZ=[]
+        for i in range(len(processed_results)):
+            for j in range(len(processed_results[i])):
+                if processed_results[i][j]==1:
 
-                # the space separated string of syndrome changes then gets a
-                # double space separated logical value on the end
-       
-                results[log][new_string] = raw_results[log][string]
-
-        return results
+                    if j%2==0:
+                        error_nodesX.append((i,syn[j][0],syn[j][1]))
+                    else:
+                        error_nodesZ.append((i,syn[j][0],syn[j][1]))
+        return error_nodesX,error_nodesZ
