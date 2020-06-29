@@ -107,6 +107,11 @@ class SurfaceCode():
     def code_patches_generation(self):
         """
         Generating the code patches for stabilizer circuit construction;
+        
+        Syndrome qubit assignment:
+            0 to (d-1)^2-1 elements are the ones for the main block code patches;
+            (d-1)^2 to d^2-1 elements are the ones for the side code patches, counted clockwise from the one above the first block code batch;
+            
     
         """
         code_patches=[]
