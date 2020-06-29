@@ -4,7 +4,20 @@ Created on Sat Jun 27 18:53:39 2020
 
 @author: Shantanu Jha
 """
+import math
+
+from operator import mul
+from fractions import Fraction
+from functools import reduce
+from itertools import product
+
 import networkx as nx
+
+
+def nCr(n, r):
+    # https://stackoverflow.com/a/3027128
+    return int(reduce(mul, (Fraction(n - i, i + 1) for i in range(r)), 1))
+
 
 class GraphDecoder:
     """
@@ -32,6 +45,31 @@ class GraphDecoder:
             virtual["Z"].append((-1, j + 0.5, -0.5))
             virtual["Z"].append((-1, j - 0.5, self.d - 0.5))
         return virtual
+
+    def _path_degeneracy(self, a, b):
+        """Calculate the number of shortest error paths that link two syndrome nodes
+        through both space and time.
+
+        Args:
+            a (node): Starting or ending syndrome node (degeneracy is symmetric)
+            b (node): Ending or starting syndrome node (degeneracy is symmetric)
+
+        Raises:
+            nx.exception.NodeNotFound: Nodes not both in X or Z syndrome graph
+
+        Returns:
+            int: Number of degenerate shortest paths matching this syndrome pair
+        """
+        # Check which subgraph node is on. If x + y is even => Z, else X.
+        a_sum, b_sum = a[1] + a[2], b[1] + b[2]
+        if a_sum % 2 == 0 and b_sum % 2 == 0:
+            subgraph = self.S["Z"]
+        elif a_sum % 2 == 1 and b_sum % 2 == 1:
+            subgraph = self.S["X"]
+        else:
+            raise nx.exception.NodeNotFound("Nodes not both in X or Z syndrome graph.")
+
+        return len(list(nx.all_shortest_paths(subgraph, a, b, weight="distance")))
 
     def _make_syndrome_graph(self):
         """
@@ -147,28 +185,55 @@ class GraphDecoder:
             else:
                 return False
 
-    def make_error_graph(self, nodes, error_key):
+    def make_error_graph(self, nodes, error_key, err_prob=None):
+        """Creates error syndrome subgraph from list of syndrome nodes. The output of
+        this function is a graph that's ready for MWPM.
+
+        If err_prob is specified, we adjust the shortest distance between syndrome
+        nodes by the degeneracy of the error path.
+
+        Args:
+            nodes ([(t, x, y),]): List of changes of syndrome nodes in time.
+            error_key (char): Which X/Z syndrome subgraph these nodes are from.
+            err_prob (float, optional): Probability of IID data qubit X/Z flip. Defaults to None.
+
+        Returns:
+            nx.Graph: Nodes are syndromes, edges are proxy for error probabilities
+        """
         virtual_dict = dict(self.S[error_key].nodes(data="virtual"))
         time_dict = dict(self.S[error_key].nodes(data="time"))
         error_graph = nx.Graph()
         nodes += self.virtual[error_key]
-        for source in nodes:
-            for target in nodes:
-                if source != target:
-                    for node in [source, target]:
-                        if not error_graph.has_node(node):
-                            error_graph.add_node(
-                                node,
-                                virtual=virtual_dict[node],
-                                pos=(node[2], node[1]),
-                                time=time_dict[node],
-                            )
-                    distance = int(
-                        nx.shortest_path_length(
-                            self.S[error_key], source, target, weight="distance"
+
+        for source, target in product(nodes, repeat=2):
+            if source != target:
+                for node in [source, target]:
+                    if not error_graph.has_node(node):
+                        # Add all nodes to graph. We do this before adding edges so
+                        # that attributes can be defined
+                        error_graph.add_node(
+                            node,
+                            virtual=virtual_dict[node],
+                            pos=(node[2], node[1]),
+                            time=time_dict[node],
                         )
+                # Distance is proportional to the probability of this error chain, so
+                # finding the maximum-weight perfect matching of the whole graph gives
+                # the most likely sequence of errors that led to these syndromes.
+                distance = int(
+                    nx.shortest_path_length(
+                        self.S[error_key], source, target, weight="distance"
                     )
-                    error_graph.add_edge(source, target, weight=-distance)
+                )
+
+                # If err_prob is specified, we also account for path degeneracies, as:
+                # ln(degeneracy) + distance * log(p / 1 + p)
+                if err_prob:
+                    distance *= math.log(err_prob) - math.log1p(err_prob)
+                    distance += math.log(self._path_degeneracy(source, target))
+                else:  # Otherwise we can just assume that the log err_prob part is neg
+                    distance = -distance
+                error_graph.add_edge(source, target, weight=distance)
         return error_graph
 
     def matching_graph(self, error_graph, error_key):
