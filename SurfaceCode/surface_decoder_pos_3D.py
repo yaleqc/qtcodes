@@ -224,9 +224,9 @@ class GraphDecoder:
             )
 
             # If err_prob is specified, we also account for path degeneracies, as:
-            # ln(degeneracy) + distance * log(p / 1 + p)
+            # ln(degeneracy) + distance * log(p / 1 - p)
             if err_prob:
-                distance *= math.log(err_prob) - math.log1p(err_prob)
+                distance *= math.log(err_prob) - math.log1p(-err_prob)
                 distance += math.log(self._path_degeneracy(source, target))
             else:  # Otherwise we can just assume that the log err_prob part is neg
                 distance = -distance
