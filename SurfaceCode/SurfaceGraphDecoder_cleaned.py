@@ -83,8 +83,8 @@ class GraphDecoder():
                 space_label = (node[1], node[2])
                 for t in range(0, self.T-1):
                     self.S[error_key].add_edge(
-                        (t,)+space_label, 
-                        (t+1,)+space_label, 
+                        (t,) + space_label, 
+                        (t+1,) + space_label, 
                         distance=1
                     )
 
@@ -202,8 +202,6 @@ class GraphDecoder():
             nx.Graph: Nodes are syndromes, edges are proxy for error probabilities
         """
         paths = {}
-        #virtual_dict = dict(self.S[error_key].nodes(data='virtual'))
-        #time_dict = dict(self.S[error_key].nodes(data='time'))
         virtual_dict = nx.get_node_attributes(self.S[error_key], 'virtual')
         time_dict = nx.get_node_attributes(self.S[error_key], 'time')
         error_graph = nx.Graph()
@@ -287,7 +285,7 @@ class GraphDecoder():
                 if distance == shortest_distance and node != target:
                     degeneracy += len(
                         list(nx.all_shortest_paths(subgraph, source, node, weight="distance"))
-)
+                        )
         return degeneracy, one_path
 
     def matching_graph(self, error_graph, error_key):
@@ -300,7 +298,6 @@ class GraphDecoder():
         Returns:
             nx.Graph: Subgraph of error graph to be matched
         """
-        #time_dict = dict(self.S[error_key].nodes(data='time'))
         time_dict = nx.get_node_attributes(self.S[error_key], 'time')
         subgraph = nx.Graph()
         syndrome_nodes = [x for x,y in error_graph.nodes(data=True) if y['virtual']==0]
@@ -336,12 +333,12 @@ class GraphDecoder():
                 pos=(nearest_virtual[2], -nearest_virtual[1]), 
                 time=-1, 
                 pos_3D=(nearest_virtual[2], -nearest_virtual[1], -1)
-            )
+            ) # add paired_virtual to subgraph
             subgraph.add_edge(
                 source,
                 paired_virtual,
                 weight=potential_virtual[nearest_virtual]
-            )
+            ) # add (syndrome, paired_virtual) edge to subgraph
 
         paired_virtual_nodes = [x for x,y in subgraph.nodes(data=True) if y['virtual']==1]
 
@@ -435,7 +432,7 @@ class GraphDecoder():
 
         Args:
             G (nx.Graph): Graph to plot in 3D.
-            edge_label (float): Edge label to display; usually edge weight.
+            edge_label (float): Edge label to display; either distance or weight.
             angle ([float, float]): Initial 3D angle view.
 
         Returns:
@@ -476,7 +473,7 @@ class GraphDecoder():
                 # Plot the connecting lines
                 ax.plot(x_line, y_line, z_line, color='black', alpha=0.5)
 
-                # Plot edge weight labels at midpoints
+                # Label edges at midpoints
                 x_mid = (x_1 + x_2)/2
                 y_mid = (y_1 + y_2)/2
                 z_mid = (z_1 + z_2)/2
@@ -490,10 +487,3 @@ class GraphDecoder():
         ax.set_axis_off()
 
         plt.show()
-
-decoder = GraphDecoder(5, 2)
-G = decoder.S['Z']
-decoder.graph_3D(G, 'distance')
-a = [n for n in G.nodes if n == (0, 1.5, 1.5)][0]
-b = [n for n in G.nodes if n == (-1,4.5,4.5)][0]
-print(decoder._path_degeneracy(a, b, 'Z'))
