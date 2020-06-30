@@ -217,11 +217,11 @@ class GraphDecoder():
         through both space and time.
 
         Args:
-            a (node): Starting or ending syndrome node (degeneracy is symmetric)
-            b (node): Ending or starting syndrome node (degeneracy is symmetric)
+            a (tuple): Starting or ending syndrome node (degeneracy is symmetric)
+            b (tuple): Ending or starting syndrome node (degeneracy is symmetric)
 
         Raises:
-            nx.exception.NodeNotFound: Nodes not both in X or Z syndrome graph
+            nx.exception.NodeNotFound: error_key must be X or Z
 
         Returns:
             int: Number of degenerate shortest paths matching this syndrome pair
@@ -233,6 +233,8 @@ class GraphDecoder():
             subgraph = self.S["X"]
         elif error_key == "Z":
             subgraph = self.S["Z"]
+        else:
+            raise nx.exception.NodeNotFound("error_key must be X or Z")
 
         shortest_paths = list(nx.all_shortest_paths(subgraph, a, b, weight="distance"))
         one_path = shortest_paths[0]  # We can pick any path to return as the error chain
@@ -241,19 +243,22 @@ class GraphDecoder():
         # If either node is a virtual node, we also find degeneracies from the other
         # node to *any* nearest virtual node
         source = None
-        if a['virtual']:
+        if a[0] == -1:
+            target = a
             source = b
-        elif b['virtual']:
+        elif b[0] == -1:
+            target = b
             source = a
 
         # Compute additional degeneracies to edge boundaries
         if source:
-            virtual_nodes = self.S[error_key].nodes(data='virtual')
-            for target in virtual_nodes:
-                if nx.shortest_path_length(subgraph, source, target,
-                                           weight="distance") == len(one_path):
+            virtual_nodes = self.virtual[error_key]
+            shortest_distance = nx.shortest_path_length(subgraph, a, b, weight="distance")
+            for node in virtual_nodes:
+                distance = nx.shortest_path_length(subgraph, source, node, weight="distance")
+                if distance == shortest_distance and node != target:
                     degeneracy += len(
-                        list(nx.all_shortest_paths(subgraph, source, target, weight="distance"))
+                        list(nx.all_shortest_paths(subgraph, source, node, weight="distance"))
 )
         return degeneracy, one_path
 
