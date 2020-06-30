@@ -1,20 +1,3 @@
-import qiskit
-#from qiskit import IBMQ
-#IBMQ.save_account("API toke")
-from qiskit import QuantumRegister, ClassicalRegister
-import copy
-import warnings
-import networkx as nx
-import numpy as np
-from qiskit import QuantumCircuit, execute
-from random import randrange
-import matplotlib
-try:
-    from qiskit import Aer
-    HAS_AER = True
-except ImportError:
-    from qiskit import BasicAer
-    HAS_AER = False
 # -*- coding: utf-8 -*-
 """
 This qiskit code was created on 29-JUN-20 1:18PM at IBM Hackatthon 2020 (Summer Jam)
@@ -41,7 +24,6 @@ try:
 except ImportError:
     from qiskit import BasicAer
     HAS_AER = False
-
 
 class SurfaceCode():
     """
@@ -135,7 +117,7 @@ class SurfaceCode():
                         return i
     
             new=[]
-            new.append(i)
+            new.append((r,c))
             if r==-0.5: #top semicircile
                 new.append(-1)
                 new.append(get_index((r+0.5,c-0.5)))
@@ -189,23 +171,23 @@ class SurfaceCode():
                     for i in range(len(order)):
                         k=self.data[order[i][j]]
                         l=self.ancilla[i]
-                        if i%2==0: #Xstabilizer
+                        if (order[i][0][0]+order[i][0][1])%2==0: #Xstabilizer
                             if j==1:
                                 self.circuit[log].h(l)
-                            if order[i][0]!=-1:
+                            if order[i][j]!=-1:
                                 self.circuit[log].cx(l,k)
                             if j==4:
                                 self.circuit[log].h(l)
                         else: #Xstabilizer
-                            if order[i][0]!=-1 and j!=0:
+                            if order[i][j]!=-1:
                                 self.circuit[log].cx(k,l)
 
-            for j in range(self.d**2 - 1):
-                self.circuit[log].measure(self.ancilla[j], self.output[self.T][j])
-                if reset:
-                    self.circuit[log].reset(self.ancilla[j])
-            if barrier:
-                self.circuit[log].barrier()
+                for j in range(self.d**2 - 1):
+                    self.circuit[log].measure(self.ancilla[j], self.output[self.T][j])
+                    if reset:
+                        self.circuit[log].reset(self.ancilla[j])
+                if barrier:
+                    self.circuit[log].barrier()
 
             self.T += 1
 
@@ -229,7 +211,7 @@ class SurfaceCode():
             be used to create the input for this method.
         """
         results =[]
-        results=list(raw_results.keys())
+        results=list(max(raw_results, key=raw_results.get))
         syn=[]
         new=[]
         for i in (results):
@@ -255,6 +237,7 @@ class SurfaceCode():
                 for j in range(0,len(syn_meas_results[i])):
                     new.append((syn_meas_results[i][j]+syn_meas_results[i-1][j])%2)
             processed_results.append(new)
+        print(processed_results)
 
         syn,dat=self.lattice()
         error_nodesX=[]
