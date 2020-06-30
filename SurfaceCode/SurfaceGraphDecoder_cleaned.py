@@ -10,18 +10,9 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 
-from operator import mul
-from fractions import Fraction
-from functools import reduce
 from itertools import combinations
 from mpl_toolkits.mplot3d import Axes3D
 from collections import defaultdict
-
-
-
-def nCr(n, r):
-    # https://stackoverflow.com/a/3027128
-    return int(reduce(mul, (Fraction(n - i, i + 1) for i in range(r)), 1))
 
 class GraphDecoder():
     """
@@ -73,7 +64,7 @@ class GraphDecoder():
                     (t,) + start_node, virtual=0, 
                     pos=(start_node[1], -start_node[0]), 
                     time=t, 
-                    pos_3D=(start_node[1], -start_node[0], t)
+                    pos_3D=(start_node[1], -start_node[0], t) # y-coord is flipped for plot purposes
                 )
                 self.populate_syndrome_graph((t,) + start_node, t, [], error_key, edge_weight=1)
 
@@ -285,7 +276,7 @@ class GraphDecoder():
                 if distance == shortest_distance and node != target:
                     degeneracy += len(
                         list(nx.all_shortest_paths(subgraph, source, node, weight="distance"))
-                        )
+                    )
         return degeneracy, one_path
 
     def matching_graph(self, error_graph, error_key):
@@ -433,7 +424,7 @@ class GraphDecoder():
         Args:
             G (nx.Graph): Graph to plot in 3D.
             edge_label (float): Edge label to display; either distance or weight.
-            angle ([float, float]): Initial 3D angle view.
+            angle ([float, float]): Initial 3D angle view. Defaults to [-116, 22]
 
         Returns:
             None: Plot is displayed in plt.show()
