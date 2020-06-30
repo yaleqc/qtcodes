@@ -28,7 +28,7 @@ class GraphDecoder():
     of a quantum error correction code, and then run suitable decoders.
     """
 
-    def __init__(self, d,T):
+    def __init__(self, d, T):
         self.d = d
         self.T = T
         self.S = {'X':nx.Graph(), 'Z':nx.Graph()}
@@ -36,17 +36,20 @@ class GraphDecoder():
         self._make_syndrome_graph()
 
     def _specify_virtual(self):
+        """Define coordinates of virtual nodes, alternating between Z and X.
+        Our convention is that Z starts at the upper left with (x, y) = (0.5, 0.5).
+        """
         virtual = {}
         virtual['X'] = []
         virtual['Z'] = []
-        for j in range(0,self.d,2):
+        for j in range(0, self.d, 2):
             # Z virtual nodes
-            virtual['Z'].append((-1,-0.5,j-0.5))
-            virtual['Z'].append((-1,self.d-0.5,j+0.5))
+            virtual['Z'].append((-1, -0.5, j-0.5))
+            virtual['Z'].append((-1, self.d-0.5, j+0.5))
 
             # X virtual nodes
-            virtual['X'].append((-1,j+0.5,-0.5))
-            virtual['X'].append((-1,j-0.5,self.d-0.5))
+            virtual['X'].append((-1, j+0.5, -0.5))
+            virtual['X'].append((-1, j-0.5, self.d-0.5))
         return virtual
 
     def _make_syndrome_graph(self):
@@ -60,64 +63,90 @@ class GraphDecoder():
         elements that can be created by the same error.
         """
 
-        start_nodes = {'Z':(.5,.5), 'X':(.5,1.5)}
+        start_nodes = {'Z':(0.5, 0.5), 'X':(0.5, 1.5)}
         for error_key in ['X','Z']:
             # subgraphs for each time step
-            for t in  range(0,self.T):
+            for t in range(0, self.T):
                 start_node = start_nodes[error_key]
-                self.S[error_key].add_node((t,) + start_node,virtual=0, pos=(start_node[1], -start_node[0]), time=t, pos_3D = (start_node[1], -start_node[0], t))
+                self.S[error_key].add_node((t,) + start_node, virtual=0, pos=(start_node[1], -start_node[0]), time=t, pos_3D = (start_node[1], -start_node[0], t))
                 self.populate_syndrome_graph((t,) + start_node, t, [], error_key, edge_weight=1)
 
             # connect physical qubits in same location across sugraphs of adjacent times
             syndrome_nodes_t0 = [x for x,y in self.S[error_key].nodes(data=True) if y['time']==0]
             for node in syndrome_nodes_t0:
-                space_label = (node[1],node[2])
-                for t in range(0,self.T-1):
+                space_label = (node[1], node[2])
+                for t in range(0, self.T-1):
                     self.S[error_key].add_edge((t,)+space_label, (t+1,)+space_label, distance=1)
 
-    def populate_syndrome_graph(self, current_node,t, visited_nodes, error_key,edge_weight=1):
+    def populate_syndrome_graph(self, current_node, t, visited_nodes, error_key, edge_weight=1):
+        """Recursive function to populate syndrome subgraph at time t with error_key X/Z. The current_node
+        is connected to neighboring nodes without revisiting a node.
+
+        Args:
+            current_node ((t, x, y)): Current syndrome node to be connected with neighboring nodes.
+            visited_nodes ([(t, x, y),]): List of syndrome nodes which have already been traver.
+            error_key (char): Which X/Z syndrome subgraph these nodes are from.
+            edge_weight (float, optional): Weight of edge between two adjacent syndrome nodes. Defaults to 1.
+
+        Returns:
+            None: function is to traverse the syndrome nodes and connect neighbors
+        """
         visited_nodes.append(current_node)
         neighbors = []
-        i = current_node[1]
-        j = current_node[2]
-        neighbors.append((i-1, j-1))
-        neighbors.append((i+1, j-1))
-        neighbors.append((i-1, j+1))
-        neighbors.append((i+1, j+1))
+        i = current_node[1] # syndrome node x coordinate
+        j = current_node[2] # syndrome node y coordinate
+        neighbors.append((i-1, j-1)) # up left
+        neighbors.append((i+1, j-1)) # down left
+        neighbors.append((i-1, j+1)) # up right
+        neighbors.append((i+1, j+1)) # down right
 
-        normal_neighbors = [n for n in neighbors if self.valid_syndrome(n,error_key) and (t, n[0],n[1]) not in visited_nodes]
-        virtual_neighbors = [n for n in neighbors if (-1,n[0],n[1]) in self.virtual[error_key] and (-1, n[0],n[1]) not in visited_nodes]
-#         print(error_key)
-#         print("Current: " + str(current_node))
-#         print("Normal: " + str(normal_neighbors))
-#         print("Virtual: " + str(virtual_neighbors))
+        normal_neighbors = [n for n in neighbors if self.valid_syndrome(n, error_key) and (t, n[0], n[1]) not in visited_nodes] # syndrome node neighbors of current_node not already visited
+        virtual_neighbors = [n for n in neighbors if (-1, n[0], n[1]) in self.virtual[error_key] and (-1, n[0], n[1]) not in visited_nodes] # virtual node neighbors of current_node not already visited
+        #         print(error_key)
+        #         print("Current: " + str(current_node))
+        #         print("Normal: " + str(normal_neighbors))
+        #         print("Virtual: " + str(virtual_neighbors))
 
+        # no neighbors to add edges
         if not normal_neighbors and not virtual_neighbors:
             return
 
+        # add normal/non-virtual neighbors
         for target in normal_neighbors:
-            target_node = (t,) + target
+            target_node = (t,) + target # target_node has time t with x and y coordinates from target
             if not self.S[error_key].has_node(target_node):
-                self.S[error_key].add_node(target_node, virtual=0, pos=(target[1],-target[0]), time=t, pos_3D = (target[1],-target[0],t))
-            self.S[error_key].add_edge(current_node, target_node, distance=edge_weight)
+                self.S[error_key].add_node(target_node, virtual=0, pos=(target[1], -target[0]), time=t, pos_3D = (target[1], -target[0], t)) # add target_node to syndrome subgraph if it doesn't already exist
+            self.S[error_key].add_edge(current_node, target_node, distance=edge_weight) # add edge between current_node and target_node
 
+        # add virtual neighbors
         for target in virtual_neighbors:
-            target_node = (-1,) + target
+            target_node = (-1,) + target # virtual target_node has time -1 with x and y coordinates from target
             if not self.S[error_key].has_node(target_node):
                 self.S[error_key].add_node(target_node,
                                            virtual=1,
                                            pos=(target[1], -target[0]),
                                            time=-1,
-                                           pos_3D=(target[1], -target[0], (self.T - 1) / 2))
-            self.S[error_key].add_edge(current_node, target_node, distance=edge_weight)
+                                           pos_3D=(target[1], -target[0], (self.T - 1) / 2)) # add virtual target_node to syndrome subgraph with z coordinate (T-1)/2 for nice plotting, if it doesn't already exist
+            self.S[error_key].add_edge(current_node, target_node, distance=edge_weight) # add edge between current_node and virtual target_node
 
+        # recursively traverse normal neighbors
         for target in normal_neighbors:
-            self.populate_syndrome_graph((t,) + target, t, visited_nodes,error_key,edge_weight=1)
+            self.populate_syndrome_graph((t,) + target, t, visited_nodes, error_key, edge_weight=1)
 
+        # recursively traverse virtual neighbors
         for target in virtual_neighbors:
-            self.populate_syndrome_graph((-1,) + target, t, visited_nodes,error_key,edge_weight=1)
+            self.populate_syndrome_graph((-1,) + target, t, visited_nodes, error_key, edge_weight=1)
 
-    def valid_syndrome(self,node, error_key):
+    def valid_syndrome(self, node, error_key):
+        """Checks whether a node is a syndrome node under our error_key, which is either X or Z.
+
+        Args:
+            node ((t, x, y)): Node in graph.
+            error_key (char): Which X/Z syndrome subgraph these nodes are from.
+
+        Returns:
+            Boolean T/F: node is or isn't a syndrome
+        """
         i = node[0]
         j = node[1]
         if error_key == 'Z':
@@ -146,6 +175,7 @@ class GraphDecoder():
         Returns:
             nx.Graph: Nodes are syndromes, edges are proxy for error probabilities
         """
+        paths = {}
         virtual_dict = dict(self.S[error_key].nodes(data='virtual'))
         time_dict = dict(self.S[error_key].nodes(data='time'))
         error_graph = nx.Graph()
@@ -172,15 +202,17 @@ class GraphDecoder():
 
             # If err_prob is specified, we also account for path degeneracies, as:
             # ln(degeneracy) + distance * log(p / 1 - p)
+            deg, path = self._path_degeneracy(source, target, error_key)
+            paths[(source,target)] = path
             if err_prob:
                 distance *= math.log(err_prob) - math.log1p(-err_prob)
-                distance += math.log(self._path_degeneracy(source, target))
+                distance += math.log(deg)
             else:  # Otherwise we can just assume that the log err_prob part is neg
                 distance = -distance
             error_graph.add_edge(source, target, weight=distance)
-        return error_graph
+        return error_graph, paths
 
-    def _path_degeneracy(self, a, b):
+    def _path_degeneracy(self, a, b, error_key):
         """Calculate the number of shortest error paths that link two syndrome nodes
         through both space and time.
 
@@ -193,19 +225,52 @@ class GraphDecoder():
 
         Returns:
             int: Number of degenerate shortest paths matching this syndrome pair
+            [nodes,]: List of nodes for one of the shortest paths
         """
         # Check which subgraph node is on. If x + y is even => X, else Z.
-        a_sum, b_sum = a[1] + a[2], b[1] + b[2]
-        if a_sum % 2 == 0 and b_sum % 2 == 0:
+        # a_sum, b_sum = a[1] + a[2], b[1] + b[2]
+        if error_key == "X":
             subgraph = self.S["X"]
-        elif a_sum % 2 == 1 and b_sum % 2 == 1:
+        elif error_key == "Z":
             subgraph = self.S["Z"]
-        else:
-            raise nx.exception.NodeNotFound("Nodes not both in X or Z syndrome graph.")
 
-        return len(list(nx.all_shortest_paths(subgraph, a, b, weight="distance")))
+        shortest_paths = list(nx.all_shortest_paths(subgraph, a, b, weight="distance"))
+        one_path = shortest_paths[0]  # We can pick any path to return as the error chain
+        degeneracy = len(shortest_paths)
+
+        # If either node is a virtual node, we also find degeneracies from the other
+        # node to *any* nearest virtual node
+        source = None
+        if a['virtual']:
+            source = b
+        elif b['virtual']:
+            source = a
+
+        # Compute additional degeneracies to edge boundaries
+        if source:
+            virtual_nodes = self.S[error_key].nodes(data='virtual')
+            for target in virtual_nodes:
+                if nx.shortest_path_length(subgraph, source, target,
+                                           weight="distance") == len(one_path):
+                    degeneracy += len(
+                        list(nx.all_shortest_paths(subgraph, source, target, weight="distance"))
+)
+        return degeneracy, one_path
 
     def matching_graph(self, error_graph, error_key):
+        """Return minimum weight matching graph of error graph with specified error key.
+
+        Args:
+            error_graph (node): Starting or ending syndrome node (degeneracy is symmetric)
+            eror_key (node): Ending or starting syndrome node (degeneracy is symmetric)
+
+        Raises:
+            nx.exception.NodeNotFound: Nodes not both in X or Z syndrome graph
+
+        Returns:
+            int: Number of degenerate shortest paths matching this syndrome pair
+            [nodes,]: List of nodes for one of the shortest paths
+        """
         time_dict = dict(self.S[error_key].nodes(data='time'))
         subgraph = nx.Graph()
         syndrome_nodes = [x for x,y in error_graph.nodes(data=True) if y['virtual']==0]
@@ -214,7 +279,7 @@ class GraphDecoder():
         for source, target in combinations(syndrome_nodes, 2):
             for node in [source,target]:
                 if not subgraph.has_node(node):
-                    subgraph.add_node(node, virtual=0, pos=(node[2],-node[1]), time=time_dict[node],pos_3D=(node[2],-node[1],time_dict[node]))
+                    subgraph.add_node(node, virtual=0, pos=(node[2],-node[1]), time=time_dict[node], pos_3D=(node[2], -node[1], time_dict[node]))
             subgraph.add_edge(source, target, weight=error_graph[source][target]['weight'])
 
         for source in syndrome_nodes:
@@ -223,7 +288,7 @@ class GraphDecoder():
                 potential_virtual[target] = error_graph[source][target]['weight']
             nearest_virtual = max(potential_virtual, key=potential_virtual.get)
             paired_virtual = nearest_virtual + source
-            subgraph.add_node(paired_virtual, virtual=1, pos=(nearest_virtual[2],-nearest_virtual[1]),time=-1,pos_3D=(nearest_virtual[2],-nearest_virtual[1],-1))
+            subgraph.add_node(paired_virtual, virtual=1, pos=(nearest_virtual[2],-nearest_virtual[1]), time=-1, pos_3D=(nearest_virtual[2], -nearest_virtual[1], -1))
             subgraph.add_edge(
                 source,
                 paired_virtual,
@@ -241,7 +306,36 @@ class GraphDecoder():
 
     def matching(self,matching_graph, error_key):
         matches = nx.max_weight_matching(matching_graph, maxcardinality=True)
-        return matches
+        filtered_matches = [(source,target) for (source,target) in matches if not (len(source) > 3 and len(target) > 3)] # remove 0 weighted matched edges between virtual syndrome nodes
+        return filtered_matches
+
+    def calculate_qubit_flips(matches, paths,error_key):
+        physical_qubit_flips = {}
+        for (source,target) in matches:
+            if len(source) > 3:
+                source = source[:3]
+            if len(target) > 3:
+                source = source[:3]
+
+            if (source,target) not in paths:
+                source,target = (target,source)
+
+            path = paths[(source,target)]
+            for i in range(0, len(path)-1):
+                start = path[i]
+                end = path[i+1]
+                if start[1:] != end[1:]:#the syndromes are not in the same physical location
+                    time = start[0]
+                    if time == -1:
+                        time = end[0]
+                    physical_qubit = (time,start[1]+end[1]/2,start[2]+end[2]/2)
+                    if physical_qubit in physical_qubit_flips:
+                        physical_qubit_flips[physical_qubit] = (physical_qubit_flips[physical_qubit] + 1)%2
+                    else:
+                        physical_qubit_flips[physical_qubit] = 1
+
+        physical_qubit_flips = {x:error_key for x,y in physical_qubit_flips.items() if y == 1}
+        return physical_qubit_flips
 
     def graph_2D(self,G,edge_label):
         pos=nx.get_node_attributes(G,'pos')
@@ -284,10 +378,10 @@ class GraphDecoder():
                 y_line = np.array((y_1, y_2))
                 z_line = np.array((z_1, z_2))
 
-            # Plot the connecting lines
+                # Plot the connecting lines
                 ax.plot(x_line, y_line, z_line, color='black', alpha=0.5)
 
-            # Plot edge weight labels at midpoints
+                # Plot edge weight labels at midpoints
                 x_mid = (x_1 + x_2)/2
                 y_mid = (y_1 + y_2)/2
                 z_mid = (z_1 + z_2)/2
@@ -296,6 +390,8 @@ class GraphDecoder():
 
         # Set the initial view
         ax.view_init(angle[1], angle[0])
+        ax.text(x_mid, y_mid, z_mid, w)
+
         # Hide the axes
         ax.set_axis_off()
 
