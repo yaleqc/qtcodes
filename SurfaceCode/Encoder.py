@@ -51,6 +51,7 @@ class SurfaceCode():
         self.qubit_registers = {'data', 'ancilla'}
         self.output=[]
         self.circuit = {}
+        self.c_output = ClassicalRegister(d**2, 'c_output')
 
         for log in ['0', '1']:
             self.circuit[log] = QuantumCircuit(self.ancilla, self.data, name=log)
@@ -63,7 +64,8 @@ class SurfaceCode():
 
         if T != 0:
             self.syndrome_measurement(reset=False)
-
+            self.readout()
+        
     def get_circuit_list(self):
         """
         Returns:
@@ -155,7 +157,7 @@ class SurfaceCode():
             order.append(new)
         return order
    
-    def syndrome_measurement(self,reset=True, barrier=False):
+    def syndrome_measurement(self,reset=True, barrier=True):
             """
             Application of a syndrome measurement round.
             Args:
@@ -181,15 +183,26 @@ class SurfaceCode():
                         else: #Xstabilizer
                             if order[i][j]!=-1:
                                 self.circuit[log].cx(k,l)
+                    if barrier:
+                        self.circuit[log].barrier()
+
 
                 for j in range(self.d**2 - 1):
                     self.circuit[log].measure(self.ancilla[j], self.output[self.T][j])
                     if reset:
                         self.circuit[log].reset(self.ancilla[j])
-                if barrier:
-                    self.circuit[log].barrier()
-
+                
             self.T += 1
+    def readout(self):
+        """
+        Readout of all code qubits, which corresponds to a logical measurement
+        as well as allowing for a measurement of the syndrome to be inferred.
+        """
+        for log in ['0', '1']:
+            self.circuit[log].add_register(self.c_output)
+            for i in range(self.d**2):
+                self.circuit[log].measure(self.data[i], self.c_output[i])
+
 
 
 
@@ -212,6 +225,8 @@ class SurfaceCode():
         """
         results =[]
         results=list(max(raw_results, key=raw_results.get))
+        print(results)
+
         syn=[]
         new=[]
         for i in (results):
@@ -228,26 +243,42 @@ class SurfaceCode():
     
     def extract_nodes(self,syn_meas_results):
         processed_results=[]
-        for i in range(0,len(syn_meas_results)):
+        new=[]
+        for j in (syn_meas_results[0]):
+            new.append(j)
+        processed_results.append(new)
+        new=[]
+        for j in (syn_meas_results[len(syn_meas_results)-1]):
+            new.append(j)
+        processed_results.append(new)
+        
+        for i in range(len(syn_meas_results)-2,0,-1):
             new=[]
-            if i==0:
-                for j in range(0,len(syn_meas_results[i])):
-                    new.append(syn_meas_results[i][j])
-            else:    
-                for j in range(0,len(syn_meas_results[i])):
-                    new.append((syn_meas_results[i][j]+syn_meas_results[i-1][j])%2)
+            for j in range(0,len(syn_meas_results[i])):
+                new.append((syn_meas_results[i][j]+syn_meas_results[i+1][j])%2)
             processed_results.append(new)
-        print(processed_results)
-
+        
+        
         syn,dat=self.lattice()
         error_nodesX=[]
         error_nodesZ=[]
-        for i in range(len(processed_results)):
+        for i in range(len(processed_results[0])):
+            if processed_results[0][i]==1:
+                if i%self.d==0 or (i+1)%self.d==0:
+                    error_nodesX.append((-2,dat[i][0],dat[i][1]))
+                if i<self.d or i>(self.d**2-1-self.d):
+                    error_nodesZ.append((-2,dat[i][0],dat[i][1]))
+                
+                    
+                    
+                
+        for i in range(1,len(processed_results)):
             for j in range(len(processed_results[i])):
+                
                 if processed_results[i][j]==1:
 
-                    if j%2==0:
-                        error_nodesX.append((i,syn[j][0],syn[j][1]))
+                    if (syn[j][0]+syn[j][1])%2==0:
+                        error_nodesX.append((i-1,syn[j][0],syn[j][1]))
                     else:
-                        error_nodesZ.append((i,syn[j][0],syn[j][1]))
+                        error_nodesZ.append((i-1,syn[j][0],syn[j][1]))
         return error_nodesX,error_nodesZ
