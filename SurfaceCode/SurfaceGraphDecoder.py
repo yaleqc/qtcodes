@@ -104,7 +104,11 @@ class GraphDecoder():
         for target in virtual_neighbors:
             target_node = (-1,) + target
             if not self.S[error_key].has_node(target_node):
-                self.S[error_key].add_node(target_node, virtual=1, pos=(target[1],-target[0]), time=-1,pos_3D=(target[1],-target[0],-1))
+                self.S[error_key].add_node(target_node,
+                                           virtual=1,
+                                           pos=(target[1], -target[0]),
+                                           time=-1,
+                                           pos_3D=(target[1], -target[0], (self.T - 1) / 2))
             self.S[error_key].add_edge(current_node, target_node, distance=edge_weight)
 
         for target in normal_neighbors:
