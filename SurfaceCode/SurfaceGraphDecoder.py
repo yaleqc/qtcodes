@@ -15,6 +15,7 @@ from fractions import Fraction
 from functools import reduce
 from itertools import combinations
 from mpl_toolkits.mplot3d import Axes3D
+from collections import defaultdict
 
 
 
@@ -314,7 +315,7 @@ class GraphDecoder():
         filtered_matches = [(source,target) for (source,target) in matches if not (len(source) > 3 and len(target) > 3)] # remove 0 weighted matched edges between virtual syndrome nodes
         return filtered_matches
 
-    def calculate_qubit_flips(matches, paths,error_key):
+    def calculate_qubit_flips(self,matches, paths,error_key):
         physical_qubit_flips = {}
         for (source,target) in matches:
             if len(source) > 3:
@@ -333,7 +334,7 @@ class GraphDecoder():
                     time = start[0]
                     if time == -1:
                         time = end[0]
-                    physical_qubit = (time,start[1]+end[1]/2,start[2]+end[2]/2)
+                    physical_qubit = (time,(start[1]+end[1])/2,(start[2]+end[2])/2)
                     if physical_qubit in physical_qubit_flips:
                         physical_qubit_flips[physical_qubit] = (physical_qubit_flips[physical_qubit] + 1)%2
                     else:
@@ -341,6 +342,34 @@ class GraphDecoder():
 
         physical_qubit_flips = {x:error_key for x,y in physical_qubit_flips.items() if y == 1}
         return physical_qubit_flips
+
+    def net_qubit_flips(self, flips_x, flips_z):
+        flipsx = {flip:'X' for flip,_ in flips_x.items() if flip not in flips_z}
+        flipsz = {flip:'Z' for flip,_ in flips_z.items() if flip not in flips_x}
+        flipsy = {flip:'Y' for flip,_ in flips_x.items() if flip in flips_z}
+        flips = {**flipsx,**flipsy,**flipsz}
+
+        individual_flips = defaultdict(dict)
+
+        for flip, error_key in flips.items():
+            individual_flips[flip[1:]][flip[0]] = error_key
+
+
+        paulis = {'X':np.array([[0,1],[1,0]]), 'Y':np.array([[0,-1j],[1j,0]]), 'Z':np.array([[1,0],[0,-1]]), 'I':np.array([[1,0],[0,1]])}
+
+        physical_qubit_flips = {}
+        for qubit_loc, flip_record in individual_flips.items():
+            net_error = paulis['I']
+            print("Physical Qubit: " + str(qubit_loc))
+            for time,error in sorted(flip_record.items(), key=lambda item: item[0]):
+                print("Error: " + error + " at time: " + str(time))
+                net_error = net_error.dot(paulis[error])
+            physical_qubit_flips[qubit_loc] = net_error
+
+        return physical_qubit_flips
+
+
+
 
     def graph_2D(self,G,edge_label):
         pos=nx.get_node_attributes(G,'pos')
