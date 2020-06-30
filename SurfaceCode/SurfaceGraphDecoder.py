@@ -146,6 +146,7 @@ class GraphDecoder():
         Returns:
             nx.Graph: Nodes are syndromes, edges are proxy for error probabilities
         """
+        paths = {}
         virtual_dict = dict(self.S[error_key].nodes(data='virtual'))
         time_dict = dict(self.S[error_key].nodes(data='time'))
         error_graph = nx.Graph()
@@ -172,15 +173,17 @@ class GraphDecoder():
 
             # If err_prob is specified, we also account for path degeneracies, as:
             # ln(degeneracy) + distance * log(p / 1 - p)
+            deg, path = self._path_degeneracy(source, target, error_key)
+            paths[(source,target)] = path
             if err_prob:
                 distance *= math.log(err_prob) - math.log1p(-err_prob)
-                distance += math.log(self._path_degeneracy(source, target))
+                distance += math.log(deg)
             else:  # Otherwise we can just assume that the log err_prob part is neg
                 distance = -distance
             error_graph.add_edge(source, target, weight=distance)
-        return error_graph
+        return error_graph, paths
 
-    def _path_degeneracy(self, a, b):
+    def _path_degeneracy(self, a, b, error_key):
         """Calculate the number of shortest error paths that link two syndrome nodes
         through both space and time.
 
@@ -195,15 +198,16 @@ class GraphDecoder():
             int: Number of degenerate shortest paths matching this syndrome pair
         """
         # Check which subgraph node is on. If x + y is even => X, else Z.
-        a_sum, b_sum = a[1] + a[2], b[1] + b[2]
-        if a_sum % 2 == 0 and b_sum % 2 == 0:
+        # a_sum, b_sum = a[1] + a[2], b[1] + b[2]
+        if error_key == "X":
             subgraph = self.S["X"]
-        elif a_sum % 2 == 1 and b_sum % 2 == 1:
+        elif error_key == "Z":
             subgraph = self.S["Z"]
-        else:
-            raise nx.exception.NodeNotFound("Nodes not both in X or Z syndrome graph.")
 
-        return len(list(nx.all_shortest_paths(subgraph, a, b, weight="distance")))
+
+        shortest_paths = list(nx.all_shortest_paths(subgraph, a, b, weight="distance"))
+
+        return len(shortest_paths), shortest_paths[0]
 
     def matching_graph(self, error_graph, error_key):
         time_dict = dict(self.S[error_key].nodes(data='time'))
