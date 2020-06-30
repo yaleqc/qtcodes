@@ -264,7 +264,36 @@ class GraphDecoder():
 
     def matching(self,matching_graph, error_key):
         matches = nx.max_weight_matching(matching_graph, maxcardinality=True)
-        return matches
+        filtered_matches = [(source,target) for (source,target) in matches if not (len(source) > 3 and len(target) > 3)] # remove 0 weighted matched edges between virtual syndrome nodes
+        return filtered_matches
+
+    def calculate_qubit_flips(matches, paths,error_key):
+        physical_qubit_flips = {}
+        for (source,target) in matches:
+            if len(source) > 3:
+                source = source[:3]
+            if len(target) > 3:
+                source = source[:3]
+
+            if (source,target) not in paths:
+                source,target = (target,source)
+
+            path = paths[(source,target)]
+            for i in range(0, len(path)-1):
+                start = path[i]
+                end = path[i+1]
+                if start[1:] != end[1:]:#the syndromes are not in the same physical location
+                    time = start[0]
+                    if time == -1:
+                        time = end[0]
+                    physical_qubit = (time,start[1]+end[1]/2,start[2]+end[2]/2)
+                    if physical_qubit in physical_qubit_flips:
+                        physical_qubit_flips[physical_qubit] = (physical_qubit_flips[physical_qubit] + 1)%2
+                    else:
+                        physical_qubit_flips[physical_qubit] = 1
+
+        physical_qubit_flips = {x:error_key for x,y in physical_qubit_flips.items() if y == 1}
+        return physical_qubit_flips
 
     def graph_2D(self,G,edge_label):
         pos=nx.get_node_attributes(G,'pos')
