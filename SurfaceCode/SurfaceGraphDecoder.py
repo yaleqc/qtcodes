@@ -34,7 +34,7 @@ class GraphDecoder():
         self.S = {'X':nx.Graph(), 'Z':nx.Graph()}
         self.virtual = self._specify_virtual()
         self._make_syndrome_graph()
-    
+
     def _specify_virtual(self):
         virtual = {}
         virtual['X'] = []
@@ -43,13 +43,12 @@ class GraphDecoder():
             # Z virtual nodes
             virtual['Z'].append((-1,-0.5,j-0.5))
             virtual['Z'].append((-1,self.d-0.5,j+0.5))
-            
+
             # X virtual nodes
             virtual['X'].append((-1,j+0.5,-0.5))
             virtual['X'].append((-1,j-0.5,self.d-0.5))
         return virtual
-        
-    
+
     def _make_syndrome_graph(self):
         """
         This method injects all possible Pauli errors into the circuit for
@@ -60,7 +59,7 @@ class GraphDecoder():
         for each non-trivial syndrome element, and an edge between all such
         elements that can be created by the same error.
         """
-        
+
         start_nodes = {'Z':(.5,.5), 'X':(.5,1.5)}
         for error_key in ['X','Z']:
             # subgraphs for each time step
@@ -70,14 +69,12 @@ class GraphDecoder():
                 self.populate_syndrome_graph((t,) + start_node, t, [], error_key, edge_weight=1)
 
             # connect physical qubits in same location across sugraphs of adjacent times
-            syndrome_nodes_t0 = [x for x,y in self.S[error_key].nodes(data=True) if y['time']==0]        
+            syndrome_nodes_t0 = [x for x,y in self.S[error_key].nodes(data=True) if y['time']==0]
             for node in syndrome_nodes_t0:
                 space_label = (node[1],node[2])
                 for t in range(0,self.T-1):
                     self.S[error_key].add_edge((t,)+space_label, (t+1,)+space_label, distance=1)
-                            
-        
-        
+
     def populate_syndrome_graph(self, current_node,t, visited_nodes, error_key,edge_weight=1):
         visited_nodes.append(current_node)
         neighbors = []
@@ -90,37 +87,32 @@ class GraphDecoder():
 
         normal_neighbors = [n for n in neighbors if self.valid_syndrome(n,error_key) and (t, n[0],n[1]) not in visited_nodes]
         virtual_neighbors = [n for n in neighbors if (-1,n[0],n[1]) in self.virtual[error_key] and (-1, n[0],n[1]) not in visited_nodes]
-#         print(error_key)        
+#         print(error_key)
 #         print("Current: " + str(current_node))
 #         print("Normal: " + str(normal_neighbors))
 #         print("Virtual: " + str(virtual_neighbors))
-        
+
         if not normal_neighbors and not virtual_neighbors:
             return
 
-        
-        
         for target in normal_neighbors:
             target_node = (t,) + target
             if not self.S[error_key].has_node(target_node):
                 self.S[error_key].add_node(target_node, virtual=0, pos=(target[1],-target[0]), time=t, pos_3D = (target[1],-target[0],t))
             self.S[error_key].add_edge(current_node, target_node, distance=edge_weight)
-        
+
         for target in virtual_neighbors:
             target_node = (-1,) + target
             if not self.S[error_key].has_node(target_node):
                 self.S[error_key].add_node(target_node, virtual=1, pos=(target[1],-target[0]), time=-1,pos_3D=(target[1],-target[0],-1))
             self.S[error_key].add_edge(current_node, target_node, distance=edge_weight)
-        
+
         for target in normal_neighbors:
             self.populate_syndrome_graph((t,) + target, t, visited_nodes,error_key,edge_weight=1)
-        
+
         for target in virtual_neighbors:
             self.populate_syndrome_graph((-1,) + target, t, visited_nodes,error_key,edge_weight=1)
-        
-        return
-    
-    
+
     def valid_syndrome(self,node, error_key):
         i = node[0]
         j = node[1]
@@ -134,7 +126,7 @@ class GraphDecoder():
                 return True
             else:
                 return False
-     
+
     def make_error_graph(self, nodes, error_key, err_prob=None):
         """Creates error syndrome subgraph from list of syndrome nodes. The output of
         this function is a graph that's ready for MWPM.
@@ -154,7 +146,7 @@ class GraphDecoder():
         time_dict = dict(self.S[error_key].nodes(data='time'))
         error_graph = nx.Graph()
         nodes += self.virtual[error_key]
-        
+
         for source, target in combinations(nodes, 2):
             for node in [source, target]:
                 if not error_graph.has_node(node):
@@ -175,15 +167,15 @@ class GraphDecoder():
             )
 
             # If err_prob is specified, we also account for path degeneracies, as:
-            # ln(degeneracy) + distance * log(p / 1 + p)
+            # ln(degeneracy) + distance * log(p / 1 - p)
             if err_prob:
-                distance *= math.log(err_prob) - math.log1p(err_prob)
+                distance *= math.log(err_prob) - math.log1p(-err_prob)
                 distance += math.log(self._path_degeneracy(source, target))
             else:  # Otherwise we can just assume that the log err_prob part is neg
                 distance = -distance
             error_graph.add_edge(source, target, weight=distance)
         return error_graph
-    
+
     def _path_degeneracy(self, a, b):
         """Calculate the number of shortest error paths that link two syndrome nodes
         through both space and time.
@@ -208,19 +200,19 @@ class GraphDecoder():
             raise nx.exception.NodeNotFound("Nodes not both in X or Z syndrome graph.")
 
         return len(list(nx.all_shortest_paths(subgraph, a, b, weight="distance")))
-    
+
     def matching_graph(self, error_graph, error_key):
         time_dict = dict(self.S[error_key].nodes(data='time'))
         subgraph = nx.Graph()
         syndrome_nodes = [x for x,y in error_graph.nodes(data=True) if y['virtual']==0]
         virtual_nodes = [x for x,y in error_graph.nodes(data=True) if y['virtual']==1]
-        
+
         for source, target in combinations(syndrome_nodes, 2):
             for node in [source,target]:
                 if not subgraph.has_node(node):
                     subgraph.add_node(node, virtual=0, pos=(node[2],-node[1]), time=time_dict[node],pos_3D=(node[2],-node[1],time_dict[node]))
             subgraph.add_edge(source, target, weight=error_graph[source][target]['weight'])
-                    
+
         for source in syndrome_nodes:
             potential_virtual = {}
             for target in virtual_nodes:
@@ -232,9 +224,9 @@ class GraphDecoder():
                 source,
                 paired_virtual,
                 weight=potential_virtual[nearest_virtual])
-            
+
         paired_virtual_nodes = [x for x,y in subgraph.nodes(data=True) if y['virtual']==1]
-        
+
         for source in paired_virtual_nodes:
             for target in paired_virtual_nodes:
                 subgraph.add_edge(
@@ -242,12 +234,11 @@ class GraphDecoder():
                 target,
                 weight=0)
         return subgraph
-    
+
     def matching(self,matching_graph, error_key):
         matches = nx.max_weight_matching(matching_graph, maxcardinality=True)
         return matches
-                
-                
+
     def graph_2D(self,G,edge_label):
         pos=nx.get_node_attributes(G,'pos')
         nx.draw_networkx(G, pos)
@@ -255,57 +246,53 @@ class GraphDecoder():
         labels = {x:round(y, 3) for (x,y) in labels.items()}
         nx.draw_networkx_edge_labels(G,pos,edge_labels=labels)
         plt.show()
-        return
-
 
     def graph_3D(self, G, edge_label, angle=[-116, 22]):
         # Get node positions
         pos_3D = nx.get_node_attributes(G, 'pos_3D')
-        
+
         # Define color range based on time
         colors = {x : plt.cm.plasma((y['time']+1)/self.T) for x,y in G.nodes(data=True)}
         # 3D network plot
 
         with plt.style.context(('ggplot')):
-            
+
             fig = plt.figure(figsize=(10,7))
             ax = Axes3D(fig)
-            
+
             # Loop on the nodes and look up in pos dictionary to extract the x,y,z coordinates of each node
             for node in G.nodes():
                 xi, yi, zi = pos_3D[node]
-                
+
                 # Scatter plot
                 ax.scatter(xi, yi, zi, color=colors[node], s=40*(1+G.degree(node)), edgecolors='k', alpha=0.7)
-                
+
                 # Node position label
                 ax.text(xi, yi, zi, node, fontsize=14)
-            
+
             # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
             # Those two points are the extrema of the line to be plotted
             for src, tgt in G.edges():
                 x_1, y_1, z_1 = pos_3D[src]
                 x_2, y_2, z_2 = pos_3D[tgt]
-                
+
                 x_line = np.array((x_1, x_2))
                 y_line = np.array((y_1, y_2))
-                z_line = np.array((z_1, z_2))                
-            
+                z_line = np.array((z_1, z_2))
+
             # Plot the connecting lines
                 ax.plot(x_line, y_line, z_line, color='black', alpha=0.5)
-            
+
             # Plot edge weight labels at midpoints
                 x_mid = (x_1 + x_2)/2
                 y_mid = (y_1 + y_2)/2
                 z_mid = (z_1 + z_2)/2
                 w = round(G[src][tgt][edge_label], 2)
                 ax.text(x_mid, y_mid, z_mid, w)
-        
+
         # Set the initial view
         ax.view_init(angle[1], angle[0])
         # Hide the axes
         ax.set_axis_off()
-        
+
         plt.show()
-             
-        return
