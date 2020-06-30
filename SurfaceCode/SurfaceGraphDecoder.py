@@ -424,7 +424,6 @@ class GraphDecoder():
 
         # Set the initial view
         ax.view_init(angle[1], angle[0])
-        ax.text(x_mid, y_mid, z_mid, w)
 
         # Hide the axes
         ax.set_axis_off()
