@@ -196,6 +196,7 @@ class GraphDecoder():
 
         Returns:
             int: Number of degenerate shortest paths matching this syndrome pair
+            [nodes,]: List of nodes for one of the shortest paths
         """
         # Check which subgraph node is on. If x + y is even => X, else Z.
         # a_sum, b_sum = a[1] + a[2], b[1] + b[2]
@@ -204,10 +205,28 @@ class GraphDecoder():
         elif error_key == "Z":
             subgraph = self.S["Z"]
 
-
         shortest_paths = list(nx.all_shortest_paths(subgraph, a, b, weight="distance"))
+        one_path = shortest_paths[0]  # We can pick any path to return as the error chain
+        degeneracy = len(shortest_paths)
 
-        return len(shortest_paths), shortest_paths[0]
+        # If either node is a virtual node, we also find degeneracies from the other
+        # node to *any* nearest virtual node
+        source = None
+        if a['virtual']:
+            source = b
+        elif b['virtual']:
+            source = a
+
+        # Compute additional degeneracies to edge boundaries
+        if source:
+            virtual_nodes = self.S[error_key].nodes(data='virtual')
+            for target in virtual_nodes:
+                if nx.shortest_path_length(subgraph, source, target,
+                                           weight="distance") == len(one_path):
+                    degeneracy += len(
+                        list(nx.all_shortest_paths(subgraph, source, target, weight="distance"))
+)
+        return degeneracy, one_path
 
     def matching_graph(self, error_graph, error_key):
         time_dict = dict(self.S[error_key].nodes(data='time'))
