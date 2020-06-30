@@ -4,12 +4,13 @@ This qiskit code was created on 29-JUN-20 1:18PM at IBM Hackatthon 2020 (Summer 
 
 @author: Shraddha Singh
 """
+# Following has been inspired from the code (qiskit.ignis.verification.topological_codes.circuits.py) that is licensed under the Apache License, Version 2.0. You may
+# obtain a copy of this license in the LICENSE.txt file in the root directory
+# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
 
-"""Generates circuits for quantum error correction."""
+"""Generates circuits for quantum error correction with surface code patches."""
 
 import qiskit
-#from qiskit import IBMQ
-#IBMQ.save_account("API toke")
 from qiskit import QuantumRegister, ClassicalRegister
 import copy
 import warnings
@@ -27,22 +28,25 @@ except ImportError:
 
 class SurfaceCode():
     """
-    Implementation of a distance d repetition code, implemented over
+    Implementation of a distance d surface code, implemented over
     T syndrome measurement rounds.
     """
 
     def __init__(self, d, T):
         """
-        Creates the circuits corresponding to a logical 0 and 1 encoded
-        using a repetition code.
+        Creates the circuits corresponding to a logical 0 encoded
+        using a surface code with X and Z stabilizers.
         Args:
-            d (int): Number of code qubits (and hence repetitions) used.
-            T (int): Number of rounds of ancilla-assisted syndrome measurement.
+            d (int): Number of physical "data" qubits. Only odd d's allowed
+            T (int): Number of rounds of ancilla-assisted syndrome measurement. Normally T=d
         Additional information:
             No measurements are added to the circuit if `T=0`. Otherwise
             `T` rounds are added, followed by measurement of the code
             qubits (corresponding to a logical measurement and final
-            syndrome measurement round).
+            syndrome measurement round)
+            This circuit is for "rotated lattices" i.e. it requires 
+            d**2 data qubits and d**2-1 syndrome qubits only. Hence, 
+            d=odd allows equal number of Z and X stabilizer mesaurments.
         """
         self.d=d
         self.T=0
@@ -52,12 +56,16 @@ class SurfaceCode():
         self.output=[]
         self.circuit = {}
         self.c_output = ClassicalRegister(d**2, 'c_output')
+        
+        """This code creates circuits only for log='0' but it can be easily 
+        modified to accomodate circuuit for log='1' """
+        
 
         for log in ['0', '1']:
             self.circuit[log] = QuantumCircuit(self.ancilla, self.data, name=log)
 
 
-#        self._preparation()
+#        self._preparation() to be included to create log='1'
 
         for _ in range(T-1):
             self.syndrome_measurement()
@@ -76,8 +84,11 @@ class SurfaceCode():
         circuit_list = [self.circuit[log] for log in ['0', '1']]
         return circuit_list
 
-    #lattice vertices
-    def lattice(self): #add self to every function later 
+    """It assigns vertices to qubits on a 2D graph, where,
+    data qubits are on the x lines and, syndrome qubits are
+    on the 0.5+x lines, in the cartesian coordinate system, where x is an integer."""
+    
+    def lattice(self):  
         d=self.d
         data_string=nx.Graph()
         syndrome_string=nx.Graph()
@@ -98,14 +109,19 @@ class SurfaceCode():
         syn_ind=list(syndrome_string.nodes)
         data_ind=list(data_string.nodes)
         return(syn_ind,data_ind)
-
-    #returns index of each node in the graph
-    #Include def x
+    """List of nodes on the 2D lattice graph returned"""
+    #def x """to be included to execute self._preparation for log='1' """
     
    # def _preparation(self):
-   #order of cnots
-
+    """ prapares log '1' from log '0' circuit by applying x logical to the lattice"""
+   
     def connection(self):
+        """
+        Determines the order of syndrome measurements between data qubits and syndrome qubits.
+        We follow the ZN rule here to avoid hook error as described by [https://doi.org/10.1063/1.1499754]
+        where Z stabilisers are arranged in 'Z' pattern and X stabilizers in 'N' pattern. 
+        Refer to the diagram in readme to get the refrence. 
+        """
         syn_index,data_index=self.lattice()
         
         order=[]
@@ -163,6 +179,10 @@ class SurfaceCode():
             Args:
                 reset (bool): If set to true add a boolean at the end of each round
                 barrier (bool): Boolean denoting whether to include a barrier at the end.
+                A barrier is included after every round of 'j' which passes through layers of
+                cx to be done, because the order should not be disturbed else the stabilizers
+                will not be executed since Z and X on the same qubit do not commute. Thus, 
+                we end up flipping the sign of some stabilizers. 
             """
             self.output.append(ClassicalRegister((self.d**2 - 1), 'round_' + str(self.T) + 'ancilla'))
             
@@ -214,9 +234,9 @@ class SurfaceCode():
                 obtained from the `get_counts` method of a ``qiskit.Result``
                 object).
         Returns:
-            results: Dictionary with the same structure as the input, but with
-                the bit strings used as keys in the counts dictionaries
-                converted to the form required by the decoder.
+            syn: d+1 dimensional array where 0th array stores qubit readouts 
+            while the subsequesnt rows store the results from measurement rounds
+            as required for extraction of nodes with errors to be sent to the decoder
         Additional information:
             The circuits must be executed outside of this class, so that
             their is full freedom to compile, choose a backend, use a
@@ -225,8 +245,7 @@ class SurfaceCode():
         """
         results =[]
         results=list(max(raw_results, key=raw_results.get))
-        print(results)
-
+        
         syn=[]
         new=[]
         for i in (results):
@@ -242,6 +261,10 @@ class SurfaceCode():
         return syn
     
     def extract_nodes(self,syn_meas_results):
+        """Extracts node locations of qubits which flipped in 
+        consecutive rounds and the data qubits which were flipped
+        during readout
+        """
         processed_results=[]
         new=[]
         for j in (syn_meas_results[0]):
