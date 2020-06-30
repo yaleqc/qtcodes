@@ -1,12 +1,11 @@
+# -*- coding: utf-8 -*-
 """
-This qiskit code was created on 29-JUN-20 1:18PM at IBM Hackatthon 2020 (Summer Jam). It was inspired from 
-the same function for a class of same name by James Wootton @IBM for topological_codes package of Qiskit
+This qiskit code was created on 29-JUN-20 1:18PM at IBM Hackatthon 2020 (Summer Jam)
 
 @author: Shraddha Singh
 """
 
-"""Generates syndromes graphs for quantum error correction."""
-
+"""Generates circuits for quantum error correction."""
 
 import qiskit
 #from qiskit import IBMQ
@@ -18,10 +17,8 @@ import networkx as nx
 import numpy as np
 from qiskit import QuantumCircuit, execute
 from random import randrange
+from Encoder import *
 import matplotlib
-import matplotlib.pyplot as plt
-import SurfaceCode
-from SurfaceCode import*
 try:
     from qiskit import Aer
     HAS_AER = True
@@ -29,13 +26,14 @@ except ImportError:
     from qiskit import BasicAer
     HAS_AER = False
 
+    
 class GraphDecoder():
     """
     Class to construct the graph corresponding to the possible syndromes
     of a quantum error correction code, and then run suitable decoders.
     """
 
-    def __init__(self, code, error_key, S=None):
+    def __init__(self, code, S=None):
         """
         Args:
             code (RepitionCode): The QEC Code object for which this decoder
@@ -52,7 +50,7 @@ class GraphDecoder():
         """
 
         self.code = code
-
+        
         if S:
             self.S = S
         else:
@@ -112,17 +110,15 @@ class GraphDecoder():
                     results = self.code.process_results(raw_results['0'])
                     
                     
+                    
                     nodesX,nodesZ = self.code.extract_nodes(results)
-                    if self.error_key=='X':
-                        nodes=nodesX
-                    else:
-                        nodes=nodesZ
-
-                    for node in nodes:
-                        S.add_node(node)
-                        for source in nodes:
-                            for target in nodes:
-                                if source != target:
-                                    S.add_edge(source, target, distance=1)
+                    for nodes in (nodesX,nodesZ):
+                        for node in nodes:
+                            print(node)
+                            S.add_node(node)
+                            for source in nodes:
+                                for target in nodes:
+                                    if source != target:
+                                        S.add_edge(source, target, distance=1)
 
         return S
