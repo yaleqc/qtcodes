@@ -394,29 +394,33 @@ class GraphDecoder:
     def calculate_qubit_flips(self, matches, paths, error_key):
         physical_qubit_flips = {}
         for (source, target) in matches:
+            # Trim "paired virtual" nodes to nearest virtual node
             if len(source) > 3:
                 source = source[:3]
             if len(target) > 3:
                 source = source[:3]
 
+            # Paths dict is encoded in one direction, check other if not found
             if (source, target) not in paths:
                 source, target = (target, source)
 
-            path = paths[(source, target)]
+            path = paths[(source, target)]  # This is an arbitrary shortest error path
             for i in range(0, len(path) - 1):
                 start = path[i]
                 end = path[i + 1]
-                if (
-                    start[1:] != end[1:]
-                ):  # the syndromes are not in the same physical location
+                # Check if syndromes are in different physical locations
+                # If they're in the same location, this is a measurement error
+                if start[1:] != end[1:]:
                     time = start[0]
-                    if time == -1:
+                    if time == -1:  # Grab time from non-virtual syndrome
                         time = end[0]
                     physical_qubit = (
                         time,
                         (start[1] + end[1]) / 2,
                         (start[2] + end[2]) / 2,
                     )
+
+                    # Paired flips at the same time can be ignored
                     if physical_qubit in physical_qubit_flips:
                         physical_qubit_flips[physical_qubit] = (
                             physical_qubit_flips[physical_qubit] + 1
