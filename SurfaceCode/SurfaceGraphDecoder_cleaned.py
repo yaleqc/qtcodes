@@ -28,20 +28,20 @@ class GraphDecoder():
         self._make_syndrome_graph()
 
     def _specify_virtual(self):
-        """Define coordinates of virtual nodes, alternating between Z and X.
-        Our convention is that Z starts at the upper left with (x, y) = (0.5, 0.5).
+        """Define coordinates of Z and X virtual nodes.
+        Our convention is that Z virtual nodes are top/bottom and X virtual nodes are left/right.
         """
         virtual = {}
         virtual['X'] = []
         virtual['Z'] = []
         for j in range(0, self.d, 2):
             # Z virtual nodes
-            virtual['Z'].append((-1, -0.5, j-0.5))
-            virtual['Z'].append((-1, self.d-0.5, j+0.5))
+            virtual['Z'].append((-1, -0.5, j-0.5)) # top
+            virtual['Z'].append((-1, self.d-0.5, j+0.5)) # bottom
 
             # X virtual nodes
-            virtual['X'].append((-1, j+0.5, -0.5))
-            virtual['X'].append((-1, j-0.5, self.d-0.5))
+            virtual['X'].append((-1, j+0.5, -0.5)) # left
+            virtual['X'].append((-1, j-0.5, self.d-0.5)) # right
         return virtual
 
     def _make_syndrome_graph(self):
@@ -61,14 +61,15 @@ class GraphDecoder():
             for t in range(0, self.T):
                 start_node = start_nodes[error_key]
                 self.S[error_key].add_node(
-                    (t,) + start_node, virtual=0, 
+                    (t,) + start_node, 
+                    virtual=0, 
                     pos=(start_node[1], -start_node[0]), 
                     time=t, 
                     pos_3D=(start_node[1], -start_node[0], t) # y-coord is flipped for plot purposes
                 )
                 self.populate_syndrome_graph((t,) + start_node, t, [], error_key, edge_weight=1)
 
-            # connect physical qubits in same location across sugraphs of adjacent times
+            # connect physical qubits in same location across subgraphs of adjacent times
             syndrome_nodes_t0 = [x for x,y in self.S[error_key].nodes(data=True) if y['time']==0]
             for node in syndrome_nodes_t0:
                 space_label = (node[1], node[2])
@@ -121,7 +122,7 @@ class GraphDecoder():
                     virtual=0, 
                     pos=(target[1], -target[0]), 
                     time=t, 
-                    pos_3D = (target[1], -target[0], t)
+                    pos_3D=(target[1], -target[0], t)
                 ) # add target_node to syndrome subgraph if it doesn't already exist
             self.S[error_key].add_edge(
                 current_node, 
@@ -162,7 +163,7 @@ class GraphDecoder():
             error_key (char): Which X/Z syndrome subgraph these nodes are from.
 
         Returns:
-            Boolean T/F: node is or isn't a syndrome
+            Boolean T/F: whether node is a syndrome node
         """
         i = node[0]
         j = node[1]
@@ -179,7 +180,7 @@ class GraphDecoder():
 
     def make_error_graph(self, nodes, error_key, err_prob=None):
         """Creates error syndrome subgraph from list of syndrome nodes. The output of
-        this function is a graph that's ready for MWPM.
+        this function is a graph that's ready for minimum weight perfect matching (MWPM).
 
         If err_prob is specified, we adjust the shortest distance between syndrome
         nodes by the degeneracy of the error path.
@@ -359,7 +360,7 @@ class GraphDecoder():
 
     def calculate_qubit_flips(self, matches, paths, error_key):
         physical_qubit_flips = {}
-        for (source,target) in matches:
+        for (source, target) in matches:
             if len(source) > 3:
                 source = source[:3]
             if len(target) > 3:
@@ -376,7 +377,7 @@ class GraphDecoder():
                     time = start[0]
                     if time == -1:
                         time = end[0]
-                    physical_qubit = (time,(start[1]+end[1])/2,(start[2]+end[2])/2)
+                    physical_qubit = (time, (start[1]+end[1])/2, (start[2]+end[2])/2)
                     if physical_qubit in physical_qubit_flips:
                         physical_qubit_flips[physical_qubit] = (physical_qubit_flips[physical_qubit] + 1)%2
                     else:
@@ -397,7 +398,7 @@ class GraphDecoder():
             individual_flips[flip[1:]][flip[0]] = error_key
 
 
-        paulis = {'X':np.array([[0,1],[1,0]]), 'Y':np.array([[0,-1j],[1j,0]]), 'Z':np.array([[1,0],[0,-1]]), 'I':np.array([[1,0],[0,1]])}
+        paulis = { 'X':np.array([[0,1],[1,0]]), 'Y':np.array([[0,-1j],[1j,0]]), 'Z':np.array([[1,0],[0,-1]]), 'I':np.array([[1,0],[0,1]]) }
 
         physical_qubit_flips = {}
         for qubit_loc, flip_record in individual_flips.items():
@@ -468,8 +469,8 @@ class GraphDecoder():
                 x_mid = (x_1 + x_2)/2
                 y_mid = (y_1 + y_2)/2
                 z_mid = (z_1 + z_2)/2
-                w = round(G[src][tgt][edge_label], 2)
-                ax.text(x_mid, y_mid, z_mid, w)
+                label = round(G[src][tgt][edge_label], 2)
+                ax.text(x_mid, y_mid, z_mid, label)
 
         # Set the initial view
         ax.view_init(angle[1], angle[0])
