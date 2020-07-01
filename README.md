@@ -8,6 +8,9 @@ Surface Code is a CSS code, consisting of pairwise commuting X and Z stabilizers
 
 ## circuits.py
 The SurfaceCode class, located in circuits.py creates the following circuit for any dstance, d. This example is for d=3 circuit where, blue patches are Z stabilizers and red patches are X stabilizers. Green labels are data qubit locations and yellow labels are syndrome qubit locations. The Z and N marked in each patch determines the order of CX labeled in red. It processes the final results from measurements and extracts the nodes that were flipped in two consecutive syndrome measurements.
+<p align="center">
+<img src="https://github.com/Phionx/qiskit_surface_codes/blob/master/SurfaceCode/tutorials/img/Lattice.png" width="50%">
+</p>
 ## Syndrome_Graph.py
 The Syndrome class, located in syndrome_graph.py creates a graph of nodes from all the possible circuits by inserting an x error or a z error anywhere in the circuit. Following is an example of one such graph:
 <p align="center">
@@ -37,7 +40,7 @@ Below is an example of the MWPM matching graph for our error subgraph:
 Finally, we correct the syndrome errors through a series of qubit flips.
 
 # Acknowledgements
-We would like to thank @quantumjim for valuable suggestions and pointing out to the topological_codes repository availableon qiskit, which proved quite useful for our project.
+We would like to thank @quantumjim for valuable suggestions and pointing out to the topological_codes for repetition codes (also included here) repository availableon qiskit, which proved quite useful for our project.
 
 # References
 - [Surface Codes: Towards Practical Large-Scale Quantum Computation](https://arxiv.org/abs/1208.0928)
