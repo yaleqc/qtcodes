@@ -9,7 +9,16 @@ This surface code evolves over a specified number of time steps `T`, giving rise
 
 ![X_d3_T3_plot](https://user-images.githubusercontent.com/42923017/86188148-b1c91080-bb0b-11ea-9012-abd3ac91210e.jpg)
 
-We construct our 3D syndrome graph by specifying the coordinates of the syndrome and virtual nodes, connecting the lattice of syndrome nodes at a given time step, and connecting the lattices between adjacent time steps and virtual nodes to their adjacent syndrome nodes at all time steps. Then, a subgraph of detected syndrome errors is extracted, where we account for path degeneracy for the edge weights and clone virtual nodes to allow for multiple virtual node to syndrome node matchings. We run a MWPM on the subgraph to determine the most probable set of syndrome errors, and finally correct them by a series of qubit flips.
+We construct our 3D syndrome graph by specifying the coordinates of the syndrome and virtual nodes, connecting the lattice of syndrome nodes at a given time step, and connecting the lattices between adjacent time steps and virtual nodes to their adjacent syndrome nodes at all time steps. Then, a subgraph of detected syndrome errors is extracted, where we account for path degeneracy for the edge weights and clone virtual nodes to allow for multiple virtual node to syndrome node matchings.
+Below is an example of this error subgraph with `node_set = [(0, 1.5, 0.5), (1, 1.5, 0.5), (1, 0.5, 1.5), (2, 0.5, 1.5)]`:
+
+![X_d3_T3_error](https://user-images.githubusercontent.com/42923017/86188813-cefede80-bb0d-11ea-8355-4e6a2acf1b1f.jpg)
+
+We run a MWPM on the subgraph to determine the most probable set of syndrome errors.
+Below is an example of the MWPM for our error subgraph:
+![X_d3_T3_match](https://user-images.githubusercontent.com/42923017/86188816-d1613880-bb0d-11ea-8125-a544fdf50f80.jpg)
+
+Finally, we correct the syndrome errors through a series of qubit flips.
 
 # Sources
 
