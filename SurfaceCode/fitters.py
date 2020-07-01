@@ -35,14 +35,14 @@ class GraphDecoder:
     """
 
     def __init__(self, d, T, simulation=False):
+        
         self.d = d
         self.T = T
-        self.code = SurfaceCode(d, T)
-
         self.virtual = self._specify_virtual()
-
         self.S = {"X": nx.Graph(), "Z": nx.Graph()}
+        self.simulation = simulation
         if simulation:
+            self.code = SurfaceCode(d, T)
             self._make_syndrome_graph_simulate()
         else:
             self._make_syndrome_graph()
@@ -343,6 +343,11 @@ class GraphDecoder:
                 distance = distance - math.log(deg)/(math.log1p(-err_prob) - math.log(err_prob))
             distance = -distance    
             error_graph.add_edge(source, target, weight=distance)
+
+
+        if self.simulation: #paths incorrect for simulated syndrome graph
+            return error_graph
+
         return error_graph, paths
 
     def analytic_paths(self, matches, error_key):
@@ -558,9 +563,9 @@ class GraphDecoder:
         physical_qubit_flips = {}
         for qubit_loc, flip_record in individual_flips.items():
             net_error = paulis["I"]
-            print("Physical Qubit: " + str(qubit_loc))
+            # print("Physical Qubit: " + str(qubit_loc))
             for time, error in sorted(flip_record.items(), key=lambda item: item[0]):
-                print("Error: " + error + " at time: " + str(time))
+                # print("Error: " + error + " at time: " + str(time))
                 net_error = net_error.dot(paulis[error])
             physical_qubit_flips[qubit_loc] = net_error
 
