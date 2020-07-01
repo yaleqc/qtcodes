@@ -1,10 +1,6 @@
 # Qiskit Surface Code Encoder/Decoder
 ## IBM Qiskit - Summer Jam Hackathon 2020
 
-<p align="center">
-<img width="300" alt="Lattice" src="https://user-images.githubusercontent.com/293681/86272449-9ce88d80-bb9c-11ea-8da2-2867aafc9fb8.jpg">
-</p>
-
 Quantum computation is an inherently noisy process. In order to build scalable quantum computers, fault-tolerance will be necessary to implement useful computation. There are many proposed approaches to this, but one promising candidate is the family of topological quantum error correcting codes.
 
 Currently, the [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, a *repetition code*.
@@ -12,6 +8,10 @@ Currently, the [`qiskit.ignis.verification.topological_codes`](https://qiskit.or
 For this hackathon, our team [Erwin's Tigers](#team) added a full **surface code encoder and decoder** to Qiskit Ignis. We hope that this implementation will be useful to other Qiskitters, and will also inspire others to continue building out the `topological_codes` module into a diverse family.
 
 ## Background
+
+<p align="center">
+<img width="300" alt="Lattice" src="https://user-images.githubusercontent.com/293681/86272449-9ce88d80-bb9c-11ea-8da2-2867aafc9fb8.jpg">
+</p>
 
 Surface codes are a type of CSS code, consisting of pairwise commuting X and Z stabilizers made of Pauli gates. It defines a logical state on a 2 by 2 lattice made of quantum bits with the stabilizers X<sub>1</sub> X<sub>2</sub> Z<sub>1</sub> Z<sub>2</sub>.
 
