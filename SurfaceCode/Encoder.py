@@ -287,30 +287,48 @@ class SurfaceCode():
         for j in (syn_meas_results[len(syn_meas_results)-1]):
             new.append(j)
         processed_results.append(new)
-        
+
         for i in range(len(syn_meas_results)-2,0,-1):
             new=[]
             for j in range(0,len(syn_meas_results[i])):
                 new.append((syn_meas_results[i][j]+syn_meas_results[i+1][j])%2)
             processed_results.append(new)
-        
-        
+
+
         syn,dat=self.lattice()
         error_nodesX=[]
         error_nodesZ=[]
-        for i in range(len(processed_results[0])):
-            if processed_results[0][i]==1:
-                if i%self.d==0 or (i+1)%self.d==0:
-                    error_nodesX.append((-2,dat[i][0],dat[i][1]))
-                if i<self.d or i>(self.d**2-1-self.d):
-                    error_nodesZ.append((-2,dat[i][0],dat[i][1]))
+
+        # first_row = processed_result[0][:self.d]
+        # last_row = processed_result[0][-self.d - 1:-1]
+
+        # left_col = processed_result[0][::self.d]
+        # right_col = processed_result[0][self.d-1:-1:self.d]
+
+        # if sum(first_row) % 2 == 1 or sum(last_row) % 2 == 1:
+        #     for node in dat[:self.d]:
+        #         # Append virtual node
+        #         if node[1] == 0:
+        #             error_nodesZ.append((-1, node[0] - 0.5, node[1] - 0.5))
+        #         else:
+        #             error_nodesZ.append((-1, node[0] - 0.5, node[1] + 0.5))
                 
-                    
-                    
-                
+        #     for node in dat[-self.d - 1:-1]:
+        #         if node[1] == self.d - 1:
+        #             error_nodesZ.append((-1, node[0] + 0.5, node[1] + 0.5))
+        #         else:
+        #             error_nodesZ.append((-1, node[0] + 0.5, node[1] - 0.5))
+
+        # if sum(left_col) % 2 == 1 or sum(right_col) % 2 == 1:
+        #     for node in dat[::self.d]:
+        #         error_nodesX.append((-2, node[0], node[1]))
+        #     for node in dat[self.d-1:-1:self.d]:
+        #         error_nodesX.append((-2, node[0], node[1]))
+
+
         for i in range(1,len(processed_results)):
             for j in range(len(processed_results[i])):
-                
+
                 if processed_results[i][j]==1:
 
                     if (syn[j][0]+syn[j][1])%2==0:
