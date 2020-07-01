@@ -5,7 +5,7 @@ Quantum computation is an inherently noisy process. Scalable quantum computers w
 
 Currently, the [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, the *repetition code*.
 
-For the hackathon, our team [Erwin's Tigers](#team) implemented a full **surface code encoder and decoder** for Qiskit Ignis. We hope that this implementation will be useful to other Qiskitters and will inspire others to continue building out the `topological_codes` module into a diverse family.
+For the hackathon, our team [Erwin's Tigers](#team) implemented a **surface code encoder and decoder** for Qiskit Ignis. We hope that this implementation will be useful to other Qiskitters and will inspire others to continue building out the `topological_codes` module into a diverse family.
 
 ## Usage
 Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html), we've written a full set of [jupyter notebook tutorials](https://github.com/Phionx/qiskit_surface_codes/tree/master/tutorials), which are the best way to get up to speed. They detail both the API and the gritty implementation details -- please check them out!
@@ -28,7 +28,7 @@ There are two main interfaces — corresponding to the encoder and decoder, resp
 
 ### `SurfaceCode` in [`surface_code.circuits`](surface_code/circuits.py)
 
-`SurfaceCode(d, T)` generates a `QuantumCircuit` for creating a logical state and measuring stabilizers. The class is parameterized with the code distance `d` (which should be odd) and the number of syndrome measurement rounds `T` (usually `T = d`). This class also handles parsing of the physical device readout into a form suitable for decoding. Please see the [encoder tutorial]() for a full walkthrough.
+`SurfaceCode(d, T)` generates a `QuantumCircuit` for creating a logical state and measuring stabilizers. The class is parameterized with the code distance `d` (which should be odd) and the number of syndrome measurement rounds `T` (usually `T = d`). This class also handles parsing of the physical device readout into a form suitable for decoding. Please see the [encoder tutorial](tutorials/1_surface_code_encoding.ipynb) for a full walkthrough.
 <p align="center">
 <img width="615" alt="circuit" src="https://user-images.githubusercontent.com/293681/86277098-23ed3400-bba4-11ea-8305-c6d19eb73899.png">
 </p>
