@@ -10,7 +10,7 @@ For the hackathon, our team, [Erwin's Tigers](#team), implemented a full **surfa
 ## Background
 
 <p align="center">
-<img width="300" alt="Lattice" src="https://user-images.githubusercontent.com/293681/86272449-9ce88d80-bb9c-11ea-8da2-2867aafc9fb8.jpg">
+<img width="300" alt="surface code teaser" src="https://user-images.githubusercontent.com/293681/86277823-5f3c3280-bba5-11ea-9c87-d8525a8cbe88.jpg">
 </p>
 
 Surface codes are a type of CSS code, consisting of pairwise commuting X and Z stabilizers made of Pauli gates. It defines a logical state on a 2 by 2 lattice made of quantum bits with the stabilizers X<sub>1</sub> X<sub>2</sub> Z<sub>1</sub> Z<sub>2</sub>.
