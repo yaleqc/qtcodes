@@ -220,22 +220,13 @@ class GraphDecoder:
 
         for node in nodes:
             if not error_graph.has_node(node):
-                if virtual_dict[node] == 0:
-                    error_graph.add_node(
-                        node,
-                        virtual=0,
-                        pos=(node[2], -node[1]),
-                        time=time_dict[node],
-                        pos_3D=(node[2], -node[1], time_dict[node]),
-                    )
-                else:  # set z in pos_3D of virtual node to be mid height for nice plotting
-                    error_graph.add_node(
-                        node,
-                        virtual=1,
-                        pos=(node[2], -node[1]),
-                        time=time_dict[node],
-                        pos_3D=(node[2], -node[1], -1),
-                    )
+                error_graph.add_node(
+                    node,
+                    virtual=virtual_dict[node],
+                    pos=(node[2], -node[1]),
+                    time=time_dict[node],
+                    pos_3D=(node[2], -node[1], time_dict[node]),
+                )
 
 
         for source, target in combinations(nodes, 2):            
@@ -248,8 +239,7 @@ class GraphDecoder:
                 )
             )
 
-            # If err_prob is specified, we also account for path degeneracies, as:
-            # ln(degeneracy) + distance * log(p / 1 - p)
+            # If err_prob is specified, we also account for path degeneracies
             deg, path = self._path_degeneracy(source, target, error_key)
             paths[(source, target)] = path
             if err_prob:
@@ -469,6 +459,7 @@ class GraphDecoder:
                 net_error = net_error.dot(paulis[error])
             physical_qubit_flips[qubit_loc] = net_error
 
+        physical_qubit_flips = {x:y for x,y in physical_qubit_flips.items() if not np.array_equal(y,paulis["I"])}
         return physical_qubit_flips
 
     def graph_2D(self, G, edge_label):
