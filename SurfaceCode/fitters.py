@@ -345,6 +345,14 @@ class GraphDecoder:
             error_graph.add_edge(source, target, weight=distance)
         return error_graph, paths
 
+    def analytic_paths(self, matches, error_key):
+        analytic_decoder = GraphDecoder(self.d,self.T)
+        paths = {}
+        for (source,target) in matches:
+            _, path = self._path_degeneracy(source,target, error_key)
+            paths[(source, target)] = path
+        return paths
+
     def _path_degeneracy(self, a, b, error_key):
         """Calculate the number of shortest error paths that link two syndrome nodes
         through both space and time.
