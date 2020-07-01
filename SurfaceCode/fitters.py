@@ -221,13 +221,22 @@ class GraphDecoder:
         for source, target in combinations(nodes, 2):
             for node in [source, target]:
                 if not error_graph.has_node(node):
-                    error_graph.add_node(
-                        node,
-                        virtual=virtual_dict[node],
-                        pos=(node[2], -node[1]),
-                        time=time_dict[node],
-                        pos_3D=(node[2], -node[1], time_dict[node]),
-                    )
+                    if virtual_dict[node] == 0:
+                        error_graph.add_node(
+                            node,
+                            virtual=virtual_dict[node],
+                            pos=(node[2], -node[1]),
+                            time=time_dict[node],
+                            pos_3D=(node[2], -node[1], time_dict[node]),
+                        )
+                    else:
+                        error_graph.add_node(
+                            node,
+                            virtual=virtual_dict[node],
+                            pos=(node[2], -node[1]),
+                            time=time_dict[node],
+                            pos_3D=(node[2], -node[1], (self.T - 1) / 2),
+                        )
             # Distance is proportional to the probability of this error chain, so
             # finding the maximum-weight perfect matching of the whole graph gives
             # the most likely sequence of errors that led to these syndromes.
@@ -357,7 +366,7 @@ class GraphDecoder:
                 virtual=1,
                 pos=(nearest_virtual[2], -nearest_virtual[1]),
                 time=-1,
-                pos_3D=(nearest_virtual[2], -nearest_virtual[1], -1),
+                pos_3D=(nearest_virtual[2], -nearest_virtual[1], (self.T - 1) / 2),
             )  # add paired_virtual to subgraph
             subgraph.add_edge(
                 source, paired_virtual, weight=potential_virtual[nearest_virtual]
@@ -398,7 +407,7 @@ class GraphDecoder:
             if len(source) > 3:
                 source = source[:3]
             if len(target) > 3:
-                target = target[:3]
+                source = source[:3]
 
             # Paths dict is encoded in one direction, check other if not found
             if (source, target) not in paths:
@@ -505,13 +514,13 @@ class GraphDecoder:
                     yi,
                     zi,
                     color=colors[node],
-                    s=40 * (1 + G.degree(node)),
+                    s=120 * (1 + G.degree(node)),
                     edgecolors="k",
                     alpha=0.7,
                 )
 
-                # Node position label
-                ax.text(xi, yi, zi, node, fontsize=14)
+                # Label node position
+                ax.text(xi, yi, zi, node, fontsize=20)
 
             # Loop on the edges to get the x,y,z, coordinates of the connected nodes
             # Those two points are the extrema of the line to be plotted
@@ -531,12 +540,32 @@ class GraphDecoder:
                 y_mid = (y_1 + y_2) / 2
                 z_mid = (z_1 + z_2) / 2
                 label = round(G[src][tgt][edge_label], 2)
-                ax.text(x_mid, y_mid, z_mid, label)
+                ax.text(x_mid, y_mid, z_mid, label, fontsize=14)
 
         # Set the initial view
         ax.view_init(angle[1], angle[0])
 
         # Hide the axes
         ax.set_axis_off()
+        
+        # Get rid of colored axes planes
+        # First remove fill
+        ax.xaxis.pane.fill = False
+        ax.yaxis.pane.fill = False
+        ax.zaxis.pane.fill = False
+        
+        # Now set color to white (or whatever is "invisible")
+        ax.xaxis.pane.set_edgecolor('w')
+        ax.yaxis.pane.set_edgecolor('w')
+        ax.zaxis.pane.set_edgecolor('w')
 
         plt.show()
+
+decoder = GraphDecoder(3, 3)
+G = decoder.S['X']
+decoder.graph_3D(G, 'distance')
+node_set = [(0, 1.5, 0.5), (1, 1.5, 0.5), (1, 0.5, 1.5), (2, 0.5, 1.5)]
+error_graph, paths = decoder.make_error_graph(node_set, 'X')
+decoder.graph_3D(error_graph, 'weight')
+matching_graph = decoder.matching_graph(error_graph, 'X')
+decoder.graph_3D(matching_graph, 'weight')
