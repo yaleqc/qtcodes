@@ -17,7 +17,7 @@ The SurfaceCode class, located in circuits.py creates the following circuit for 
 
 The Syndrome class, located in syndrome_graph.py creates a graph of nodes from all the possible circuits by inserting an x error or a z error anywhere in the circuit. Following is an example of one such graph:
 <p align="center">
-<img width="722" alt="Graph" src="https://user-images.githubusercontent.com/293681/86267948-7410ca00-bb95-11ea-8c75-aacca29ceaa7.png">
+<img width="361" alt="Graph" src="https://user-images.githubusercontent.com/293681/86267948-7410ca00-bb95-11ea-8c75-aacca29ceaa7.png">
 </p>
 Shortest path in this graph decides the weight of two edges when creating an "error graph" for GraphDecoder(in fitter.py). We analyse another method to do obtain a syndrom graph using graph traversal. This method is discussed in the next section.
 
