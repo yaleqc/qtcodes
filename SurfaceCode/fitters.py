@@ -501,7 +501,7 @@ class GraphDecoder:
         # 3D network plot
         with plt.style.context(("ggplot")):
 
-            fig = plt.figure(figsize=(10, 7))
+            fig = plt.figure(figsize=(20, 14))
             ax = Axes3D(fig)
 
             # Loop on the nodes and look up in pos dictionary to extract the x,y,z coordinates of each node
