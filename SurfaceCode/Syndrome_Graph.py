@@ -5,11 +5,12 @@ This qiskit code was created on 29-JUN-20 1:18PM at IBM Hackatthon 2020 (Summer 
 @author: Shraddha Singh
 """
 
-"""Generates circuits for quantum error correction."""
+"""Generates syndrome graph for class GraphDecoder. This code has been modified 
+using the code that is licensed under the Apache License, Version 2.0. You may
+ obtain a copy of this license in the LICENSE.txt file in the root directory
+of this source tree or at http://www.apache.org/licenses/LICENSE-2.0."""
 
 import qiskit
-#from qiskit import IBMQ
-#IBMQ.save_account("API toke")
 from qiskit import QuantumRegister, ClassicalRegister
 import copy
 import warnings
@@ -17,26 +18,30 @@ import networkx as nx
 import numpy as np
 from qiskit import QuantumCircuit, execute
 from random import randrange
-from Encoder import *
+from circuits import *
 import matplotlib
+
 try:
     from qiskit import Aer
+
     HAS_AER = True
 except ImportError:
     from qiskit import BasicAer
+
     HAS_AER = False
 
-    
-class GraphDecoder():
+
+class Syndrome:
     """
     Class to construct the graph corresponding to the possible syndromes
-    of a quantum error correction code, and then run suitable decoders.
+    of a quantum error correction code, and then run suitable fitters. 
+    It imports objects from class circuits in surface_codes
     """
 
     def __init__(self, code, S=None):
         """
         Args:
-            code (RepitionCode): The QEC Code object for which this decoder
+            code (SurfaceCode(d,T)): The QEC Code object for which this decoder
                 will be used.
             S (networkx.Graph): Graph describing connectivity between syndrome
                 elements. Will be generated automatically if not supplied.
@@ -50,14 +55,13 @@ class GraphDecoder():
         """
 
         self.code = code
-        
+
         if S:
             self.S = S
         else:
             self.S = self._make_syndrome_graph()
 
-
-    def _make_syndrome_graph(self):#syndrome graph X or Z
+    def _make_syndrome_graph(self):  # syndrome graph X or Z
         """
         This method injects all possible Pauli errors into the circuit for
         ``code``.
@@ -70,7 +74,7 @@ class GraphDecoder():
 
         S = nx.Graph()
 
-        qc = self.code.circuit['0']
+        qc = self.code.circuit["0"]
 
         blank_qc = QuantumCircuit()
         for qreg in qc.qregs:
@@ -84,35 +88,33 @@ class GraphDecoder():
         for j in range(depth):
             qubits = qc.data[j][1]
             for qubit in qubits:
-                for error in ['x', 'z']:
+                for error in ["x", "z"]:
                     temp_qc = copy.deepcopy(blank_qc)
                     temp_qc.name = str((j, qubit, error))
                     temp_qc.data = qc.data[0:j]
                     getattr(temp_qc, error)(qubit)
-                    temp_qc.data += qc.data[j:depth + 1]
+                    temp_qc.data += qc.data[j : depth + 1]
                     circuit_name[(j, qubit, error)] = temp_qc.name
                     error_circuit[temp_qc.name] = temp_qc
 
         if HAS_AER:
-            simulator = Aer.get_backend('qasm_simulator')
+            simulator = Aer.get_backend("qasm_simulator")
         else:
-            simulator = BasicAer.get_backend('qasm_simulator')
+            simulator = BasicAer.get_backend("qasm_simulator")
 
         job = execute(list(error_circuit.values()), simulator)
 
         for j in range(depth):
             qubits = qc.data[j][1]
             for qubit in qubits:
-                for error in ['x', 'z']:
+                for error in ["x", "z"]:
 
                     raw_results = {}
-                    raw_results['0'] = job.result().get_counts(str((j, qubit, error)))
-                    results = self.code.process_results(raw_results['0'])
-                    
-                    
-                    
-                    nodesX,nodesZ = self.code.extract_nodes(results)
-                    for nodes in (nodesX,nodesZ):
+                    raw_results["0"] = job.result().get_counts(str((j, qubit, error)))
+                    results = self.code.process_results(raw_results["0"])
+
+                    nodesX, nodesZ = self.code.extract_nodes(results)
+                    for nodes in (nodesX, nodesZ):
                         for node in nodes:
                             print(node)
                             S.add_node(node)
