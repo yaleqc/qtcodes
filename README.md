@@ -14,7 +14,8 @@ The Syndrome class, located in syndrome_graph.py creates a graph of nodes from a
 <img src="https://github.com/Phionx/qiskit_surface_codes/blob/master/SurfaceCode/tutorials/img/Graph.png" width="50%">
 </p>
 Shortest path in this graph decides the weight of two edges when creating an "error graph" for GraphDecoder(in fitter.py). We analyse another method to do obtain a syndrom graph using graph traversal. This method is discussed in the next section.
-## Fitters.py
+
+## fitters.py
 The GraphDecoder class, located in fitters.py, constructs the graph corresponding to the possible syndromes of a quantum error correction surface code, runs minimum weight perfect matching (MWPM) on a subgraph of detected errors to determine the most probable sequence of errors, and then flips a series of qubits to correct them. Our surface code is structured as a square lattice with alternating X and Z syndrome nodes, as depicted below for `d=5`:
 <p align="center">
 <img src="https://user-images.githubusercontent.com/42923017/86202361-01b9ce80-bb30-11ea-8656-820d8bb17085.jpg" width="50%">
