@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+
+"""Generates syndrome graph for class GraphDecoder. This code has been modified 
+using the code that is licensed under the Apache License, Version 2.0. You may
+ obtain a copy of this license in the LICENSE.txt file in the root directory
+of this source tree or at http://www.apache.org/licenses/LICENSE-2.0."""
+
 """
 Graph decoder for surface codes
 """
@@ -94,7 +100,7 @@ class GraphDecoder:
                         (t,) + space_label, (t + 1,) + space_label, distance=1
                     )
 
-    def _make_syndrome_graph_simulate(self):  # syndrome graph X or Z
+    def _make_syndrome_graph_simulate(self):
         """
         This method injects all possible Pauli errors into the circuit for
         ``code``.
