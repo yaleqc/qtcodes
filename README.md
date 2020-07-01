@@ -12,7 +12,9 @@ The SurfaceCode class, located in circuits.py creates the following circuit for 
 <img src="https://github.com/Phionx/qiskit_surface_codes/blob/master/SurfaceCode/tutorials/img/Lattice.png" width="100%">
 </p>
  The code creates the above circuit and measures each syndrome qubit. This is called syndrome measurement and is repeated T=d times. The results from each syndrome measurement are then processed to extract error nodes i.e. nodes which were flipped in consecutive syndrome measurements. This information is then utilised by the classes in syndrome_graph and fitter.py files to create error graphs and perform matching (explained in section "fitters.py"), to deduce the most probable error. Finally, logical Z error is concluded by checking if there were odd number of qubits with errors on top (Z<sub>L</sub>) edge and logical X error is concluded if there odd number of qubits with errors on the left (X<sub>L</sub>) edge
+ 
 ## Syndrome_Graph.py
+
 The Syndrome class, located in syndrome_graph.py creates a graph of nodes from all the possible circuits by inserting an x error or a z error anywhere in the circuit. Following is an example of one such graph:
 <p align="center">
 <img src="https://github.com/Phionx/qiskit_surface_codes/blob/master/SurfaceCode/tutorials/img/Graph.png" width="50%">
