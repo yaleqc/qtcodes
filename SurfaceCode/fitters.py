@@ -224,15 +224,15 @@ class GraphDecoder:
                     if virtual_dict[node] == 0:
                         error_graph.add_node(
                             node,
-                            virtual=virtual_dict[node],
+                            virtual=0,
                             pos=(node[2], -node[1]),
                             time=time_dict[node],
                             pos_3D=(node[2], -node[1], time_dict[node]),
                         )
-                    else:
+                    else: # set z in pos_3D of virtual node to be mid height for nice plotting
                         error_graph.add_node(
                             node,
-                            virtual=virtual_dict[node],
+                            virtual=1,
                             pos=(node[2], -node[1]),
                             time=time_dict[node],
                             pos_3D=(node[2], -node[1], (self.T - 1) / 2),
