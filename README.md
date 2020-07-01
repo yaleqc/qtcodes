@@ -37,7 +37,7 @@ There are two main interfaces — corresponding to the encoder and decoder, resp
 
 `GraphDecoder(d, T)` implements minimum-weight perfect matching (MWPM) on the syndrome measurements of the physical circuit. This class is similar to the existing `GraphDecoder` for repetition codes, but introduces a new framework to handle the 2D lattice.
 
-Parsed readout from the device is used to generate graphs of *error chains* in time and space, which decode syndrome measurements into the most likely sequence of qubit flips over time. Please see the [decoder tutorial]() for a full walkthrough.
+Parsed readout from the device is used to generate graphs of *error chains* in time and space, which decode syndrome measurements into the most likely sequence of qubit flips over time. Please see the [decoder tutorial](tutorials/2_surface_code_decoding.ipynb) for a full walkthrough.
 
 <p align="center">
 <img width="615" alt="matching graph" src="https://user-images.githubusercontent.com/293681/86277350-8ba37f00-bba4-11ea-9560-02d5ea3167cd.png">
