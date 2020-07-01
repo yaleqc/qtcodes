@@ -4,15 +4,26 @@ Created on Mon Jun 29 04:09:39 2020
 
 @author: Shantanu Jha, Henry Liu, Will Sun
 """
-
+import copy
 import math
+from itertools import combinations, product
+from collections import defaultdict
+
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
-
-from itertools import combinations
 from mpl_toolkits.mplot3d import Axes3D
-from collections import defaultdict
+
+from qiskit import QuantumCircuit, execute
+
+try:
+    from qiskit import Aer
+
+    HAS_AER = True
+except ImportError:
+    from qiskit import BasicAer
+
+    HAS_AER = False
 
 
 class GraphDecoder:
@@ -21,16 +32,19 @@ class GraphDecoder:
     of a quantum error correction code, and then run suitable decoders.
     """
 
-    def __init__(self, d, T):
-        self.d = d
-        self.T = T
-        self.S = {"X": nx.Graph(), "Z": nx.Graph()}
+    def __init__(self, code):
+        self.code = code
+        self.d = code.d
+        self.T = code.T
+
         self.virtual = self._specify_virtual()
-        self._make_syndrome_graph()
+
+        self.S = {"X": nx.Graph(), "Z": nx.Graph()}
+        self._make_syndrome_graph_simulate()
 
     def _specify_virtual(self):
-        """Define coordinates of Z and X virtual nodes.
-        Our convention is that Z virtual nodes are top/bottom and X virtual nodes are left/right.
+        """Define coordinates of Z and X virtual nodes. Our convention is that Z
+        virtual nodes are top/bottom and X virtual nodes are left/right.
         """
         virtual = {}
         virtual["X"] = []
@@ -46,16 +60,6 @@ class GraphDecoder:
         return virtual
 
     def _make_syndrome_graph(self):
-        """
-        This method injects all possible Pauli errors into the circuit for
-        ``code``.
-
-        This is done by examining the qubits used in each gate of the
-        circuit for a stored logical 0. A graph is then created with a node
-        for each non-trivial syndrome element, and an edge between all such
-        elements that can be created by the same error.
-        """
-
         start_nodes = {"Z": (0.5, 0.5), "X": (0.5, 1.5)}
         for error_key in ["X", "Z"]:
             # subgraphs for each time step
@@ -86,6 +90,95 @@ class GraphDecoder:
                     self.S[error_key].add_edge(
                         (t,) + space_label, (t + 1,) + space_label, distance=1
                     )
+
+    def _make_syndrome_graph_simulate(self):  # syndrome graph X or Z
+        """
+        This method injects all possible Pauli errors into the circuit for
+        ``code``.
+
+        This is done by examining the qubits used in each gate of the
+        circuit for a stored logical 0. A graph is then created with a node
+        for each non-trivial syndrome element, and an edge between all such
+        elements that can be created by the same error.
+        """
+
+        qc = self.code.circuit["0"]
+
+        blank_qc = QuantumCircuit()
+        for qreg in qc.qregs:
+            blank_qc.add_register(qreg)
+        for creg in qc.cregs:
+            blank_qc.add_register(creg)
+
+        error_circuit = {}
+        circuit_name = {}
+        depth = len(qc)
+        for j in range(depth):
+            qubits = qc.data[j][1]
+            for qubit in qubits:
+                for error in ["x", "z"]:
+                    temp_qc = copy.deepcopy(blank_qc)
+                    temp_qc.name = str((j, qubit, error))
+                    temp_qc.data = qc.data[0:j]
+                    getattr(temp_qc, error)(qubit)
+                    temp_qc.data += qc.data[j : depth + 1]
+                    circuit_name[(j, qubit, error)] = temp_qc.name
+                    error_circuit[temp_qc.name] = temp_qc
+
+        if HAS_AER:
+            simulator = Aer.get_backend("qasm_simulator")
+        else:
+            simulator = BasicAer.get_backend("qasm_simulator")
+
+        job = execute(list(error_circuit.values()), simulator)
+
+        for j in range(depth):
+            qubits = qc.data[j][1]
+            for qubit in qubits:
+                for error in ["x", "z"]:
+                    raw_results = {}
+                    raw_results["0"] = job.result().get_counts(str((j, qubit, error)))
+
+                    results = self.code.process_results(raw_results["0"])
+                    extracted_nodes = self.code.extract_nodes(results)
+
+                    for err_key, nodes in dict(
+                        zip(("X", "Z"), extracted_nodes)
+                    ).items():
+                        # Add virtual syndrome nodes
+                        for node in self.virtual[err_key]:
+                            # Visualization coords (y-coord flipped for plot)
+                            pos_2D = (node[2], -node[1])
+                            pos_3D = (*pos_2D, (self.T - 1) / 2)  # Plot midway in stack
+                            self.S[err_key].add_node(
+                                node, virtual=1, pos=pos_2D, time=-1, pos_3D=pos_3D,
+                            )
+
+                        # Add syndrome nodes
+                        for node in nodes:
+                            # Visualization coords (y-coord flipped for plot)
+                            pos_2D = (node[2], -node[1])
+                            pos_3D = (*pos_2D, node[0])
+                            self.S[err_key].add_node(
+                                node,
+                                virtual=0,
+                                pos=pos_2D,
+                                time=node[0],
+                                pos_3D=pos_3D,
+                            )
+
+                            # Check if any neighbors are virtual nodes
+                            candidates = [
+                                (-1, node[1] + di, node[2] + dj)
+                                for di, dj in product((1, -1), repeat=2)
+                            ]
+                            for virtual in candidates:
+                                if virtual in self.virtual[err_key]:
+                                    self.S[err_key].add_edge(node, virtual, distance=1)
+
+                        # Add connections
+                        for source, target in combinations(nodes, 2):
+                            self.S[err_key].add_edge(source, target, distance=1)
 
     def populate_syndrome_graph(
         self, current_node, t, visited_nodes, error_key, edge_weight=1
@@ -228,8 +321,7 @@ class GraphDecoder:
                     pos_3D=(node[2], -node[1], time_dict[node]),
                 )
 
-
-        for source, target in combinations(nodes, 2):            
+        for source, target in combinations(nodes, 2):
             # Distance is proportional to the probability of this error chain, so
             # finding the maximum-weight perfect matching of the whole graph gives
             # the most likely sequence of errors that led to these syndromes.
@@ -397,7 +489,7 @@ class GraphDecoder:
             if len(source) > 3:
                 source = source[:3]
             if len(target) > 3:
-                source = source[:3]
+                target = target[:3]
 
             # Paths dict is encoded in one direction, check other if not found
             if (source, target) not in paths:
@@ -453,9 +545,9 @@ class GraphDecoder:
         physical_qubit_flips = {}
         for qubit_loc, flip_record in individual_flips.items():
             net_error = paulis["I"]
-            # print("Physical Qubit: " + str(qubit_loc))
+            print("Physical Qubit: " + str(qubit_loc))
             for time, error in sorted(flip_record.items(), key=lambda item: item[0]):
-                # print("Error: " + error + " at time: " + str(time))
+                print("Error: " + error + " at time: " + str(time))
                 net_error = net_error.dot(paulis[error])
             physical_qubit_flips[qubit_loc] = net_error
 
