@@ -28,7 +28,7 @@ except ImportError:
     HAS_AER = False
 
     
-class GraphDecoder():
+class Syndrome():
     """
     Class to construct the graph corresponding to the possible syndromes
     of a quantum error correction code, and then run suitable fitters. 
