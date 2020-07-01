@@ -349,7 +349,7 @@ class GraphDecoder:
         analytic_decoder = GraphDecoder(self.d,self.T)
         paths = {}
         for (source,target) in matches:
-            _, path = self._path_degeneracy(source,target, error_key)
+            _, path = analytic_decoder._path_degeneracy(source,target, error_key)
             paths[(source, target)] = path
         return paths
 
