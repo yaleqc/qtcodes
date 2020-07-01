@@ -262,8 +262,12 @@ class SurfaceCode():
     
     def extract_nodes(self,syn_meas_results):
         """Extracts node locations of qubits which flipped in 
-        consecutive rounds and the data qubits which were flipped
-        during readout
+        consecutive rounds (stored as (k,i,j)) and the data qubits which were flipped
+        during readout (stored as (-2,i,j)). Here k spans range(0,d-1,1)
+        Z syndrome nodes and Z logical data qubit nodes (see figure) in error_nodesZ
+        and we do the same for X stabilizers and X logical qubits in error_nodesX.
+        Note that arrays are reversed in terms of syndrome rounds, when compared to
+        syn_meas_results
         """
         processed_results=[]
         new=[]
