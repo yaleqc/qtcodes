@@ -229,7 +229,7 @@ class GraphDecoder:
                             time=time_dict[node],
                             pos_3D=(node[2], -node[1], time_dict[node]),
                         )
-                    else: # set z in pos_3D of virtual node to be mid height for nice plotting
+                    else:  # set z in pos_3D of virtual node to be mid height for nice plotting
                         error_graph.add_node(
                             node,
                             virtual=1,
@@ -338,16 +338,16 @@ class GraphDecoder:
         ]
 
         # add and connect each syndrome node to subgraph
+        for node in syndrome_nodes:
+            if not subgraph.has_node(node):
+                subgraph.add_node(
+                    node,
+                    virtual=0,
+                    pos=(node[2], -node[1]),
+                    time=time_dict[node],
+                    pos_3D=(node[2], -node[1], time_dict[node]),
+                )
         for source, target in combinations(syndrome_nodes, 2):
-            for node in [source, target]:
-                if not subgraph.has_node(node):
-                    subgraph.add_node(
-                        node,
-                        virtual=0,
-                        pos=(node[2], -node[1]),
-                        time=time_dict[node],
-                        pos_3D=(node[2], -node[1], time_dict[node]),
-                    )
             subgraph.add_edge(
                 source, target, weight=error_graph[source][target]["weight"]
             )
@@ -547,25 +547,26 @@ class GraphDecoder:
 
         # Hide the axes
         ax.set_axis_off()
-        
+
         # Get rid of colored axes planes
         # First remove fill
         ax.xaxis.pane.fill = False
         ax.yaxis.pane.fill = False
         ax.zaxis.pane.fill = False
-        
+
         # Now set color to white (or whatever is "invisible")
-        ax.xaxis.pane.set_edgecolor('w')
-        ax.yaxis.pane.set_edgecolor('w')
-        ax.zaxis.pane.set_edgecolor('w')
+        ax.xaxis.pane.set_edgecolor("w")
+        ax.yaxis.pane.set_edgecolor("w")
+        ax.zaxis.pane.set_edgecolor("w")
 
         plt.show()
 
+
 decoder = GraphDecoder(3, 3)
-G = decoder.S['X']
-decoder.graph_3D(G, 'distance')
+G = decoder.S["X"]
+decoder.graph_3D(G, "distance")
 node_set = [(0, 1.5, 0.5), (1, 1.5, 0.5), (1, 0.5, 1.5), (2, 0.5, 1.5)]
-error_graph, paths = decoder.make_error_graph(node_set, 'X')
-decoder.graph_3D(error_graph, 'weight')
-matching_graph = decoder.matching_graph(error_graph, 'X')
-decoder.graph_3D(matching_graph, 'weight')
+error_graph, paths = decoder.make_error_graph(node_set, "X")
+decoder.graph_3D(error_graph, "weight")
+matching_graph = decoder.matching_graph(error_graph, "X")
+decoder.graph_3D(matching_graph, "weight")
