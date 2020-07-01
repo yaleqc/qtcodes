@@ -9,7 +9,7 @@ Surface Code is a CSS code, consisting of pairwise commuting X and Z stabilizers
 ## circuits.py
 The SurfaceCode class, located in circuits.py creates the following circuit for any dstance, d. This example is for d=3 circuit where, blue patches are Z stabilizers and red patches are X stabilizers. Z stabilizers link qubits on data qubits (grey) in corners as control with syndrome qubits (black) in the centre.The Z and N marked in each patch determines the order of CX labeled in black. Grey coordinate labels are data qubit locations and black labels are syndrome qubit locations. The straight line marked Z<sub>L</sub> signifies that a logical Z is applied by operating Z on each qubit, on any horizontal line in the lattice. Similarly, the straight line marked X<sub>L</sub> signifies that a logical X is applied by operating X on each qubit, on any vertical line in the lattice. We choose one convention and say top edge signifies a Z logical operation and left edge signifies X logical operation!
 <p align="center">
-<img src="https://github.com/Phionx/qiskit_surface_codes/blob/master/SurfaceCode/tutorials/img/Lattice.png" width="100%">
+<img width="672" alt="Lattice" src="https://user-images.githubusercontent.com/293681/86267952-7541f700-bb95-11ea-8292-240bf344f7f8.png">
 </p>
  The code creates the above circuit and measures each syndrome qubit. This is called syndrome measurement and is repeated T=d times. The results from each syndrome measurement are then processed to extract error nodes i.e. nodes which were flipped in consecutive syndrome measurements. This information is then utilised by the classes in syndrome_graph and fitter.py files to create error graphs and perform matching (explained in section "fitters.py"), to deduce the most probable error. Finally, logical Z error is concluded by checking if there were odd number of qubits with errors on top (Z<sub>L</sub>) edge and logical X error is concluded if there odd number of qubits with errors on the left (X<sub>L</sub>) edge
  
@@ -17,7 +17,7 @@ The SurfaceCode class, located in circuits.py creates the following circuit for 
 
 The Syndrome class, located in syndrome_graph.py creates a graph of nodes from all the possible circuits by inserting an x error or a z error anywhere in the circuit. Following is an example of one such graph:
 <p align="center">
-<img src="https://github.com/Phionx/qiskit_surface_codes/blob/master/SurfaceCode/tutorials/img/Graph.png" width="50%">
+<img width="722" alt="Graph" src="https://user-images.githubusercontent.com/293681/86267948-7410ca00-bb95-11ea-8c75-aacca29ceaa7.png">
 </p>
 Shortest path in this graph decides the weight of two edges when creating an "error graph" for GraphDecoder(in fitter.py). We analyse another method to do obtain a syndrom graph using graph traversal. This method is discussed in the next section.
 
@@ -50,4 +50,3 @@ We would like to thank @quantumjim for valuable suggestions and pointing out to 
 - [Stabilizer Codes and Quantum Error Correction](https://arxiv.org/pdf/quant-ph/9705052.pdf)
 - [Multi-path Summation for Decoding 2D Topological Codes](https://quantum-journal.org/wp-content/uploads/2018/10/q-2018-10-19-102.pdf)
 - [tutorial](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html#Lookup-table-decoding)
-
