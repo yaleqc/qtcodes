@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-This qiskit code was created on 29-JUN-20 1:18PM at IBM Hackatthon 2020 (Summer Jam)
-@author: Shraddha Singh
+Generates circuits for quantum error correction with surface code patches.
 """
-# Following has been inspired from the code (qiskit.ignis.verification.topological_codes.circuits.py) that is licensed under the Apache License, Version 2.0. You may
-# obtain a copy of this license in the LICENSE.txt file in the root directory
-# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
-
-"""Generates circuits for quantum error correction with surface code patches."""
 
 import qiskit
 from qiskit import QuantumRegister, ClassicalRegister
