@@ -84,7 +84,7 @@ class GraphDecoder():
         for j in range(depth):
             qubits = qc.data[j][1]
             for qubit in qubits:
-                for error in ['x', 'y', 'z']:
+                for error in ['x', 'z']:
                     temp_qc = copy.deepcopy(blank_qc)
                     temp_qc.name = str((j, qubit, error))
                     temp_qc.data = qc.data[0:j]
@@ -103,7 +103,7 @@ class GraphDecoder():
         for j in range(depth):
             qubits = qc.data[j][1]
             for qubit in qubits:
-                for error in ['x', 'y', 'z']:
+                for error in ['x', 'z']:
 
                     raw_results = {}
                     raw_results['0'] = job.result().get_counts(str((j, qubit, error)))
