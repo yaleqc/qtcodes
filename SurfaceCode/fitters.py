@@ -218,25 +218,27 @@ class GraphDecoder:
         error_graph = nx.Graph()
         nodes += self.virtual[error_key]
 
-        for source, target in combinations(nodes, 2):
-            for node in [source, target]:
-                if not error_graph.has_node(node):
-                    if virtual_dict[node] == 0:
-                        error_graph.add_node(
-                            node,
-                            virtual=0,
-                            pos=(node[2], -node[1]),
-                            time=time_dict[node],
-                            pos_3D=(node[2], -node[1], time_dict[node]),
-                        )
-                    else:  # set z in pos_3D of virtual node to be mid height for nice plotting
-                        error_graph.add_node(
-                            node,
-                            virtual=1,
-                            pos=(node[2], -node[1]),
-                            time=time_dict[node],
-                            pos_3D=(node[2], -node[1], (self.T - 1) / 2),
-                        )
+        for node in nodes:
+            if not error_graph.has_node(node):
+                if virtual_dict[node] == 0:
+                    error_graph.add_node(
+                        node,
+                        virtual=0,
+                        pos=(node[2], -node[1]),
+                        time=time_dict[node],
+                        pos_3D=(node[2], -node[1], time_dict[node]),
+                    )
+                else:  # set z in pos_3D of virtual node to be mid height for nice plotting
+                    error_graph.add_node(
+                        node,
+                        virtual=1,
+                        pos=(node[2], -node[1]),
+                        time=time_dict[node],
+                        pos_3D=(node[2], -node[1], -1),
+                    )
+
+
+        for source, target in combinations(nodes, 2):            
             # Distance is proportional to the probability of this error chain, so
             # finding the maximum-weight perfect matching of the whole graph gives
             # the most likely sequence of errors that led to these syndromes.
@@ -366,7 +368,7 @@ class GraphDecoder:
                 virtual=1,
                 pos=(nearest_virtual[2], -nearest_virtual[1]),
                 time=-1,
-                pos_3D=(nearest_virtual[2], -nearest_virtual[1], (self.T - 1) / 2),
+                pos_3D=(nearest_virtual[2], -nearest_virtual[1], -1),
             )  # add paired_virtual to subgraph
             subgraph.add_edge(
                 source, paired_virtual, weight=potential_virtual[nearest_virtual]
@@ -560,13 +562,3 @@ class GraphDecoder:
         ax.zaxis.pane.set_edgecolor("w")
 
         plt.show()
-
-
-decoder = GraphDecoder(3, 3)
-G = decoder.S["X"]
-decoder.graph_3D(G, "distance")
-node_set = [(0, 1.5, 0.5), (1, 1.5, 0.5), (1, 0.5, 1.5), (2, 0.5, 1.5)]
-error_graph, paths = decoder.make_error_graph(node_set, "X")
-decoder.graph_3D(error_graph, "weight")
-matching_graph = decoder.matching_graph(error_graph, "X")
-decoder.graph_3D(matching_graph, "weight")
