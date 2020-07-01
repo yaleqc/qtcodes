@@ -2,8 +2,9 @@
 Following is an attempt at a built-in package for surface codes to be pushed in the topological codes package of qiskit, by the team, Erwin's Tigers. 
 
 Surface Code is a CSS code, consisting of pairwise commuting X and Z stabilizers made of Pauli gates. It creates a logical state on a 2 by 2 lattice made of quantum bits with the stabilizers X_1 X_2 Z_1 Z_2. This repository has three parts: 
-\item **ciruits.py** creates initial circuit for measuring stabilizers and creating a logical state. Our code takes d (distance d) as input and T (no. of syndrome measurement rounds, usually T=d). 'd' should be odd and currently the code encodes only a logical 0 state. It's easy to make modifications and get logical 1,+,- states.
-\item **fitters.py** takes inputs from circuits.py and syndrome_graph.py and inserts errors in the original using a noise simulator. It returns the number of qubits flipped after all the stabilizer measurements, and concludes if there was a logical Z error in the final state.
+- **ciruits.py** creates initial circuit for measuring stabilizers and creating a logical state. Our code takes d (distance d) as input and T (no. of syndrome measurement rounds, usually T=d). 'd' should be odd and currently the code encodes only a logical 0 state. It's easy to make modifications and get logical 1,+,- states.
+- **syndrome_graph** creates a graph which is a results of errors (as nodes) from varoius combination of pauli errors in the circuit for logical 0 from circuit.py. T
+- **fitters.py** takes inputs from circuits.py and syndrome_graph.py and inserts errors in the original using a noise simulator. syndrome_graph.py is used to weigh the error graph to be sent in the minimum weight perfect matching algorithm to find disjoint edges and conclude a flip. The code returns the number of qubits flipped after all the stabilizer measurements, and concludes if there was a logical Z error in the final state.
 
  
 
