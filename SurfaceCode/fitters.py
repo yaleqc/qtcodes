@@ -253,10 +253,8 @@ class GraphDecoder:
             deg, path = self._path_degeneracy(source, target, error_key)
             paths[(source, target)] = path
             if err_prob:
-                distance *= math.log(err_prob) - math.log1p(-err_prob)
-                distance += math.log(deg)
-            else:  # Otherwise we can just assume that the log err_prob part is neg
-                distance = -distance
+                distance = distance - math.log(deg)/(math.log1p(-err_prob) - math.log(err_prob))
+            distance = -distance    
             error_graph.add_edge(source, target, weight=distance)
         return error_graph, paths
 
@@ -465,9 +463,9 @@ class GraphDecoder:
         physical_qubit_flips = {}
         for qubit_loc, flip_record in individual_flips.items():
             net_error = paulis["I"]
-            print("Physical Qubit: " + str(qubit_loc))
+            # print("Physical Qubit: " + str(qubit_loc))
             for time, error in sorted(flip_record.items(), key=lambda item: item[0]):
-                print("Error: " + error + " at time: " + str(time))
+                # print("Error: " + error + " at time: " + str(time))
                 net_error = net_error.dot(paulis[error])
             physical_qubit_flips[qubit_loc] = net_error
 
