@@ -10,7 +10,7 @@ The SurfaceCode class, located in circuits.py creates the following circuit for 
 
 The Syndrome class, located in syndrome_graph.py creates a graph of nodes from all the possible circuits by inserting an x error or a z error anywhere in the circuit. Following is an example of one such graph:
 <p align="center">
-<img src="(https://github.com/[username]/[reponame]/blob/[branch]/Graph.png?raw=true)"width="50%">
+(./SurfaceCode/tutorials/img/Graph.png?raw=true "Syndrome Graph")
 </p>
 
 
