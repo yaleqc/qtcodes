@@ -7,17 +7,17 @@ The GraphDecoder class, located in fitters.py, constructs the graph correspondin
 
 This surface code evolves over a specified number of time steps `T`, giving rise to a 3D syndrome graph of the syndrome node lattice over time. Virtual nodes, which are nonphysical but nevertheless error-inducing, alternate between X and Z nodes across the border of the surface code and are also included in the graph. We construct our 3D syndrome graph by specifying the coordinates of the syndrome and virtual nodes, connecting the lattice of syndrome nodes at a given time step, and connecting the lattices between adjacent time steps and virtual nodes to their adjacent syndrome nodes at all time steps. Each edge weight is 1 to denote that adjacent syndrome nodes have a rotated Manhattan distance of 1. Below is an example of a 3D syndrome graph of X syndromes with `d=3` and `T=3`:
 
-<img src="https://user-images.githubusercontent.com/42923017/86188148-b1c91080-bb0b-11ea-9012-abd3ac91210e.jpg" width="50%">
+<img src="https://user-images.githubusercontent.com/42923017/86195157-49375f00-bb1e-11ea-8dd1-63a3adae1002.jpg" width="50%">
 
 Then, a subgraph of detected syndrome errors is extracted, where we account for path degeneracy in the edge weights and clone virtual nodes to allow for multiple virtual node to syndrome node matchings.
 Below is an example of this error subgraph with `node_set = [(0, 1.5, 0.5), (1, 1.5, 0.5), (1, 0.5, 1.5), (2, 0.5, 1.5)]`:
 
-<img src="https://user-images.githubusercontent.com/42923017/86188813-cefede80-bb0d-11ea-8355-4e6a2acf1b1f.jpg" width="50%">
+<img src="https://user-images.githubusercontent.com/42923017/86195162-4b99b900-bb1e-11ea-8f61-61ebf97a77f5.jpg" width="50%">
 
 To determine the most probable set of syndrome errors, we run a MWPM on the error subgraph.
 Below is an example of the MWPM matching graph for our error subgraph:
 
-<img src="https://user-images.githubusercontent.com/42923017/86188816-d1613880-bb0d-11ea-8125-a544fdf50f80.jpg" width="50%">
+<img src="https://user-images.githubusercontent.com/42923017/86195169-505e6d00-bb1e-11ea-9ad3-259d87911718.jpg" width="50%">
 
 Finally, we correct the syndrome errors through a series of qubit flips.
 
