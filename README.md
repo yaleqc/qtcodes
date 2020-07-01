@@ -36,6 +36,9 @@ Below is an example of the MWPM matching graph for our error subgraph:
 </p>
 Finally, we correct the syndrome errors through a series of qubit flips.
 
+# Acknowledgements
+We would like to thank @quantumjim for valuable suggestions and pointing out to the topological_codes repository availableon qiskit, which proved quite useful for our project.
+
 # References
 - [Surface Codes: Towards Practical Large-Scale Quantum Computation](https://arxiv.org/abs/1208.0928)
 - [Stabilizer Codes and Quantum Error Correction](https://arxiv.org/pdf/quant-ph/9705052.pdf)
