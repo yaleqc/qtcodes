@@ -5,11 +5,12 @@ This qiskit code was created on 29-JUN-20 1:18PM at IBM Hackatthon 2020 (Summer 
 @author: Shraddha Singh
 """
 
-"""Generates circuits for quantum error correction."""
+"""Generates syndrome graph for class GraphDecoder. This code has been modified 
+using the code that is licensed under the Apache License, Version 2.0. You may
+ obtain a copy of this license in the LICENSE.txt file in the root directory
+of this source tree or at http://www.apache.org/licenses/LICENSE-2.0."""
 
 import qiskit
-#from qiskit import IBMQ
-#IBMQ.save_account("API toke")
 from qiskit import QuantumRegister, ClassicalRegister
 import copy
 import warnings
@@ -17,7 +18,7 @@ import networkx as nx
 import numpy as np
 from qiskit import QuantumCircuit, execute
 from random import randrange
-from Encoder import *
+from circuits import *
 import matplotlib
 try:
     from qiskit import Aer
@@ -30,13 +31,14 @@ except ImportError:
 class GraphDecoder():
     """
     Class to construct the graph corresponding to the possible syndromes
-    of a quantum error correction code, and then run suitable decoders.
+    of a quantum error correction code, and then run suitable fitters. 
+    It imports objects from class circuits in surface_codes
     """
 
     def __init__(self, code, S=None):
         """
         Args:
-            code (RepitionCode): The QEC Code object for which this decoder
+            code (SurfaceCode(d,T)): The QEC Code object for which this decoder
                 will be used.
             S (networkx.Graph): Graph describing connectivity between syndrome
                 elements. Will be generated automatically if not supplied.
