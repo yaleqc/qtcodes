@@ -6,7 +6,13 @@ Surface Code is a CSS code, consisting of pairwise commuting X and Z stabilizers
 - **syndrome_graph** creates a graph which is a results of errors (as nodes) from varoius combination of pauli errors in the circuit for logical 0 from circuit.py. T
 - **fitters.py** takes inputs from circuits.py and syndrome_graph.py and inserts errors in the original using a noise simulator. syndrome_graph.py is used to weigh the error graph to be sent in the minimum weight perfect matching algorithm to find disjoint edges and conclude a flip. The code returns the number of qubits flipped after all the stabilizer measurements, and concludes if there was a logical Z error in the final state.
 
- 
+The SurfaceCode class, located in circuits.py creates the following circuit for any dstance, d. This example is for d=3 circuit where, blue patches are Z stabilizers and red patches are X stabilizers. Green labels are data qubit locations and yellow labels are syndrome qubit locations. The Z and N marked in each patch determines the order of CX labeled in red. It processes the final results from measurements and extracts the nodes that were flipped in two consecutive syndrome measurements.
+
+The Syndrome class, located in syndrome_graph.py creates a graph of nodes from all the possible circuits by inserting an x error or a z error anywhere in the circuit. Following is an example of one such graph:
+<p align="center">
+<img src="(https://github.com/[username]/[reponame]/blob/[branch]/Graph.png?raw=true)"width="50%">
+</p>
+
 
 The GraphDecoder class, located in fitters.py, constructs the graph corresponding to the possible syndromes of a quantum error correction surface code, runs minimum weight perfect matching (MWPM) on a subgraph of detected errors to determine the most probable sequence of errors, and then flips a series of qubits to correct them. Our surface code is structured as a square lattice with alternating X and Z syndrome nodes, as depicted below for `d=5`:
 <p align="center">
