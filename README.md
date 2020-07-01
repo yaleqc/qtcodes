@@ -4,9 +4,7 @@ Following is an attempt at a built-in package for surface codes to be pushed in 
 The GraphDecoder class, located in fitters.py, constructs the graph corresponding to the possible syndromes of a quantum error correction surface code, runs minimum weight perfect matching (MWPM) on a subgraph of detected errors to determine the most probable sequence of errors, and then flips a series of qubits to correct them. Our surface code is structured as a square lattice with alternating X and Z syndrome nodes, as depicted below for `d=3` and `d=5`:
 
 ![Surface_Code_Diagram](https://media.springernature.com/full/springer-static/image/art%3A10.1038%2Fs41534-018-0106-y/MediaObjects/41534_2018_106_Fig1_HTML.png?as=webp)
-<!-- .element height="50%" width="50%" -->
-<img src="https://github.com/favicon.ico" width="48">
-<img src="https://github.com/favicon.ico" width="80">
+<img src="https://media.springernature.com/full/springer-static/image/art%3A10.1038%2Fs41534-018-0106-y/MediaObjects/41534_2018_106_Fig1_HTML.png?as=webp" width="50%">
 
 This surface code evolves over a specified number of time steps `T`, giving rise to a 3D syndrome graph of the syndrome node lattice over time. Virtual nodes, which are nonphysical but nevertheless error-inducing, alternate between X and Z nodes across the border of the surface code and are also included in the graph. We construct our 3D syndrome graph by specifying the coordinates of the syndrome and virtual nodes, connecting the lattice of syndrome nodes at a given time step, and connecting the lattices between adjacent time steps and virtual nodes to their adjacent syndrome nodes at all time steps. Each edge weight is 1 to denote that adjacent syndrome nodes have a rotated Manhattan distance of 1. Below is an example of a 3D syndrome graph of X syndromes with `d=3` and `T=3`:
 
