@@ -398,7 +398,7 @@ class GraphDecoder:
             if len(source) > 3:
                 source = source[:3]
             if len(target) > 3:
-                source = source[:3]
+                target = target[:3]
 
             # Paths dict is encoded in one direction, check other if not found
             if (source, target) not in paths:
