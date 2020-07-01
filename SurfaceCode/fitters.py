@@ -16,6 +16,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from qiskit import QuantumCircuit, execute
 
+from circuits import SurfaceCode
+
 try:
     from qiskit import Aer
 
@@ -32,15 +34,18 @@ class GraphDecoder:
     of a quantum error correction code, and then run suitable decoders.
     """
 
-    def __init__(self, code):
-        self.code = code
-        self.d = code.d
-        self.T = code.T
+    def __init__(self, d, T, simulation=False):
+        self.d = d
+        self.T = T
+        self.code = SurfaceCode(d, T)
 
         self.virtual = self._specify_virtual()
 
         self.S = {"X": nx.Graph(), "Z": nx.Graph()}
-        self._make_syndrome_graph_simulate()
+        if simulation:
+            self._make_syndrome_graph_simulate()
+        else:
+            self._make_syndrome_graph()
 
     def _specify_virtual(self):
         """Define coordinates of Z and X virtual nodes. Our convention is that Z
