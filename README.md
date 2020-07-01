@@ -1,5 +1,5 @@
 # IBM-Hackathon-2020 Summer Jam
-Following is an attempt at a built-in package for surface codes to be pushed in the topological codes package of qiskit, by the team, Erwin's Tigers. The team memebers are @liuhenry @muirheadmaster @Phionx @shraggy and @zhenghaoding
+Following is an attempt at a built-in package for surface codes to be pushed in the topological codes package of qiskit, by team Erwin's Tigers. The team memebers are @liuhenry @muirheadmaster @Phionx @shraggy and @zhenghaoding
 
 Surface Code is a CSS code, consisting of pairwise commuting X and Z stabilizers made of Pauli gates. It creates a logical state on a 2 by 2 lattice made of quantum bits with the stabilizers X<sub>1</sub> X<sub>2</sub> Z<sub>1</sub> Z<sub>2</sub>. This repository has three parts: 
 - **ciruits.py** creates initial circuit for measuring stabilizers and creating a logical state. Our code takes d (distance d) as input and T (no. of syndrome measurement rounds, usually T=d). 'd' should be odd and currently the code encodes only a logical 0 state. It's easy to make modifications and get logical 1,+,- states.
