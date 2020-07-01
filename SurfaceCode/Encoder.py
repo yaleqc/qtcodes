@@ -44,8 +44,8 @@ class SurfaceCode():
             `T` rounds are added, followed by measurement of the code
             qubits (corresponding to a logical measurement and final
             syndrome measurement round)
-            This circuit is for "rotated lattices" i.e. it requires 
-            d**2 data qubits and d**2-1 syndrome qubits only. Hence, 
+            This circuit is for "rotated lattices" i.e. it requires
+            d**2 data qubits and d**2-1 syndrome qubits only. Hence,
             d=odd allows equal number of Z and X stabilizer mesaurments.
         """
         self.d=d
@@ -56,10 +56,10 @@ class SurfaceCode():
         self.output=[]
         self.circuit = {}
         self.c_output = ClassicalRegister(d**2, 'c_output')
-        
-        """This code creates circuits only for log='0' but it can be easily 
+
+        """This code creates circuits only for log='0' but it can be easily
         modified to accomodate circuuit for log='1' """
-        
+
 
         for log in ['0', '1']:
             self.circuit[log] = QuantumCircuit(self.ancilla, self.data, name=log)
@@ -73,7 +73,7 @@ class SurfaceCode():
         if T != 0:
             self.syndrome_measurement(reset=False)
             self.readout()
-        
+
     def get_circuit_list(self):
         """
         Returns:
@@ -87,8 +87,8 @@ class SurfaceCode():
     """It assigns vertices to qubits on a 2D graph, where,
     data qubits are on the x lines and, syndrome qubits are
     on the 0.5+x lines, in the cartesian coordinate system, where x is an integer."""
-    
-    def lattice(self):  
+
+    def lattice(self):
         d=self.d
         data_string=nx.Graph()
         syndrome_string=nx.Graph()
@@ -111,19 +111,19 @@ class SurfaceCode():
         return(syn_ind,data_ind)
     """List of nodes on the 2D lattice graph returned"""
     #def x """to be included to execute self._preparation for log='1' """
-    
+
    # def _preparation(self):
     """ prapares log '1' from log '0' circuit by applying x logical to the lattice"""
-   
+
     def connection(self):
         """
         Determines the order of syndrome measurements between data qubits and syndrome qubits.
         We follow the ZN rule here to avoid hook error as described by [https://doi.org/10.1063/1.1499754]
-        where Z stabilisers are arranged in 'Z' pattern and X stabilizers in 'N' pattern. 
-        Refer to the diagram in readme to get the refrence. 
+        where Z stabilisers are arranged in 'Z' pattern and X stabilizers in 'N' pattern.
+        Refer to the diagram in readme to get the refrence.
         """
         syn_index,data_index=self.lattice()
-        
+
         order=[]
         for i in range(self.d**2-1):
             d=data_index
@@ -133,7 +133,7 @@ class SurfaceCode():
                 for i in range(len(data_index)):
                     if data_index[i]==j:
                         return i
-    
+
             new=[]
             new.append((r,c))
             if r==-0.5: #top semicircile
@@ -148,7 +148,7 @@ class SurfaceCode():
                 new.append(get_index((r+0.5,c+0.5)))
 
             elif r==self.d-0.5: #bottom semicircle
-                
+
                 new.append(get_index((r-0.5,c-0.5)))
                 new.append(-1)
                 new.append(get_index((r-0.5,c+0.5)))
@@ -172,7 +172,7 @@ class SurfaceCode():
                     new.append(get_index((r+0.5,c+0.5)))
             order.append(new)
         return order
-   
+
     def syndrome_measurement(self,reset=True, barrier=True):
             """
             Application of a syndrome measurement round.
@@ -181,11 +181,11 @@ class SurfaceCode():
                 barrier (bool): Boolean denoting whether to include a barrier at the end.
                 A barrier is included after every round of 'j' which passes through layers of
                 cx to be done, because the order should not be disturbed else the stabilizers
-                will not be executed since Z and X on the same qubit do not commute. Thus, 
-                we end up flipping the sign of some stabilizers. 
+                will not be executed since Z and X on the same qubit do not commute. Thus,
+                we end up flipping the sign of some stabilizers.
             """
             self.output.append(ClassicalRegister((self.d**2 - 1), 'round_' + str(self.T) + 'ancilla'))
-            
+
             for log in ['0', '1']:
                 self.circuit[log].add_register(self.output[-1])
                 order=self.connection()
@@ -208,10 +208,19 @@ class SurfaceCode():
 
 
                 for j in range(self.d**2 - 1):
-                    self.circuit[log].measure(self.ancilla[j], self.output[self.T][j])
+                    if (order[j][0][0] + order[j][0][1]) % 2 == 1:  # Z
+                        self.circuit[log].measure(self.ancilla[j], self.output[self.T][j])
                     if reset:
                         self.circuit[log].reset(self.ancilla[j])
-                
+
+                self.circuit[log].barrier()
+
+                for j in range(self.d**2 - 1):
+                    if (order[j][0][0] + order[j][0][1]) % 2 == 0:  # X
+                        self.circuit[log].measure(self.ancilla[j], self.output[self.T][j])
+                    if reset:
+                        self.circuit[log].reset(self.ancilla[j])
+
             self.T += 1
     def readout(self):
         """
@@ -234,7 +243,7 @@ class SurfaceCode():
                 obtained from the `get_counts` method of a ``qiskit.Result``
                 object).
         Returns:
-            syn: d+1 dimensional array where 0th array stores qubit readouts 
+            syn: d+1 dimensional array where 0th array stores qubit readouts
             while the subsequesnt rows store the results from measurement rounds
             as required for extraction of nodes with errors to be sent to the decoder
         Additional information:
@@ -245,7 +254,7 @@ class SurfaceCode():
         """
         results =[]
         results=list(max(raw_results, key=raw_results.get))
-        
+
         syn=[]
         new=[]
         for i in (results):
@@ -256,12 +265,12 @@ class SurfaceCode():
                     syn.append(new)
                     new=[]
         syn.append(new)
-            
-                        
+
+
         return syn
-    
+
     def extract_nodes(self,syn_meas_results):
-        """Extracts node locations of qubits which flipped in 
+        """Extracts node locations of qubits which flipped in
         consecutive rounds (stored as (k,i,j)) and the data qubits which were flipped
         during readout (stored as (-2,i,j)). Here k spans range(0,d-1,1)
         Z syndrome nodes and Z logical data qubit nodes (see figure) in error_nodesZ
@@ -278,30 +287,48 @@ class SurfaceCode():
         for j in (syn_meas_results[len(syn_meas_results)-1]):
             new.append(j)
         processed_results.append(new)
-        
+
         for i in range(len(syn_meas_results)-2,0,-1):
             new=[]
             for j in range(0,len(syn_meas_results[i])):
                 new.append((syn_meas_results[i][j]+syn_meas_results[i+1][j])%2)
             processed_results.append(new)
-        
-        
+
+
         syn,dat=self.lattice()
         error_nodesX=[]
         error_nodesZ=[]
-        for i in range(len(processed_results[0])):
-            if processed_results[0][i]==1:
-                if i%self.d==0 or (i+1)%self.d==0:
-                    error_nodesX.append((-2,dat[i][0],dat[i][1]))
-                if i<self.d or i>(self.d**2-1-self.d):
-                    error_nodesZ.append((-2,dat[i][0],dat[i][1]))
+
+        # first_row = processed_result[0][:self.d]
+        # last_row = processed_result[0][-self.d - 1:-1]
+
+        # left_col = processed_result[0][::self.d]
+        # right_col = processed_result[0][self.d-1:-1:self.d]
+
+        # if sum(first_row) % 2 == 1 or sum(last_row) % 2 == 1:
+        #     for node in dat[:self.d]:
+        #         # Append virtual node
+        #         if node[1] == 0:
+        #             error_nodesZ.append((-1, node[0] - 0.5, node[1] - 0.5))
+        #         else:
+        #             error_nodesZ.append((-1, node[0] - 0.5, node[1] + 0.5))
                 
-                    
-                    
-                
+        #     for node in dat[-self.d - 1:-1]:
+        #         if node[1] == self.d - 1:
+        #             error_nodesZ.append((-1, node[0] + 0.5, node[1] + 0.5))
+        #         else:
+        #             error_nodesZ.append((-1, node[0] + 0.5, node[1] - 0.5))
+
+        # if sum(left_col) % 2 == 1 or sum(right_col) % 2 == 1:
+        #     for node in dat[::self.d]:
+        #         error_nodesX.append((-2, node[0], node[1]))
+        #     for node in dat[self.d-1:-1:self.d]:
+        #         error_nodesX.append((-2, node[0], node[1]))
+
+
         for i in range(1,len(processed_results)):
             for j in range(len(processed_results[i])):
-                
+
                 if processed_results[i][j]==1:
 
                     if (syn[j][0]+syn[j][1])%2==0:
