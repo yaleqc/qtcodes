@@ -1,52 +1,74 @@
-# IBM-Hackathon-2020 Summer Jam
-Following is an attempt at a built-in package for surface codes to be pushed in the topological codes package of qiskit, by team Erwin's Tigers. The team memebers are @liuhenry @muirheadmaster @Phionx @shraggy and @zhenghaoding
+# Qiskit Surface Code Encoder/Decoder
+## IBM Qiskit - Summer Jam Hackathon 2020
 
-Surface Code is a CSS code, consisting of pairwise commuting X and Z stabilizers made of Pauli gates. It creates a logical state on a 2 by 2 lattice made of quantum bits with the stabilizers X<sub>1</sub> X<sub>2</sub> Z<sub>1</sub> Z<sub>2</sub>. This repository has three parts: 
-- **ciruits.py** creates initial circuit for measuring stabilizers and creating a logical state. Our code takes d (distance d) as input and T (no. of syndrome measurement rounds, usually T=d). 'd' should be odd and currently the code encodes only a logical 0 state. It's easy to make modifications and get logical 1,+,- states.
-- **syndrome_graph** creates a graph which is a results of errors (as nodes) from varoius combination of pauli errors in the circuit for logical 0 from circuit.py. T
-- **fitters.py** takes inputs from circuits.py and syndrome_graph.py and inserts errors in the original using a noise simulator. syndrome_graph.py is used to weigh the error graph to be sent in the minimum weight perfect matching algorithm to find disjoint edges and conclude a flip. The code returns the number of qubits flipped after all the stabilizer measurements, and concludes if there was a logical Z error in the final state.
+Quantum computation is an inherently noisy process. Scalable quantum computers will require fault-tolerance to implement useful computation. There are many proposed approaches to this, but one promising candidate is the family of *topological quantum error correcting codes*.
 
-## circuits.py
-The SurfaceCode class, located in circuits.py creates the following circuit for any dstance, d. This example is for d=3 circuit where, blue patches are Z stabilizers and red patches are X stabilizers. Z stabilizers link qubits on data qubits (grey) in corners as control with syndrome qubits (black) in the centre.The Z and N marked in each patch determines the order of CX labeled in black. Grey coordinate labels are data qubit locations and black labels are syndrome qubit locations. The straight line marked Z<sub>L</sub> signifies that a logical Z is applied by operating Z on each qubit, on any horizontal line in the lattice. Similarly, the straight line marked X<sub>L</sub> signifies that a logical X is applied by operating X on each qubit, on any vertical line in the lattice. We choose one convention and say top edge signifies a Z logical operation and left edge signifies X logical operation!
-<p align="center">
-<img width="672" alt="Lattice" src="https://user-images.githubusercontent.com/293681/86267952-7541f700-bb95-11ea-8292-240bf344f7f8.png">
-</p>
- The code creates the above circuit and measures each syndrome qubit. This is called syndrome measurement and is repeated T=d times. The results from each syndrome measurement are then processed to extract error nodes i.e. nodes which were flipped in consecutive syndrome measurements. This information is then utilised by the classes in syndrome_graph and fitter.py files to create error graphs and perform matching (explained in section "fitters.py"), to deduce the most probable error. Finally, logical Z error is concluded by checking if there were odd number of qubits with errors on top (Z<sub>L</sub>) edge and logical X error is concluded if there odd number of qubits with errors on the left (X<sub>L</sub>) edge
- 
-## Syndrome_Graph.py
+Currently, the [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, the *repetition code*.
 
-The Syndrome class, located in syndrome_graph.py creates a graph of nodes from all the possible circuits by inserting an x error or a z error anywhere in the circuit. Following is an example of one such graph:
-<p align="center">
-<img width="361" alt="Graph" src="https://user-images.githubusercontent.com/293681/86267948-7410ca00-bb95-11ea-8c75-aacca29ceaa7.png">
-</p>
-Shortest path in this graph decides the weight of two edges when creating an "error graph" for GraphDecoder(in fitter.py). We analyse another method to do obtain a syndrom graph using graph traversal. This method is discussed in the next section.
+For the hackathon, our team [Erwin's Tigers](#team) implemented a **surface code encoder and decoder** for Qiskit Ignis. We hope that this implementation will be useful to other Qiskitters and will inspire others to continue building out the `topological_codes` module into a diverse family.
 
-## fitters.py
-The GraphDecoder class, located in fitters.py, constructs the graph corresponding to the possible syndromes of a quantum error correction surface code, runs minimum weight perfect matching (MWPM) on a subgraph of detected errors to determine the most probable sequence of errors, and then flips a series of qubits to correct them. Our surface code is structured as a square lattice with alternating X and Z syndrome nodes, as depicted below for `d=5`:
-<p align="center">
-<img src="https://user-images.githubusercontent.com/42923017/86202361-01b9ce80-bb30-11ea-8656-820d8bb17085.jpg" width="50%">
-</p>
-This surface code evolves over a specified number of time steps `T`, effectively creating `T` syndrome node lattices. So, our 3D syndrome graph has the time step as the z dimension and the syndrome node lattices in the xy plane. Virtual nodes, which are nonphysical but nevertheless error-inducing, alternate between X and Z nodes across the border of the surface code and are also included in the graph. We construct our 3D syndrome graph by specifying the coordinates of the syndrome and virtual nodes, connecting the lattice of syndrome nodes at a given time step, and connecting the lattices between adjacent time steps and virtual nodes to their adjacent syndrome nodes at all time steps. Each edge weight is 1 to denote that adjacent syndrome nodes have a rotated Manhattan distance of 1. Below is an example of a 3D syndrome graph of X syndromes with `d=3` and `T=3`:
-<p align="center">
-<img src="https://user-images.githubusercontent.com/42923017/86195157-49375f00-bb1e-11ea-8dd1-63a3adae1002.jpg" width="50%">
-</p>
-Then, a subgraph of detected syndrome errors is extracted, where we account for path degeneracy in the edge weights and clone virtual nodes to allow for multiple virtual node to syndrome node matchings.
-Below is an example of this error subgraph with `node_set = [(0, 1.5, 0.5), (1, 1.5, 0.5), (1, 0.5, 1.5), (2, 0.5, 1.5)]`:
-<p align="center">
-<img src="https://user-images.githubusercontent.com/42923017/86195162-4b99b900-bb1e-11ea-8f61-61ebf97a77f5.jpg" width="50%">
-</p>
-To determine the most probable set of syndrome errors, we run a MWPM on the error subgraph.
-Below is an example of the MWPM matching graph for our error subgraph:
-<p align="center">
-<img src="https://user-images.githubusercontent.com/42923017/86195169-505e6d00-bb1e-11ea-9ad3-259d87911718.jpg" width="50%">
-</p>
-Finally, we correct the syndrome errors through a series of qubit flips.
+## Usage
+Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html), we've written a full set of [jupyter notebook tutorials](https://github.com/Phionx/qiskit_surface_codes/tree/master/tutorials), which are the best way to get up to speed. They detail both the API and the gritty implementation details -- please check them out!
 
-# Acknowledgements
-We would like to thank @quantumjim for valuable suggestions and pointing out to the topological_codes for repetition codes (also included here) repository availableon qiskit, which proved quite useful for our project.
+## Background
 
-# References
+<p align="center">
+<img width="300" alt="surface code teaser" src="https://user-images.githubusercontent.com/293681/86277823-5f3c3280-bba5-11ea-9c87-d8525a8cbe88.jpg">
+</p>
+
+Surface codes are a type of CSS code, consisting of pairwise commuting X and Z stabilizers made of Pauli gates. It defines a logical state on a 2 by 2 lattice made of quantum bits with the stabilizers X<sub>1</sub> X<sub>2</sub> Z<sub>1</sub> Z<sub>2</sub>.
+
+The code is based on the earlier theoretical idea of a *toric code*, with periodic boundary conditions instead of open boundary conditions. This has been shown to be largely identical, but embedding a surface code on an actual device is much easier.
+
+## Implementation
+
+In general, we try to follow the existing structure of [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes). The code is implemented separately here but is able to easily be merged into Ignis.
+
+There are two main interfaces — corresponding to the encoder and decoder, respectively:
+
+### `SurfaceCode` in [`surface_code.circuits`](surface_code/circuits.py)
+
+`SurfaceCode(d, T)` generates a `QuantumCircuit` for creating a logical state and measuring stabilizers. The class is parameterized with the code distance `d` (which should be odd) and the number of syndrome measurement rounds `T` (usually `T = d`). This class also handles parsing of the physical device readout into a form suitable for decoding. Please see the [encoder tutorial](tutorials/1_surface_code_encoding.ipynb) for a full walkthrough.
+<p align="center">
+<img width="615" alt="circuit" src="https://user-images.githubusercontent.com/293681/86277098-23ed3400-bba4-11ea-8305-c6d19eb73899.png">
+</p>
+
+### `GraphDecoder` in [`surface_code.fitters`](surface_code/fitters.py)
+
+`GraphDecoder(d, T)` implements minimum-weight perfect matching (MWPM) on the syndrome measurements of the physical circuit. This class is similar to the existing `GraphDecoder` for repetition codes, but introduces a new framework to handle the 2D lattice.
+
+Parsed readout from the device is used to generate graphs of *error chains* in time and space, which decode syndrome measurements into the most likely sequence of qubit flips over time. Please see the [decoder tutorial](tutorials/2_surface_code_decoding.ipynb) for a full walkthrough.
+
+<p align="center">
+<img width="615" alt="matching graph" src="https://user-images.githubusercontent.com/293681/86277350-8ba37f00-bba4-11ea-9560-02d5ea3167cd.png">
+</p>
+
+## Future Directions
+The scope of the project is quite large, so we focused on completing a "minimum viable product" during the hackathon. However, there are many areas which we'd like to explore going forward. A few immediate ones:
+
+* Expand `SurfaceCode(d, T).circuits` a full set of logical states (1, +, -) -- and ultimately logical gate operations for computation.
+* Full benchmark of the physical-error to logical-error probabilities to determine the error correction threshold
+* More simulation runs: different X/Z error probabilities, more limited `coupling_map`, etc.
+* Our MWPM matching already has the below improvements to the basic algorithm, but are there more?
+  * For a given pair of syndromes, there may be many possible error chains through space and time. We compute this "path degeneracy" and use it to re-weight the error probabilities.
+  * We cross-match X and Z errors to produce an overall Y error. However, this doesn't exactly match a depolarizing channel, so ideally the weights would be re-adjusted with conditional probabilities.
+* Other approaches to error-chain matching (e.g. [neural networks](https://iopscience.iop.org/article/10.1088/2058-9565/aa955a/meta) or [tensor networks](https://journals.aps.org/pra/abstract/10.1103/PhysRevA.90.032326))?
+* Our `GraphDecoder` implements two different approaches to syndrome graph generation. One is a "analytic" approach (much faster), and the other uses simulation to insert errors into the circuit. These produce slightly different syndrome graphs, but we get the same decoding results in our tests.
+
+## Team
+* [Andy Ding](https://github.com/ZhenghaoDing)
+* [Shantanu Jha](https://github.com/Phionx)
+* [Henry Liu](https://github.com/liuhenry)
+* [Shraddha Singh](https://github.com/shraggy)
+* [Will Sun](https://github.com/muirheadmaster)
+
+## Acknowledgements
+We would like to thank [James Wootton](https://github.com/quantumjim) for valuable suggestions and feedback. Our code closely follows his `RepetitionCode` structure in [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes), and his tutorials closely guided our initial explorations.
+
+We'd also like to thank [Doug McClure](https://github.com/dtmcclure) for advising us on helpful details of the IBM hardware.
+
+## References
 - [Surface Codes: Towards Practical Large-Scale Quantum Computation](https://arxiv.org/abs/1208.0928)
 - [Stabilizer Codes and Quantum Error Correction](https://arxiv.org/pdf/quant-ph/9705052.pdf)
 - [Multi-path Summation for Decoding 2D Topological Codes](https://quantum-journal.org/wp-content/uploads/2018/10/q-2018-10-19-102.pdf)
-- [tutorial](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html#Lookup-table-decoding)
+- [Qiskit Textbook - Introduction to Quantum Error Correction using Repetition Codes](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html)
