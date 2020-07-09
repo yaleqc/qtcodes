@@ -47,7 +47,7 @@ Parsed readout from the device is used to generate graphs of *error chains* in t
 The scope of the project is quite large, so we focused on completing a "minimum viable product" during the hackathon. However, there are many areas which we'd like to explore going forward. A few immediate ones:
 
 * Expand `SurfaceCode(d, T).circuits` a full set of logical states (1, +, -) -- and ultimately logical gate operations for computation.
-* Full benchmark of the physical-error to logical-error probabilities to determine the error correction threshold
+* Full benchmark of the physical-error to logical-error probabilities to determine the error correction threshold.
 * More simulation runs: different X/Z error probabilities, more limited `coupling_map`, etc.
 * Our MWPM matching already has the below improvements to the basic algorithm, but are there more?
   * For a given pair of syndromes, there may be many possible error chains through space and time. We compute this "path degeneracy" and use it to re-weight the error probabilities.
