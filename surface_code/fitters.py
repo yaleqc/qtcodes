@@ -34,7 +34,7 @@ class GraphDecoder:
     """
 
     def __init__(self, d, T, simulation=False):
-        
+
         self.d = d
         self.T = T
         self.virtual = self._specify_virtual()
@@ -339,21 +339,24 @@ class GraphDecoder:
             deg, path = self._path_degeneracy(source, target, error_key)
             paths[(source, target)] = path
             if err_prob:
-                distance = distance - math.log(deg)/(math.log1p(-err_prob) - math.log(err_prob))
-            distance = -distance    
+                distance = distance - math.log(deg) / (
+                    math.log1p(-err_prob) - math.log(err_prob)
+                )
+            distance = -distance
             error_graph.add_edge(source, target, weight=distance)
 
-
-        if self.simulation: #paths incorrect for simulated syndrome graph
+        if self.simulation:  # paths incorrect for simulated syndrome graph
             return error_graph
 
         return error_graph, paths
 
     def analytic_paths(self, matches, error_key):
-        analytic_decoder = GraphDecoder(self.d,self.T)
+        analytic_decoder = GraphDecoder(self.d, self.T)
         paths = {}
-        for (source,target) in matches:
-            _, path = analytic_decoder._path_degeneracy(source[:3],target[:3], error_key)
+        for (source, target) in matches:
+            _, path = analytic_decoder._path_degeneracy(
+                source[:3], target[:3], error_key
+            )
             paths[(source[:3], target[:3])] = path
         return paths
 
@@ -568,7 +571,11 @@ class GraphDecoder:
                 net_error = net_error.dot(paulis[error])
             physical_qubit_flips[qubit_loc] = net_error
 
-        physical_qubit_flips = {x:y for x,y in physical_qubit_flips.items() if not np.array_equal(y,paulis["I"])}
+        physical_qubit_flips = {
+            x: y
+            for x, y in physical_qubit_flips.items()
+            if not np.array_equal(y, paulis["I"])
+        }
         return physical_qubit_flips
 
     def graph_2D(self, G, edge_label):
