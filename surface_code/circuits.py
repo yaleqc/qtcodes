@@ -206,16 +206,18 @@ class SurfaceCode:
             for j in range(self.d ** 2 - 1):
                 if (order[j][0][0] + order[j][0][1]) % 2 == 1:  # Z
                     self.circuit[log].measure(self.ancilla[j], self.output[self.T][j])
-                if reset:
-                    self.circuit[log].reset(self.ancilla[j])
+                    if reset:
+                        self.circuit[log].reset(self.ancilla[j])
 
             self.circuit[log].barrier()
 
             for j in range(self.d ** 2 - 1):
                 if (order[j][0][0] + order[j][0][1]) % 2 == 0:  # X
                     self.circuit[log].measure(self.ancilla[j], self.output[self.T][j])
-                if reset:
-                    self.circuit[log].reset(self.ancilla[j])
+                    if reset:
+                        self.circuit[log].reset(self.ancilla[j])
+
+            self.circuit[log].barrier()
 
         self.T += 1
 
