@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
-
-"""Generates circuits for quantum error correction with surface code patches."""
-
-import qiskit
-from qiskit import QuantumRegister, ClassicalRegister
+"""
+Generates circuits for quantum error correction with surface code patches.
+"""
 import copy
 import warnings
-import networkx as nx
+
 import numpy as np
-from qiskit import QuantumCircuit, execute
-from random import randrange
-import matplotlib
+import networkx as nx
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute
 
 try:
     from qiskit import Aer
@@ -46,18 +43,18 @@ class SurfaceCode:
         """
         self.d = d
         self.T = 0
+
         self.data = QuantumRegister(d ** 2, "data")
         self.ancilla = QuantumRegister((d ** 2 - 1), "ancilla")
-        self.qubit_registers = {"data", "ancilla"}
-        self.output = []
-        self.circuit = {}
         self.c_output = ClassicalRegister(d ** 2, "c_output")
 
-        """This code creates circuits only for log='0' but it can be easily
-        modified to accomodate circuuit for log='1' """
+        self.output = []
+        self.circuit = {}
 
-        for log in ["0", "1"]:
-            self.circuit[log] = QuantumCircuit(self.ancilla, self.data, name=log)
+        for logical in ["0", "1"]:
+            self.circuit[logical] = QuantumCircuit(
+                self.ancilla, self.data, name="logical-{}".format(logical)
+            )
 
         #        self._preparation() to be included to create log='1'
 
@@ -67,16 +64,6 @@ class SurfaceCode:
         if T != 0:
             self.syndrome_measurement(reset=False)
             self.readout()
-
-    def get_circuit_list(self):
-        """
-        Returns:
-            circuit_list: self.circuit as a list, with
-            circuit_list[0] = circuit['0']
-            circuit_list[1] = circuit['1']
-        """
-        circuit_list = [self.circuit[log] for log in ["0", "1"]]
-        return circuit_list
 
     """It assigns vertices to qubits on a 2D graph, where,
     data qubits are on the x lines and, syndrome qubits are
@@ -102,12 +89,6 @@ class SurfaceCode:
         syn_ind = list(syndrome_string.nodes)
         data_ind = list(data_string.nodes)
         return (syn_ind, data_ind)
-
-    """List of nodes on the 2D lattice graph returned"""
-    # def x """to be included to execute self._preparation for log='1' """
-
-    # def _preparation(self):
-    """ prapares log '1' from log '0' circuit by applying x logical to the lattice"""
 
     def connection(self):
         """
@@ -319,7 +300,7 @@ class SurfaceCode:
         #     for node in dat[self.d-1:-1:self.d]:
         #         error_nodesX.append((-2, node[0], node[1]))
 
-        for i in range(1, len(processed_results)):
+        for i in range(2, len(processed_results)):
             for j in range(len(processed_results[i])):
 
                 if processed_results[i][j] == 1:

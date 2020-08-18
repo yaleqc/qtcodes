@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Graph decoder for surface codes
 """
