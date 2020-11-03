@@ -45,6 +45,13 @@ class GraphDecoder:
         else:
             self._make_syndrome_graph()
 
+        self.paulis = {
+            "X": np.array([[0, 1], [1, 0]]),
+            "Y": np.array([[0, -1j], [1j, 0]]),
+            "Z": np.array([[1, 0], [0, -1]]),
+            "I": np.array([[1, 0], [0, 1]]),
+        }
+
     def _specify_virtual(self):
         """Define coordinates of Z and X virtual nodes. Our convention is that Z
         virtual nodes are top/bottom and X virtual nodes are left/right.
@@ -554,28 +561,102 @@ class GraphDecoder:
         for flip, error_key in flips.items():
             individual_flips[flip[1:]][flip[0]] = error_key
 
-        paulis = {
-            "X": np.array([[0, 1], [1, 0]]),
-            "Y": np.array([[0, -1j], [1j, 0]]),
-            "Z": np.array([[1, 0], [0, -1]]),
-            "I": np.array([[1, 0], [0, 1]]),
-        }
-
         physical_qubit_flips = {}
         for qubit_loc, flip_record in individual_flips.items():
-            net_error = paulis["I"]
+            net_error = self.paulis["I"]
             # print("Physical Qubit: " + str(qubit_loc))
             for time, error in sorted(flip_record.items(), key=lambda item: item[0]):
                 # print("Error: " + error + " at time: " + str(time))
-                net_error = net_error.dot(paulis[error])
+                net_error = net_error.dot(self.paulis[error])
             physical_qubit_flips[qubit_loc] = net_error
 
         physical_qubit_flips = {
             x: y
             for x, y in physical_qubit_flips.items()
-            if not np.array_equal(y, paulis["I"])
+            if not np.array_equal(y, self.paulis["I"])
         }
         return physical_qubit_flips
+
+    def corrections(self, syndromes):
+        """
+        Args:
+            syndromes: Dictionary with syndromes["X"] containing tuples of the form 
+            (t,i,j) where t specifies time and (i,j) specify position of 
+            the X syndrome node changed from its value at (t-1,i,j), 
+            and similarly, syndromes["Z"] for Z syndrome nodes. 
+            TODO change errors to a string format.
+        Returns:
+            physical_qubit_flips: dictionary with key representing physical (data) qubit
+            and value representing the net error matrix on that data qubit. 
+            e.g. key: (0,0), value: [[0,1],[1,0]] (X error)
+        Additional Information:
+            This method can be used to correct readout errors as shown in self.correct_readout. 
+        """
+        flips = {}
+        for syndrome_key, syndrome_set in syndromes.items():
+            if not syndrome_set:
+                flips[syndrome_key] = {}
+                continue
+            error_graph, paths = self.make_error_graph(syndrome_set, syndrome_key)
+            matching_graph = self.matching_graph(error_graph, syndrome_key)
+            matches = self.matching(matching_graph, syndrome_key)
+            flips[syndrome_key] = self.calculate_qubit_flips(
+                matches, paths, syndrome_key
+            )
+        net_flips = self.net_qubit_flips(flips["X"], flips["Z"])
+        return net_flips
+
+    def correct_readout(self, readout_string):
+        """
+        Args:
+            readout: string like "1 00000000 00000000" representing "R S2 S1" (d=3, T=2) where 
+            S1 is the first set of changed syndrome nodes (XOR'd with quiescent state syndrome measurements)
+            S1 has the form: X3X2X1X0Z3Z2Z1Z0 in the case of d = 3. R represents the logical Z readout result.
+        Returns:
+            The most probable encoded value of the logical qubit.
+        Additional Information:
+            This method can be used to benchmark logical error rates, as well as perform fault tolerant readout.
+        """
+        logical_qubit_value, syndromes = self._convert_string_to_nodes(readout_string)
+        # Logical Z readout will be performed with data qubits in the top row, this can be generalized later TODO
+        net_flips = self.corrections(syndromes)
+        top_row = [(0, i) for i in range(self.d)]
+        for top_data_qubit in top_row:
+            if top_data_qubit in net_flips:
+                flip_matrix = net_flips[top_data_qubit]
+                error = self._find_pauli_matrix(flip_matrix)
+                if error == "X" or "Y":
+                    logical_qubit_value = (logical_qubit_value + 1) % 2
+        return logical_qubit_value
+
+    def _find_pauli_matrix(self, matrix):
+        for key, pauli in self.paulis.items():
+            prod = matrix @ pauli
+            if prod[0, 0] == 0:
+                continue
+            prod = prod / prod[0, 0]
+            if np.all(prod == np.eye(2)):
+                return key
+        raise Exception("Not a Pauli Matrix")
+
+    def _convert_string_to_nodes(self, readout_string):
+        # TODO implement... for now dummy problem
+        # return logical_qubit_value, syndromes
+
+        return (
+            0,
+            {
+                "X": [
+                    (0, -0.5, 0.5),
+                    (0, 0.5, 1.5),
+                    (0, 0.5, 1.5),
+                    (0, -0.5, 2.5),
+                    (1, -0.5, 0.5),
+                    (1, 0.5, 1.5),
+                ],
+                "Z": [],
+            },
+        )
 
     def graph_2D(self, G, edge_label):
         pos = nx.get_node_attributes(G, "pos")
