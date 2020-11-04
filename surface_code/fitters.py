@@ -586,7 +586,7 @@ class GraphDecoder:
             and similarly, syndromes["Z"] for Z syndrome nodes. 
             TODO change errors to a string format.
         Returns:
-            physical_qubit_flips: dictionary with key representing physical (data) qubit
+            net_flips: dictionary with key representing physical (data) qubit
             and value representing the net error matrix on that data qubit. 
             e.g. key: (0,0), value: [[0,1],[1,0]] (X error)
         Additional Information:
