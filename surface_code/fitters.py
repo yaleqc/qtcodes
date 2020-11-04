@@ -640,22 +640,29 @@ class GraphDecoder:
         raise Exception("Not a Pauli Matrix")
 
     def _convert_string_to_nodes(self, readout_string):
-        # TODO implement... for now dummy problem
-        # return logical_qubit_value, syndromes
+        chunks = readout_string.split(" ")
+
+        int_syndromes = [int(x, base=2) for x in chunks[-1:0:-1]]
+        xor_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
+
+        X_syndromes = [(x & 0xF0) >> 4 for x in xor_syndromes]
+        Z_syndromes = [x & 0xF for x in xor_syndromes]
+
+        X = []
+        for T, syndrome in enumerate(X_syndromes):
+            for loc in range(4):
+                if syndrome & 1 << loc:
+                    X.append((T, -0.5 + loc, 0.5 + loc % 2))
+
+        Z = []
+        for T, syndrome in enumerate(Z_syndromes):
+            for loc in range(4):
+                if syndrome & 1 << loc:
+                    Z.append((T, 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
 
         return (
-            0,
-            {
-                "X": [
-                    (0, -0.5, 0.5),
-                    (0, 0.5, 1.5),
-                    (0, 0.5, 1.5),
-                    (0, -0.5, 2.5),
-                    (1, -0.5, 0.5),
-                    (1, 0.5, 1.5),
-                ],
-                "Z": [],
-            },
+            int(chunks[0]),
+            {"X": X, "Z": Z,},
         )
 
     def graph_2D(self, G, edge_label):
