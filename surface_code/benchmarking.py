@@ -8,7 +8,10 @@ from .fitters import GraphDecoder
 
 
 class SurfaceCodeBenchmarkingTool:
-    def logical_error_rate(self, decoder, readout_strings, correct_logical_value):
+    def __init__(self, decoder):
+        self.decoder = decoder
+
+    def logical_error_rate(self, readout_strings, correct_logical_value):
         """
         Args:
             decoder: a GraphDecoder object corresponding to the surface code used to produce the readout_strings
@@ -25,8 +28,14 @@ class SurfaceCodeBenchmarkingTool:
         total_errors = 0
         for readout, count in readout_strings.items():
             total_count += count
-            predicted_logical_value = decoder.correct_readout(readout)
+            predicted_logical_value = self.decoder.correct_readout(readout)
             if predicted_logical_value != correct_logical_value:
                 total_errors += count
 
         return total_errors / total_count
+
+
+"""
+    def simulate_readout(decoder, correct_logical_value):
+        return readout_strings
+"""
