@@ -269,8 +269,8 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
 
     def identity_data(self):
         """
-        Inserts an identity on the data and syndrome qubits. This is a hack to
-        create an isolated error model.
+        Inserts an identity on the data qubits only. This is a hack to create an
+        isolated error model.
         """
         [self.id(x) for register in (self.__data,) for x in register]
         self.barrier()
