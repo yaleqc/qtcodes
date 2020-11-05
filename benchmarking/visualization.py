@@ -42,8 +42,8 @@ for log_plot in [True, False]:
         )
 
     plt.plot(
-        benchmarking_tool.benchmark_data["noise"],
-        benchmarking_tool.benchmark_data["noise"],
+        benchmarking_tools[sorted_indxs[0]].benchmark_data["noise"],
+        0.5 * benchmarking_tools[sorted_indxs[0]].benchmark_data["noise"],
         "--",
         label="breakeven",
     )
