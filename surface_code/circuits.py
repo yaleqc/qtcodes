@@ -24,8 +24,19 @@ class LatticeError(Exception):
     pass
 
 
-class _Measure:
+class _Face:
+    """
+    Abstract class for a single *face* of the surface code, which is described
+    by a syndrome qubit and the four data qubits that surround it. If the face
+    exists on an edge of the surface code lattice, some of the data qubits may
+    be None.
+    """
+
     def __init__(self, syndrome, top_l, top_r, bot_l, bot_r):
+        """
+        Initialize a face by passing in the single QubitRegisters of the circuit
+        in which this face will be embedded.
+        """
         self.syndrome = syndrome
         self.top_l = top_l
         self.top_r = top_r
@@ -37,7 +48,11 @@ class _Measure:
         pass
 
 
-class _MeasureX(_Measure):
+class _FaceX(_Face):
+    """
+    X-syndrome face of the rotated surface code.
+    """
+
     def entangle(self, circ):
         """
         Traverse in reverse "Z" pattern
@@ -55,7 +70,11 @@ class _MeasureX(_Measure):
         circ.h(self.syndrome)
 
 
-class _MeasureZ(_Measure):
+class _FaceZ(_Face):
+    """
+    Z-syndrome face of the rotated surface code.
+    """
+
     def entangle(self, circ):
         """
         Traverse in reverse "N" pattern
@@ -72,7 +91,24 @@ class _MeasureZ(_Measure):
 
 
 class RotatedSurfaceCodeLattice:
+    """
+    This class is essentially a helper class that translates between the lattice
+    abstraction of the surface code and the physical qubits in the circuit. This
+    promotes a clean separation of concerns and wraps the implementation details
+    of the lattice + code entanglement ordering.
+    """
+
     def __init__(self, d, data_register, mx_register, mz_register):
+        """
+        Initializes an instance of the rotated surface code lattice with our
+        chosen layout and numbering.
+
+        Args:
+            d (int): surface code distance
+            data_register (QuantumRegister): grouped register of all data qubits
+            mx_register (QuantumRegister): grouped register of all measure-x qubits
+            mz_register (QuantumRegister): grouped register of all measure-z qubits
+        """
         self.d = d
         self.measure_x = []
         self.measure_z = []
@@ -99,7 +135,7 @@ class RotatedSurfaceCodeLattice:
                 top_r = data_register[start + (offset * 2) + row_parity + 1]
                 bot_l = data_register[start + d + (offset * 2) + row_parity]
                 bot_r = data_register[start + d + (offset * 2) + row_parity + 1]
-            self.measure_x.append(_MeasureX(mx, top_l, top_r, bot_l, bot_r))
+            self.measure_x.append(_FaceX(mx, top_l, top_r, bot_l, bot_r))
 
         for mz in mz_register:
             idx = mz.index
@@ -119,14 +155,25 @@ class RotatedSurfaceCodeLattice:
             elif row_parity == 1 and offset == 0:  # First column
                 top_l, bot_l = None, None
 
-            self.measure_z.append(_MeasureZ(mz, top_l, top_r, bot_l, bot_r))
+            self.measure_z.append(_FaceZ(mz, top_l, top_r, bot_l, bot_r))
 
     def entangle(self, circ):
+        """
+        Entangles the entire surface code by calling the entangle method of each
+        syndrome face. Within a face, order is determined by the delegated
+        method. Order between faces should not matter here, since the projection
+        will be determined by the measurement order.
+        """
         for syndrome in (self.measure_x, self.measure_z):
-            for ancilla in syndrome:
-                ancilla.entangle(circ)
+            for face in syndrome:
+                face.entangle(circ)
 
     def parse_readout(self, readout_string):
+        """
+        Helper method to turn a result string (e.g. 1 10100000 10010000) into an
+        appropriate logical readout value and XOR-ed syndrome locations
+        according to our grid coordinate convention.
+        """
         syn_len = (d ** 2 - 1) // 2
         chunks = readout_string.split(" ")
 
@@ -156,56 +203,73 @@ class RotatedSurfaceCodeLattice:
         )
 
 
-class SurfaceCode:
+class SurfaceCodeLogicalQubit(QuantumCircuit):
     """
-    Implementation of a distance d surface code, implemented over
-    T syndrome measurement rounds.
+    A single logical surface code qubit. At the physical level, this wraps a
+    circuit, so we chose to subclass and extend QuantumCircuit.
     """
 
-    def __init__(self, d, T):
+    def __init__(self, d, *args, **kwargs):
         """
-        Creates the circuits corresponding to a logical 0 encoded
-        using a surface code with X and Z stabilizers.
+        Initializes a new QuantumCircuit for this logical qubit and calculates
+        the underlying surface code lattice ordering.
+        
         Args:
-            d (int): Number of physical "data" qubits. Only odd d's allowed
-            T (int): Number of rounds of ancilla-assisted syndrome measurement. Normally T=d
-        Additional information:
-            No measurements are added to the circuit if `T=0`. Otherwise
-            `T` rounds are added, followed by measurement of the code
-            qubits (corresponding to a logical measurement and final
-            syndrome measurement round)
-            This circuit is for "rotated lattices" i.e. it requires
-            d**2 data qubits and d**2-1 syndrome qubits only. Hence,
-            d=odd allows equal number of Z and X stabilizer mesaurments.
+            d (int): Number of physical "data" qubits. Only odd d is possible!
         """
-        self.d = d
-        self.T = T
-        self.num_data = d ** 2
-        self.num_syn = (d ** 2 - 1) // 2
+        if d % 2 != 1:
+            raise ArgumentError("Surface code distance must be odd!")
+        self.__d = d
+        self.__T = 0
+        self.__num_data = d ** 2
+        self.__num_syn = (d ** 2 - 1) // 2
 
-        # These registers can be used as pointers across all of the circuits we create
-        self.data = QuantumRegister(self.num_data, "data")
-        self.mx = QuantumRegister(self.num_syn, "mx")
-        self.mz = QuantumRegister(self.num_syn, "mz")
-        self.measurements = [
-            ClassicalRegister(self.num_syn * 2, name="c{}".format(i + 1))
-            for i in range(T + 1)  # First round is quiescent projection
-        ]
+        self.__data = QuantumRegister(self.__num_data, "data")
+        self.__mx = QuantumRegister(self.__num_syn, "mx")
+        self.__mz = QuantumRegister(self.__num_syn, "mz")
 
-        # Generate the lattice connections within the convention we are using
-        self.lattice = RotatedSurfaceCodeLattice(d, self.data, self.mx, self.mz)
+        # We implement and assume the rotated lattice only, but this can be
+        # imagined to accept other layouts in the future.
+        self.__lattice = RotatedSurfaceCodeLattice(d, self.__data, self.__mx, self.__mz)
 
-    @property
-    def zero(self):
-        circ = QuantumCircuit(self.data, self.mz, self.mx, *self.measurements)
+        # Spare ancilla (e.g. for readout)
+        self.__ancilla = QuantumRegister(1, name="ancilla")
+        super().__init__(self.__data, self.__mz, self.__mx, self.__ancilla)
 
-        for i in range(self.T + 1):
-            self.lattice.entangle(circ)
-            circ.barrier()
-            circ.measure(self.mz, self.measurements[i][0 : self.num_syn])
-            circ.measure(self.mx, self.measurements[i][self.num_syn : self.num_syn * 2])
-            circ.reset(self.mz)
-            circ.reset(self.mx)
-            circ.barrier()
+    def stabilize(self):
+        """
+        Run a single round of stabilization (entangle and measure).
+        """
+        syndrome_readouts = ClassicalRegister(
+            self.__num_syn * 2, name="c{}".format(self.__T)
+        )
+        self.add_register(syndrome_readouts)
+        self.__T += 1
 
-        return circ
+        self.__lattice.entangle(self)
+        self.barrier()
+        self.measure(self.__mz, syndrome_readouts[0 : self.__num_syn])
+        self.measure(self.__mx, syndrome_readouts[self.__num_syn : self.__num_syn * 2])
+        self.reset(self.__mz)
+        self.reset(self.__mx)
+        self.barrier()
+
+    def logical_x(self):
+        """
+        Logical X operator on the qubit.
+        """
+        for i in range(0, self.__num_data, self.__d):
+            self.x(self.__data[i])
+        self.barrier()
+
+    def readout_z(self):
+        """
+        Convenience method to read-out the logical-Z projection.
+        """
+        self.reset(self.__ancilla)
+        readout = ClassicalRegister(1, name="readout")
+        self.add_register(readout)
+        for i in range(self.__d):
+            self.cx(self.__data[i], self.__ancilla)
+        self.measure(self.__ancilla, readout)
+        self.barrier()
