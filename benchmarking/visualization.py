@@ -17,7 +17,7 @@ from benchmarking.benchmarking_tools import SurfaceCodeBenchmarkingTool
 import glob
 import numpy as np
 
-dir = "data_identity_noise/T_2_d_vary/"
+dir = "data_identity_noise/T_vary_d_3/"
 data_files = glob.glob(dir + "*.npz")
 benchmarking_tools = []
 for file in data_files:
@@ -47,7 +47,7 @@ for log_plot in [True, False]:
         "--",
         label="breakeven",
     )
-    plt.legend(loc="lower right", prop={"size": 6})
+    plt.legend(loc="upper left", prop={"size": 6})
     ax.set_xlabel("Physical Error Rate", size=10)
     ax.set_ylabel("Logical Error Rate", size=10)
     ax.set_title("Comparison of Surface Codes", size=10)

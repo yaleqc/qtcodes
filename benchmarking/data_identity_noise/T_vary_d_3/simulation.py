@@ -28,14 +28,15 @@ def get_noise_model(p_err):
 
 
 if __name__ == "__main__":
-    decoder_keys = [(3, T) for T in range(2, 6, 1)]
+    decoder_keys = [(3, T) for T in range(1, 2, 1)]
     benchmarking_tools = []
 
     for d, T in tqdm(decoder_keys):
         qubit = SurfaceCodeLogicalQubit(d)
         qubit.stabilize()
-        qubit.identity_data()
-        qubit.stabilize()
+        for i in range(T):
+            qubit.identity_data()
+            qubit.stabilize()
         qubit.readout_z()
         benchmarking_tools.append(
             SurfaceCodeBenchmarkingTool(

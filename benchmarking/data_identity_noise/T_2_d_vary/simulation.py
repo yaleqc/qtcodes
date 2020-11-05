@@ -34,8 +34,9 @@ if __name__ == "__main__":
     for d, T in tqdm(decoder_keys):
         qubit = SurfaceCodeLogicalQubit(d)
         qubit.stabilize()
-        qubit.identity_data()
-        qubit.stabilize()
+        for i in range(T):
+            qubit.identity_data()
+            qubit.stabilize()
         qubit.readout_z()
         benchmarking_tools.append(
             SurfaceCodeBenchmarkingTool(

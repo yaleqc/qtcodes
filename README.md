@@ -1,4 +1,6 @@
 # Qiskit Surface Code Encoder/Decoder
+*This README is not up to date. Please review our comprehensive tutorials to better understand and use our package.*
+
 ## IBM Qiskit - Summer Jam Hackathon 2020
 
 Quantum computation is an inherently noisy process. Scalable quantum computers will require fault-tolerance to implement useful computation. There are many proposed approaches to this, but one promising candidate is the family of *topological quantum error correcting codes*.
@@ -13,7 +15,7 @@ Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardwar
 ## Background
 
 <p align="center">
-<img width="300" alt="surface code teaser" src="https://user-images.githubusercontent.com/293681/86277823-5f3c3280-bba5-11ea-9c87-d8525a8cbe88.jpg">
+<img width="300" alt="surface code teaser" src="tutorials/img/error_set.jpg">
 </p>
 
 Surface codes are a type of CSS code, consisting of pairwise commuting X and Z stabilizers made of Pauli gates. It defines a logical state on a 2 by 2 lattice made of quantum bits with the stabilizers X<sub>1</sub> X<sub>2</sub> Z<sub>1</sub> Z<sub>2</sub>.
