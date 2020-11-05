@@ -266,6 +266,14 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         ]
         self.barrier()
 
+    def hadamard_reset(self):
+        """
+        A hack to initialize a + and - logical qubit for now...
+        """
+        [self.reset(x) for x in self.__data]
+        [self.h(x) for x in self.__data]
+        self.barrier()
+
     def logical_x(self):
         """
         Logical X operator on the qubit.
@@ -274,14 +282,38 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
             self.x(self.__data[i])
         self.barrier()
 
+    def logical_z(self):
+        """
+        Logical Z operator on the qubit.
+        """
+        for i in range(self.__d):
+            self.z(self.__data[i])
+        self.barrier()
+
     def readout_z(self):
         """
         Convenience method to read-out the logical-Z projection.
         """
-        self.reset(self.__ancilla)
         readout = ClassicalRegister(1, name="readout")
         self.add_register(readout)
+
+        self.reset(self.__ancilla)
         for i in range(self.__d):
             self.cx(self.__data[i], self.__ancilla)
+        self.measure(self.__ancilla, readout)
+        self.barrier()
+
+    def readout_x(self):
+        """
+        Convenience method to read-out the logical-X projection.
+        """
+        readout = ClassicalRegister(1, name="readout")
+        self.add_register(readout)
+
+        self.reset(self.__ancilla)
+        self.h(self.__ancilla)
+        for i in range(0, self.__num_data, self.__d):
+            self.cx(self.__ancilla, self.__data[i])
+        self.h(self.__ancilla)
         self.measure(self.__ancilla, readout)
         self.barrier()
