@@ -225,8 +225,8 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         self.__num_syn = (d ** 2 - 1) // 2
 
         self.__data = QuantumRegister(self.__num_data, "data")
-        self.__mx = QuantumRegister(self.__num_syn, "mx")
         self.__mz = QuantumRegister(self.__num_syn, "mz")
+        self.__mx = QuantumRegister(self.__num_syn, "mx")
 
         # We implement and assume the rotated lattice only, but this can be
         # imagined to accept other layouts in the future.
@@ -252,6 +252,18 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         self.measure(self.__mx, syndrome_readouts[self.__num_syn : self.__num_syn * 2])
         self.reset(self.__mz)
         self.reset(self.__mx)
+        self.barrier()
+
+    def identity(self):
+        """
+        Inserts an identity on the data and syndrome qubits. This is a hack to
+        create an isolated error model.
+        """
+        [
+            self.id(x)
+            for register in (self.__data, self.__mz, self.__mx)
+            for x in register
+        ]
         self.barrier()
 
     def logical_x(self):
