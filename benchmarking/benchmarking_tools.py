@@ -84,6 +84,7 @@ class SurfaceCodeBenchmarkingTool:
             2e-2,
         ],
         save_data=True,
+        shots=1024 * 2,
     ):
         self.benchmark_data["noise"] = []
         self.benchmark_data["logical_error_rate"] = []
@@ -97,7 +98,7 @@ class SurfaceCodeBenchmarkingTool:
                     self.readout_circuit,
                     Aer.get_backend("qasm_simulator"),
                     noise_model=self.noise_model_func(noise_value),
-                    shots=1024 * 2,
+                    shots=shots,
                 )
                 .result()
                 .get_counts()
