@@ -172,7 +172,8 @@ class SurfaceCodeBenchmarkingTool:
             ax = fig.subplots()
         plt.plot(
             self.benchmark_data["noise"],
-            self.benchmark_data["logical_error_rate"] / (self.T if per_round else 1.0),
+            np.array(self.benchmark_data["logical_error_rate"])
+            / (self.T if per_round else 1.0),
             **kwargs
         )
         if log:
