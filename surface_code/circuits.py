@@ -4,6 +4,7 @@ Generates circuits for quantum error correction with surface code patches.
 """
 import copy
 import warnings
+from abc import ABC, abstractmethod
 
 import numpy as np
 import networkx as nx
@@ -17,6 +18,142 @@ except ImportError:
     from qiskit import BasicAer
 
     HAS_AER = False
+
+
+class LatticeError(Exception):
+    pass
+
+
+class _Measure:
+    def __init__(self, syndrome, top_l, top_r, bot_l, bot_r):
+        self.syndrome = syndrome
+        self.top_l = top_l
+        self.top_r = top_r
+        self.bot_l = bot_l
+        self.bot_r = bot_r
+
+    @abstractmethod
+    def entangle(self, circ):
+        pass
+
+
+class _MeasureX(_Measure):
+    def entangle(self, circ):
+        """
+        Traverse in reverse "Z" pattern
+        """
+        if (self.top_r and not self.top_l) or (self.bot_r and not self.bot_l):
+            raise LatticeError("Inconsistent X syndrome connections")
+
+        circ.h(self.syndrome)
+        if self.top_r:
+            circ.cx(self.syndrome, self.top_r)
+            circ.cx(self.syndrome, self.top_l)
+        if self.bot_r:
+            circ.cx(self.syndrome, self.bot_r)
+            circ.cx(self.syndrome, self.bot_l)
+        circ.h(self.syndrome)
+
+
+class _MeasureZ(_Measure):
+    def entangle(self, circ):
+        """
+        Traverse in reverse "N" pattern
+        """
+        if (self.top_r and not self.bot_r) or (self.top_l and not self.bot_l):
+            raise LatticeError("Inconsistent Z syndrome connections")
+
+        if self.top_r:
+            circ.cx(self.top_r, self.syndrome)
+            circ.cx(self.bot_r, self.syndrome)
+        if self.top_l:
+            circ.cx(self.top_l, self.syndrome)
+            circ.cx(self.bot_l, self.syndrome)
+
+
+class RotatedSurfaceCodeLattice:
+    def __init__(self, d, data_register, mx_register, mz_register):
+        self.d = d
+        self.measure_x = []
+        self.measure_z = []
+
+        per_row_x = (d ** 2 - 1) // 2 // (d + 1)
+        per_row_z = (d ** 2 - 1) // 2 // (d - 1)
+        for mx in mx_register:
+            idx = mx.index
+            row = idx // per_row_x
+            offset = idx % per_row_x
+            start = (row - 1) * d
+            row_parity = row % 2
+
+            if row == 0:  # First row
+                top_l, top_r = None, None
+                bot_l = data_register[idx * 2]
+                bot_r = data_register[idx * 2 + 1]
+            elif row == d:  # Last row
+                bot_l, bot_r = None, None
+                top_l = data_register[idx * 2 + 1]
+                top_r = data_register[idx * 2 + 2]
+            else:
+                top_l = data_register[start + (offset * 2) + row_parity]
+                top_r = data_register[start + (offset * 2) + row_parity + 1]
+                bot_l = data_register[start + d + (offset * 2) + row_parity]
+                bot_r = data_register[start + d + (offset * 2) + row_parity + 1]
+            self.measure_x.append(_MeasureX(mx, top_l, top_r, bot_l, bot_r))
+
+        for mz in mz_register:
+            idx = mz.index
+            row = idx // per_row_z
+            offset = idx % per_row_z
+            start = row * d
+            row_parity = row % 2
+
+            top_l = data_register[start + (offset * 2) - row_parity]
+            top_r = data_register[start + (offset * 2) - row_parity + 1]
+            bot_l = data_register[start + d + (offset * 2) - row_parity]
+            bot_r = data_register[start + d + (offset * 2) - row_parity + 1]
+
+            # Overwrite edge column syndromes
+            if row_parity == 0 and offset == per_row_z:  # Last column
+                top_r, bot_r = None, None
+            elif row_parity == 1 and offset == 0:  # First column
+                top_l, bot_l = None, None
+
+            self.measure_z.append(_MeasureZ(mz, top_l, top_r, bot_l, bot_r))
+
+    def entangle(self, circ):
+        for syndrome in (self.measure_x, self.measure_z):
+            for ancilla in syndrome:
+                ancilla.entangle(circ)
+
+    def parse_readout(self, readout_string):
+        syn_len = (d ** 2 - 1) // 2
+        chunks = readout_string.split(" ")
+
+        int_syndromes = [int(x, base=2) for x in chunks[-1:0:-1]]
+        xor_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
+
+        mask_Z = "1" * syn_len
+        mask_X = mask_Z + "0" * syn_len
+        X_syndromes = [(x & int(mask_X, base=2)) >> syn_len for x in xor_syndromes]
+        Z_syndromes = [x & int(mask_Z, base=2) for x in xor_syndromes]
+
+        X = []
+        for T, syndrome in enumerate(X_syndromes):
+            for loc in range(syn_len):
+                if syndrome & 1 << loc:
+                    X.append((T, -0.5 + loc, 0.5 + loc % 2))
+
+        Z = []
+        for T, syndrome in enumerate(Z_syndromes):
+            for loc in range(syn_len):
+                if syndrome & 1 << loc:
+                    Z.append((T, 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
+
+        return (
+            int(chunks[0]),
+            {"X": X, "Z": Z,},
+        )
 
 
 class SurfaceCode:
@@ -42,271 +179,33 @@ class SurfaceCode:
             d=odd allows equal number of Z and X stabilizer mesaurments.
         """
         self.d = d
-        self.T = 0
+        self.T = T
+        self.num_data = d ** 2
+        self.num_syn = (d ** 2 - 1) // 2
 
-        self.data = QuantumRegister(d ** 2, "data")
-        self.ancilla = QuantumRegister((d ** 2 - 1), "ancilla")
-        self.c_output = ClassicalRegister(d ** 2, "c_output")
+        # These registers can be used as pointers across all of the circuits we create
+        self.data = QuantumRegister(self.num_data, "data")
+        self.mx = QuantumRegister(self.num_syn, "mx")
+        self.mz = QuantumRegister(self.num_syn, "mz")
+        self.measurements = [
+            ClassicalRegister(self.num_syn * 2, name="c{}".format(i + 1))
+            for i in range(T + 1)  # First round is quiescent projection
+        ]
 
-        self.output = []
-        self.circuit = {}
+        # Generate the lattice connections within the convention we are using
+        self.lattice = RotatedSurfaceCodeLattice(d, self.data, self.mx, self.mz)
 
-        for logical in ["0", "1"]:
-            self.circuit[logical] = QuantumCircuit(
-                self.ancilla, self.data, name="logical-{}".format(logical)
-            )
+    @property
+    def zero(self):
+        circ = QuantumCircuit(self.data, self.mz, self.mx, *self.measurements)
 
-        #        self._preparation() to be included to create log='1'
+        for i in range(self.T + 1):
+            self.lattice.entangle(circ)
+            circ.barrier()
+            circ.measure(self.mz, self.measurements[i][0 : self.num_syn])
+            circ.measure(self.mx, self.measurements[i][self.num_syn : self.num_syn * 2])
+            circ.reset(self.mz)
+            circ.reset(self.mx)
+            circ.barrier()
 
-        for _ in range(T - 1):
-            self.syndrome_measurement()
-
-        if T != 0:
-            self.syndrome_measurement(reset=False)
-            self.readout()
-
-    """It assigns vertices to qubits on a 2D graph, where,
-    data qubits are on the x lines and, syndrome qubits are
-    on the 0.5+x lines, in the cartesian coordinate system, where x is an integer."""
-
-    def lattice(self):
-        d = self.d
-        data_string = nx.Graph()
-        syndrome_string = nx.Graph()
-        for i in range(0, d):
-            for j in range(0, d):
-                data_string.add_node((i, j))
-        for k in range(0, d, 1):
-            for i in range(0, d + 1, 1):
-                for j in range(0, d + 1, 1):
-                    if (i + j) % 2 != 0:
-                        if ((i % 2 == 0) and j != d) or ((i % 2 == 1) and (j != 0)):
-                            syndrome_string.add_node(((2 * i - 1) / 2, (2 * j - 1) / 2))
-                    else:
-                        if ((j % 2 == 0) and i != 0) or ((j % 2 == 1) and (i != d)):
-                            syndrome_string.add_node(((2 * i - 1) / 2, (2 * j - 1) / 2))
-
-        syn_ind = list(syndrome_string.nodes)
-        data_ind = list(data_string.nodes)
-        return (syn_ind, data_ind)
-
-    def connection(self):
-        """
-        Determines the order of syndrome measurements between data qubits and syndrome qubits.
-        We follow the ZN rule here to avoid hook error as described by [https://doi.org/10.1063/1.1499754]
-        where Z stabilisers are arranged in 'Z' pattern and X stabilizers in 'N' pattern.
-        Refer to the diagram in readme to get the refrence.
-        """
-        syn_index, data_index = self.lattice()
-
-        order = []
-        for i in range(self.d ** 2 - 1):
-            d = data_index
-            r = syn_index[i][0]
-            c = syn_index[i][1]
-
-            def get_index(j):
-                for i in range(len(data_index)):
-                    if data_index[i] == j:
-                        return i
-
-            new = []
-            new.append((r, c))
-            if r == -0.5:  # top semicircile
-                new.append(-1)
-                new.append(get_index((r + 0.5, c - 0.5)))
-                new.append(-1)
-                new.append(get_index((r + 0.5, c + 0.5)))
-            elif c == -0.5:  # left semicircle
-                new.append(-1)
-                new.append(get_index((r - 0.5, c + 0.5)))
-                new.append(-1)
-                new.append(get_index((r + 0.5, c + 0.5)))
-
-            elif r == self.d - 0.5:  # bottom semicircle
-
-                new.append(get_index((r - 0.5, c - 0.5)))
-                new.append(-1)
-                new.append(get_index((r - 0.5, c + 0.5)))
-                new.append(-1)
-
-            elif c == self.d - 0.5:  # right semicircle
-                new.append(get_index((r - 0.5, c - 0.5)))
-                new.append(-1)
-                new.append(get_index((r + 0.5, c - 0.5)))
-                new.append(-1)
-            else:
-                if (r + c) % 2 == 0:  # square patches
-                    new.append(get_index((r - 0.5, c - 0.5)))
-                    new.append(get_index((r + 0.5, c - 0.5)))
-                    new.append(get_index((r - 0.5, c + 0.5)))
-                    new.append(get_index((r + 0.5, c + 0.5)))
-                else:
-                    new.append(get_index((r - 0.5, c - 0.5)))
-                    new.append(get_index((r - 0.5, c + 0.5)))
-                    new.append(get_index((r + 0.5, c - 0.5)))
-                    new.append(get_index((r + 0.5, c + 0.5)))
-            order.append(new)
-        return order
-
-    def syndrome_measurement(self, reset=True, barrier=True):
-        """
-            Application of a syndrome measurement round.
-            Args:
-                reset (bool): If set to true add a boolean at the end of each round
-                barrier (bool): Boolean denoting whether to include a barrier at the end.
-                A barrier is included after every round of 'j' which passes through layers of
-                cx to be done, because the order should not be disturbed else the stabilizers
-                will not be executed since Z and X on the same qubit do not commute. Thus,
-                we end up flipping the sign of some stabilizers.
-            """
-        self.output.append(
-            ClassicalRegister((self.d ** 2 - 1), "round_" + str(self.T) + "ancilla")
-        )
-
-        for log in ["0", "1"]:
-            self.circuit[log].add_register(self.output[-1])
-            order = self.connection()
-            for j in range(1, 5):
-                for i in range(len(order)):
-                    k = self.data[order[i][j]]
-                    l = self.ancilla[i]
-                    if (order[i][0][0] + order[i][0][1]) % 2 == 0:  # Xstabilizer
-                        if j == 1:
-                            self.circuit[log].h(l)
-                        if order[i][j] != -1:
-                            self.circuit[log].cx(l, k)
-                        if j == 4:
-                            self.circuit[log].h(l)
-                    else:  # Xstabilizer
-                        if order[i][j] != -1:
-                            self.circuit[log].cx(k, l)
-                if barrier:
-                    self.circuit[log].barrier()
-
-            for j in range(self.d ** 2 - 1):
-                if (order[j][0][0] + order[j][0][1]) % 2 == 1:  # Z
-                    self.circuit[log].measure(self.ancilla[j], self.output[self.T][j])
-                    if reset:
-                        self.circuit[log].reset(self.ancilla[j])
-
-            self.circuit[log].barrier()
-
-            for j in range(self.d ** 2 - 1):
-                if (order[j][0][0] + order[j][0][1]) % 2 == 0:  # X
-                    self.circuit[log].measure(self.ancilla[j], self.output[self.T][j])
-                    if reset:
-                        self.circuit[log].reset(self.ancilla[j])
-
-            self.circuit[log].barrier()
-
-        self.T += 1
-
-    def readout(self):
-        """
-        Readout of all code qubits, which corresponds to a logical measurement
-        as well as allowing for a measurement of the syndrome to be inferred.
-        """
-        for log in ["0", "1"]:
-            self.circuit[log].add_register(self.c_output)
-            for i in range(self.d ** 2):
-                self.circuit[log].measure(self.data[i], self.c_output[i])
-
-    def process_results(self, raw_results):
-        """
-        Args:
-            raw_results (dict): A dictionary whose keys are logical values,
-                and whose values are standard counts dictionaries, (as
-                obtained from the `get_counts` method of a ``qiskit.Result``
-                object).
-        Returns:
-            syn: d+1 dimensional array where 0th array stores qubit readouts
-            while the subsequesnt rows store the results from measurement rounds
-            as required for extraction of nodes with errors to be sent to the decoder
-        Additional information:
-            The circuits must be executed outside of this class, so that
-            their is full freedom to compile, choose a backend, use a
-            noise model, etc. The results from these executions should then
-            be used to create the input for this method.
-        """
-        results = []
-        results = list(max(raw_results, key=raw_results.get))
-
-        syn = []
-        new = []
-        for i in results:
-            for j in range(len(i)):
-                if i[j] != " ":
-                    new.append(int(i[j]))
-                else:
-                    syn.append(new)
-                    new = []
-        syn.append(new)
-
-        return syn
-
-    def extract_nodes(self, syn_meas_results):
-        """Extracts node locations of qubits which flipped in
-        consecutive rounds (stored as (k,i,j)) and the data qubits which were flipped
-        during readout (stored as (-2,i,j)). Here k spans range(0,d-1,1)
-        Z syndrome nodes and Z logical data qubit nodes (see figure) in error_nodesZ
-        and we do the same for X stabilizers and X logical qubits in error_nodesX.
-        Note that arrays are reversed in terms of syndrome rounds, when compared to
-        syn_meas_results
-        """
-        processed_results = []
-        new = []
-        for j in syn_meas_results[0]:
-            new.append(j)
-        processed_results.append(new)
-        new = []
-        for j in syn_meas_results[len(syn_meas_results) - 1]:
-            new.append(j)
-        processed_results.append(new)
-
-        for i in range(len(syn_meas_results) - 2, 0, -1):
-            new = []
-            for j in range(0, len(syn_meas_results[i])):
-                new.append((syn_meas_results[i][j] + syn_meas_results[i + 1][j]) % 2)
-            processed_results.append(new)
-
-        syn, dat = self.lattice()
-        error_nodesX = []
-        error_nodesZ = []
-
-        # first_row = processed_result[0][:self.d]
-        # last_row = processed_result[0][-self.d - 1:-1]
-
-        # left_col = processed_result[0][::self.d]
-        # right_col = processed_result[0][self.d-1:-1:self.d]
-
-        # if sum(first_row) % 2 == 1 or sum(last_row) % 2 == 1:
-        #     for node in dat[:self.d]:
-        #         # Append virtual node
-        #         if node[1] == 0:
-        #             error_nodesZ.append((-1, node[0] - 0.5, node[1] - 0.5))
-        #         else:
-        #             error_nodesZ.append((-1, node[0] - 0.5, node[1] + 0.5))
-
-        #     for node in dat[-self.d - 1:-1]:
-        #         if node[1] == self.d - 1:
-        #             error_nodesZ.append((-1, node[0] + 0.5, node[1] + 0.5))
-        #         else:
-        #             error_nodesZ.append((-1, node[0] + 0.5, node[1] - 0.5))
-
-        # if sum(left_col) % 2 == 1 or sum(right_col) % 2 == 1:
-        #     for node in dat[::self.d]:
-        #         error_nodesX.append((-2, node[0], node[1]))
-        #     for node in dat[self.d-1:-1:self.d]:
-        #         error_nodesX.append((-2, node[0], node[1]))
-
-        for i in range(2, len(processed_results)):
-            for j in range(len(processed_results[i])):
-
-                if processed_results[i][j] == 1:
-
-                    if (syn[j][0] + syn[j][1]) % 2 == 0:
-                        error_nodesX.append((i - 1, syn[j][0], syn[j][1]))
-                    else:
-                        error_nodesZ.append((i - 1, syn[j][0], syn[j][1]))
-        return error_nodesX, error_nodesZ
+        return circ
