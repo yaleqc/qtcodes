@@ -17,10 +17,17 @@ from tqdm import tqdm
 
 plt.rcParams.update({"font.size": 14, "pdf.fonttype": 42, "ps.fonttype": 42})
 
+from multiprocessing import Pool
+
 
 class SurfaceCodeBenchmarkingTool:
     def __init__(
-        self, decoder=None, readout_circuit=None, noise_model_func=None, filename=None
+        self,
+        decoder=None,
+        readout_circuit=None,
+        noise_model_func=None,
+        filename=None,
+        correct_logical_value=None,
     ):
         self.decoder = decoder
         if self.decoder is not None:
@@ -32,6 +39,7 @@ class SurfaceCodeBenchmarkingTool:
             else filename
         )
         self.readout_circuit = readout_circuit
+        self.correct_logical_value = correct_logical_value
         self.noise_model_func = noise_model_func
         self.benchmark_data = {"noise": [], "logical_error_rate": []}
 
@@ -75,7 +83,6 @@ class SurfaceCodeBenchmarkingTool:
             1e-2,
             2e-2,
         ],
-        printing=True,
         save_data=True,
     ):
         self.benchmark_data["noise"] = []
@@ -85,9 +92,6 @@ class SurfaceCodeBenchmarkingTool:
             noise_values, reverse=True
         )  # higher noise readout is slower to decode, gives more accurate tqdm estimate
         for noise_value in tqdm(noise_values):
-            # if printing:
-            #     print("=================================")
-            #     print("Noise: {}".format(noise_value))
             results = (
                 execute(
                     self.readout_circuit,
@@ -105,12 +109,58 @@ class SurfaceCodeBenchmarkingTool:
             self.benchmark_data["logical_error_rate"] = [
                 logical_error_rate_value
             ] + self.benchmark_data["logical_error_rate"]
-            # if printing:
-            #     print("Logical Error Rate: {}".format(logical_error_rate_value))
             if save_data:
                 self.save_data()
 
         return self.benchmark_data
+
+    def simulate_readout_mp(
+        self,
+        correct_logical_value=0,
+        noise_values=[
+            5e-5,
+            1e-4,
+            2e-4,
+            5e-4,
+            1e-3,
+            2e-3,
+            4e-3,
+            5e-3,
+            6e-3,
+            7e-3,
+            8e-3,
+            9e-3,
+            1e-2,
+            2e-2,
+        ],
+        save_data=True,
+    ):
+        self.benchmark_data["noise"] = sorted(noise_values)
+        self.correct_logical_value = correct_logical_value
+        p = Pool(4)  # TODO change on HPC
+
+        self.benchmark_data["logical_error_rate"] = p.map(
+            self.simulate_readout_single, noise_values
+        )
+        self.save_data()
+        return self.benchmark_data
+
+    def simulate_readout_single(self, noise_value):
+        results = (
+            execute(
+                self.readout_circuit,
+                Aer.get_backend("qasm_simulator"),
+                noise_model=self.noise_model_func(noise_value),
+                shots=100000,
+            )
+            .result()
+            .get_counts()
+        )
+        logical_error_rate_value = self.logical_error_rate(
+            results, self.correct_logical_value
+        )
+        print("Done simulating noise: " + str(noise_value))
+        return logical_error_rate_value
 
     def plot_benchmark_data(self, fig=None, ax=None, log=True, **kwargs):
         if fig is None:
