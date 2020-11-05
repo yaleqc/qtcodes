@@ -391,7 +391,7 @@ class GraphDecoder:
 
         return subgraph
 
-    def matching(self, matching_graph, syndrome_key):
+    def matching(self, matching_graph, syndrome_key, return_graph=False):
         """Return matches of minimum weight perfect matching (MWPM) on matching_graph.
 
         Args:
@@ -407,6 +407,13 @@ class GraphDecoder:
             for (source, target) in matches
             if not (len(source) > 3 and len(target) > 3)
         ]  # remove 0 weighted matched edges between virtual syndrome nodes
+        if return_graph:
+            matched_graph = matching_graph.copy()
+            for u, v, _ in matching_graph.edges(data=True):
+                if (u, v) not in filtered_matches and (v, u) not in filtered_matches:
+                    matched_graph.remove_edge(u, v)
+            matched_graph.remove_nodes_from(list(nx.isolates(matched_graph)))
+            return filtered_matches, matched_graph
         return filtered_matches
 
     def calculate_qubit_flips(self, matches, paths, syndrome_key):

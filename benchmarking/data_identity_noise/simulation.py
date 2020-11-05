@@ -27,60 +27,50 @@ def get_noise_model(p_err):
     return noise_model
 
 
-decoder_keys = [(d, 1) for d in range(3, 11, 2)]
-benchmarking_tools = []
+if __name__ == "__main__":
+    decoder_keys = [(d, 1) for d in range(3, 11, 2)]
+    benchmarking_tools = []
 
-for decoder_key in tqdm(decoder_keys):
-    d = decoder_key[0]
-    T = decoder_key[1]
-    qubit = SurfaceCodeLogicalQubit(d)
-    qubit.stabilize()
-    qubit.identity_data()
-    qubit.stabilize()
-    qubit.readout_z()
-    benchmarking_tools.append(
-        SurfaceCodeBenchmarkingTool(
-            decoder=GraphDecoder(d=d, T=T),
-            readout_circuit=qubit,
-            noise_model_func=get_noise_model,
+    for decoder_key in tqdm(decoder_keys):
+        d = decoder_key[0]
+        T = decoder_key[1]
+        qubit = SurfaceCodeLogicalQubit(d)
+        qubit.stabilize()
+        qubit.identity_data()
+        qubit.stabilize()
+        qubit.readout_z()
+        benchmarking_tools.append(
+            SurfaceCodeBenchmarkingTool(
+                decoder=GraphDecoder(d=d, T=T),
+                readout_circuit=qubit,
+                noise_model_func=get_noise_model,
+            )
         )
-    )
-print("\nDONE SETTING UP DECODERS!\n")
+    print("\nDONE SETTING UP DECODERS!\n")
 
-
-def simulate(index):
-    correct_logical_value = 0
-    noise_values = [
-        5e-5,
-        1e-4,
-        2e-4,
-        5e-4,
-        1e-3,
-        2e-3,
-        4e-3,
-        5e-3,
-        6e-3,
-        7e-3,
-        8e-3,
-        9e-3,
-        1e-2,
-        2e-2,
-    ]
-    benchmarking_tools[index].simulate_readout(
-        correct_logical_value=correct_logical_value, noise_values=noise_values
-    )
-
-
-for i in range(len(benchmarking_tools)):
-    print(
-        "\nSIMULATE: (d={},T={})\n".format(
-            benchmarking_tools[i].d, benchmarking_tools[i].T
+    for benchmarking_tool in benchmarking_tools:
+        print(
+            "\nSIMULATE: (d={},T={})\n".format(benchmarking_tool.d, benchmarking_tool.T)
         )
-    )
-    simulate(i)
-
-# Get mp working
-# pool = mp.Pool(4)  # TODO change when running on HPC
-# pool.map(test, list(range(4)))
+        correct_logical_value = 0
+        noise_values = [
+            5e-5,
+            1e-4,
+            2e-4,
+            5e-4,
+            1e-3,
+            2e-3,
+            4e-3,
+            5e-3,
+            6e-3,
+            7e-3,
+            8e-3,
+            9e-3,
+            1e-2,
+            2e-2,
+        ]
+        benchmarking_tool.simulate_readout_mp(
+            correct_logical_value=correct_logical_value, noise_values=noise_values
+        )
 
 # %%
