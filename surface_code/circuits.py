@@ -174,7 +174,7 @@ class RotatedSurfaceCodeLattice:
         appropriate logical readout value and XOR-ed syndrome locations
         according to our grid coordinate convention.
         """
-        syn_len = (d ** 2 - 1) // 2
+        syn_len = (self.__d ** 2 - 1) // 2
         chunks = readout_string.split(" ")
 
         int_syndromes = [int(x, base=2) for x in chunks[-1:0:-1]]
