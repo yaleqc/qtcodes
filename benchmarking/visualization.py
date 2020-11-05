@@ -15,31 +15,45 @@ plt.rcParams.update({"font.size": 14, "pdf.fonttype": 42, "ps.fonttype": 42})
 from benchmarking.benchmarking_tools import SurfaceCodeBenchmarkingTool
 
 import glob
+import numpy as np
 
-data_files = glob.glob("*.npz")
+dir = "identity_noise/"
+data_files = glob.glob(dir + "*.npz")
 benchmarking_tools = []
 for file in data_files:
     benchmarking_tools.append(SurfaceCodeBenchmarkingTool(filename=file))
     benchmarking_tools[-1].load_data()
 
-# Plotting
-fig = plt.figure(figsize=(3.5, 2.5), dpi=200)
-ax = fig.subplots()
+sorted_indxs = np.argsort(
+    np.array([benchmarking_tool.d for benchmarking_tool in benchmarking_tools])
+)
 
-for benchmarking_tool in benchmarking_tools:
-    benchmarking_tool.plot_benchmark_data(
-        fig=fig,
-        ax=ax,
-        label="d={},T={}".format(benchmarking_tool.d, benchmarking_tool.T),
+for log_plot in [True, False]:
+    # Plotting
+    fig = plt.figure(figsize=(3.5, 2.5), dpi=200)
+    ax = fig.subplots()
+    for i in sorted_indxs:
+        benchmarking_tool = benchmarking_tools[i]
+        benchmarking_tool.plot_benchmark_data(
+            fig=fig,
+            ax=ax,
+            label="d={},T={}".format(benchmarking_tool.d, benchmarking_tool.T),
+            log=log_plot,
+        )
+
+    plt.plot(
+        benchmarking_tool.benchmark_data["noise"],
+        benchmarking_tool.benchmark_data["noise"],
+        "--",
+        label="breakeven",
     )
-
-plt.legend(loc="lower right", prop={"size": 6})
-ax.set_xlabel("Physical Error Rate", size=10)
-ax.set_ylabel("Logical Error Rate", size=10)
-ax.set_title("Comparison of Surface Codes", size=10)
-fig.tight_layout()
-plt.savefig("comparison.png")
-plt.show()
+    plt.legend(loc="lower right", prop={"size": 6})
+    ax.set_xlabel("Physical Error Rate", size=10)
+    ax.set_ylabel("Logical Error Rate", size=10)
+    ax.set_title("Comparison of Surface Codes", size=10)
+    fig.tight_layout()
+    plt.savefig(dir + "comparison" + ("_log" if log_plot else "") + ".png")
+    plt.show()
 
 
 # %%
