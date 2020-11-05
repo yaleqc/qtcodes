@@ -318,5 +318,5 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         self.measure(self.__ancilla, readout)
         self.barrier()
 
-    def parse_readout(self, readout_string)
+    def parse_readout(self, readout_string):
         return self.__lattice.parse_readout(readout_string)
