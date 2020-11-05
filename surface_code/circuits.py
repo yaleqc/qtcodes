@@ -150,7 +150,7 @@ class RotatedSurfaceCodeLattice:
             bot_r = data_register[start + d + (offset * 2) - row_parity + 1]
 
             # Overwrite edge column syndromes
-            if row_parity == 0 and offset == per_row_z:  # Last column
+            if row_parity == 0 and offset == per_row_z - 1:  # Last column
                 top_r, bot_r = None, None
             elif row_parity == 1 and offset == 0:  # First column
                 top_l, bot_l = None, None
@@ -164,9 +164,11 @@ class RotatedSurfaceCodeLattice:
         method. Order between faces should not matter here, since the projection
         will be determined by the measurement order.
         """
-        for syndrome in (self.measure_x, self.measure_z):
-            for face in syndrome:
-                face.entangle(circ)
+        syn_len = (self.d ** 2 - 1) // 2
+        for loc in range(syn_len):
+            self.measure_x[loc].entangle(circ)
+            self.measure_z[loc].entangle(circ)
+            circ.barrier()
 
     def parse_readout(self, readout_string):
         """
@@ -247,7 +249,6 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         self.__T += 1
 
         self.__lattice.entangle(self)
-        self.barrier()
         self.measure(self.__mz, syndrome_readouts[0 : self.__num_syn])
         self.measure(self.__mx, syndrome_readouts[self.__num_syn : self.__num_syn * 2])
         self.reset(self.__mz)
