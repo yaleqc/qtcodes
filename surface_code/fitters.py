@@ -607,7 +607,9 @@ class GraphDecoder:
             if not syndrome_set:
                 flips[syndrome_key] = []
                 continue
-            error_graph, paths = self.make_error_graph(syndrome_set, syndrome_key)
+            error_graph, paths = self.make_error_graph(
+                syndrome_set, syndrome_key
+            )  # TODO add option to use degeneracy weighting by setting err_prob
             matching_graph = self.matching_graph(error_graph, syndrome_key)
             matches = self.matching(matching_graph, syndrome_key)
             flips[syndrome_key] = self.calculate_qubit_flips(
@@ -616,7 +618,9 @@ class GraphDecoder:
         net_flips = self.net_qubit_flips(flips)
         return net_flips
 
-    def correct_readout(self, readout_string):
+    def correct_readout(
+        self, readout_string=None, logical_qubit_value=None, syndromes=None
+    ):
         """
         Args:
             readout: string like "1 00000000 00000000" representing "R S2 S1" (d=3, T=2) where 
@@ -627,7 +631,11 @@ class GraphDecoder:
         Additional Information:
             This method can be used to benchmark logical error rates, as well as perform fault tolerant readout.
         """
-        logical_qubit_value, syndromes = self._convert_string_to_nodes(readout_string)
+        if readout_string is not None:
+            logical_qubit_value, syndromes = self._convert_string_to_nodes(
+                readout_string
+            )
+
         # Logical Z readout will be performed with data qubits in the top row, this can be generalized later TODO
         net_flips = self.corrections(syndromes)
         top_row = [(0, i) for i in range(self.d)]
