@@ -163,14 +163,16 @@ class SurfaceCodeBenchmarkingTool:
         print("Done simulating noise: " + str(noise_value))
         return logical_error_rate_value
 
-    def plot_benchmark_data(self, fig=None, ax=None, log=True, **kwargs):
+    def plot_benchmark_data(
+        self, fig=None, ax=None, log=True, per_round=False, **kwargs
+    ):
         if fig is None:
             fig = plt.figure(figsize=(3.5, 2.5), dpi=200)
         if ax is None:
             ax = fig.subplots()
         plt.plot(
             self.benchmark_data["noise"],
-            self.benchmark_data["logical_error_rate"],
+            self.benchmark_data["logical_error_rate"] / (self.T if per_round else 1.0),
             **kwargs
         )
         if log:

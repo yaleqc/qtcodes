@@ -55,5 +55,33 @@ for log_plot in [True, False]:
     plt.savefig(dir + "comparison" + ("_log" if log_plot else "") + ".png")
     plt.show()
 
+for log_plot in [True, False]:
+    # Plotting
+    fig = plt.figure(figsize=(3.5, 2.5), dpi=200)
+    ax = fig.subplots()
+    for i in sorted_indxs:
+        benchmarking_tool = benchmarking_tools[i]
+        benchmarking_tool.plot_benchmark_data(
+            fig=fig,
+            ax=ax,
+            label="d={},T={}".format(benchmarking_tool.d, benchmarking_tool.T),
+            log=log_plot,
+            per_round=True,
+        )
+
+    plt.plot(
+        benchmarking_tools[sorted_indxs[0]].benchmark_data["noise"],
+        0.5 * benchmarking_tools[sorted_indxs[0]].benchmark_data["noise"],
+        "--",
+        label="breakeven",
+    )
+    plt.legend(loc="upper left", prop={"size": 6})
+    ax.set_xlabel("Physical Error Rate", size=10)
+    ax.set_ylabel("Logical Error Rate (per round)", size=10)
+    ax.set_title("Comparison of Surface Codes", size=10)
+    fig.tight_layout()
+    plt.savefig(dir + "per_round_comparison" + ("_log" if log_plot else "") + ".png")
+    plt.show()
+
 
 # %%
