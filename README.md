@@ -1,5 +1,5 @@
 # Qiskit Surface Code Encoder/Decoder
-*This README is not up to date. Please review our comprehensive tutorials to better understand and use our package.*
+***Please check out our [presentation](https://docs.google.com/presentation/d/1HC5tQkvOcfl5lPDWy-l8ZvsWW3AGf6jUCmMu_sz-cDY/edit?usp=sharing) of this package to the Qiskit Advocate community at the November 2020 Qiskit Advocate Demo Session.***
 
 ## IBM Qiskit - Summer Jam Hackathon 2020
 
