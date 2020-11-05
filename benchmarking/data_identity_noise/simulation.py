@@ -35,7 +35,7 @@ for decoder_key in tqdm(decoder_keys):
     T = decoder_key[1]
     qubit = SurfaceCodeLogicalQubit(d)
     qubit.stabilize()
-    qubit.identity()
+    qubit.identity_data()
     qubit.stabilize()
     qubit.readout_z()
     benchmarking_tools.append(
