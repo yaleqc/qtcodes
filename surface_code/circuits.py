@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-"Pull Request: Aaron Householder"
 """
 Generates circuits for quantum error correction with surface code patches.
 """
