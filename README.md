@@ -28,16 +28,14 @@ You don't have to use miniconda, but we highly recommend it. Follow these [instr
 
 ## 3. Set up conda environment
 
-Once you are able to successfully run `conda -h`, you can `cd`  (change directory) into the directory into which you just cloned the qiskit surface code project. 
-Then, run `conda create --name qiskit-surface-code-env --file dependencies/requirements.txt` to install all necessary dependencies and create an environment called `qiskit-surface-code-env` using which you can test and develop the qiskit surface codes package!
+Once you are able to successfully run `conda -h`, run `conda create --name qiskit-surface-code-env python=3` to create a virtual environment. Afterward, run `conda activate qiskit-surface-code-env` to activate the environment. The required packages can be installed by executing the following commands sequentially:
 
-*Note: The alternative is for you to install dependencies (python packages) manually until you are able to smoothly run the tutorials in this repo.*
+1. `conda install numpy scipy matplotlib networkx ipykernel tqdm`
+2. `pip install qiskit pylatexenc`
 
 ## 4. Run the tutorials
 
-Next, just activate your environment using `conda activate qiskit-surface-code-env`, `cd` into the project repo directory, and run `jupyter lab`. 
-
-Then, you should be able to open up the tutorial notebooks and run them without issues.
+Next, use Jupyter, Visual Studio Code or your favorite notebook environment to open the tutorial notebooks. If all tutorial notebooks execute correctly without error, your environment is good to go!
 
 
 ---
