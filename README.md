@@ -29,13 +29,13 @@ You don't have to use miniconda, but we highly recommend it. Follow these [instr
 ## 3. Set up conda environment
 
 Once you are able to successfully run `conda -h`, you can `cd`  (change directory) into the directory into which you just cloned the qiskit surface code project. 
-Then, run `conda create --name qiskit-surface-code-env --file dependencies/requirements.txt` to install all necessary dependencies and create an environment called `qiskit-surface-code-env` using which you can test and develop the qiskit surface codes package!
+Then, run `conda env create --file dependencies/requirements.yml` to install all necessary dependencies and create an environment called `qiskit-surface-code-env` using which you can test and develop the qiskit surface codes package!
 
 *Note: The alternative is for you to install dependencies (python packages) manually until you are able to smoothly run the tutorials in this repo.*
 
 ## 4. Run the tutorials
 
-Next, just activate your environment using `conda activate qiskit-surface-code-env`, `cd` into the project repo directory, and run `jupyter lab`. 
+Next, just activate your environment using `conda activate qiskit-surface-code-env`, `cd` into the project repo directory, and run `jupyter notebook`. 
 
 Then, you should be able to open up the tutorial notebooks and run them without issues.
 
