@@ -105,17 +105,17 @@ class XZZXDecoder:
 
         # flipped = {"X": [], "Y": [], "Z": []}
         for pos in dat_qubits:
-            # Determine error or not according to error probability
+            # Determine error or not according to error probabilityF
             err_z = choices([0,1], [1-pz, pz])[0]
             err_x = choices([0,1], [1-px, px])[0]
             err_y = choices([0,1], [1-py, py])[0]
 
-            if err_x == 1:
-                flipped["X"].append(pos)
-            if err_y == 1:
-                flipped["Y"].append(pos)
-            if err_z == 1:
-                flipped["Z"].append(pos)
+#             if err_x == 1:
+#                 flipped["X"].append(pos)
+#             if err_y == 1:
+#                 flipped["Y"].append(pos)
+#             if err_z == 1:
+#                 flipped["Z"].append(pos)
 
             # Count actual logical error from data qubits
             if pos[0] == self.d - 1:
