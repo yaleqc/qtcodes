@@ -424,7 +424,7 @@ class XZZXDecoder:
         start_nodes = {"A": (0.5, 0.5), "B": (0.5, 1.5)}
         for subgraph in ["A", "B"]:   
             start_node = start_nodes[subgraph]
-            graph[subgraph].add_node(
+            node_graph[subgraph].add_node(
                 (0,) + start_node,
                 virtual=0,
                 pos=(start_node[1], -start_node[0]),
@@ -579,7 +579,7 @@ def mwpm(edges):
     return mates
 
 
-def graph_2D(self, G, edge_label):
+def graph_2D(G, edge_label):
     pos = nx.get_node_attributes(G, "pos")
     nx.draw_networkx(G, pos)
     labels = nx.get_edge_attributes(G, edge_label)
