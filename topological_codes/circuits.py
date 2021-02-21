@@ -1,4 +1,0 @@
-
-# class TopologicalQubit
-
-# class TopologicalCircuit

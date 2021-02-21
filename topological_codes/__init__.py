@@ -2,5 +2,5 @@
 Error correction benchmarking module
 """
 
-from .repetition_code.circuits import RepetitionCode
+from .circuits.xxzz_circuits import SurfaceCodeLogicalQubit
 # will add more later
