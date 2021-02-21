@@ -8,7 +8,11 @@ import networkx as nx
 import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
 
-_libpypm = ctypes.cdll.LoadLibrary("./libpypm.so")
+from pathlib import Path
+
+path = Path(__file__).parent / "./libpypm.so"
+
+_libpypm = ctypes.cdll.LoadLibrary(path)
 
 _libpypm.infty.argtypes = None
 _libpypm.infty.restype = ctypes.c_int
@@ -586,3 +590,5 @@ def graph_2D(G, edge_label):
     labels = {x: round(y, 3) for (x, y) in labels.items()}
     nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
     plt.show()
+
+# %%

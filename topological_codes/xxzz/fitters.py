@@ -89,7 +89,7 @@ class GraphDecoder:
                         t,
                     ),  # y-coord is flipped for plot purposes
                 )
-                self.populate_syndrome_graph(
+                self._populate_syndrome_graph(
                     (t,) + start_node, t, [], syndrome_key, edge_weight=1
                 )
 
@@ -104,7 +104,7 @@ class GraphDecoder:
                         (t,) + space_label, (t + 1,) + space_label, distance=1
                     )
 
-    def populate_syndrome_graph(
+    def _populate_syndrome_graph(
         self, current_node, t, visited_nodes, syndrome_key, edge_weight=1
     ):
         """Recursive function to populate syndrome subgraph at time t with syndrome_key X/Z. The current_node
@@ -131,7 +131,7 @@ class GraphDecoder:
         normal_neighbors = [
             n
             for n in neighbors
-            if self.valid_syndrome(n, syndrome_key)
+            if self._valid_syndrome(n, syndrome_key)
             and (t, n[0], n[1]) not in visited_nodes
         ]  # syndrome node neighbors of current_node not already visited
         virtual_neighbors = [
@@ -181,17 +181,17 @@ class GraphDecoder:
 
         # recursively traverse normal neighbors
         for target in normal_neighbors:
-            self.populate_syndrome_graph(
+            self._populate_syndrome_graph(
                 (t,) + target, t, visited_nodes, syndrome_key, edge_weight=1
             )
 
         # recursively traverse virtual neighbors
         for target in virtual_neighbors:
-            self.populate_syndrome_graph(
+            self._populate_syndrome_graph(
                 (-1,) + target, t, visited_nodes, syndrome_key, edge_weight=1
             )
 
-    def valid_syndrome(self, node, syndrome_key):
+    def _valid_syndrome(self, node, syndrome_key):
         """Checks whether a node is a syndrome node under our syndrome_key, which is either X or Z.
 
         Args:
