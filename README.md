@@ -99,14 +99,16 @@ The scope of the project is quite large, so we focused on completing a "minimum 
 * Other approaches to error-chain matching (e.g. [neural networks](https://iopscience.iop.org/article/10.1088/2058-9565/aa955a/meta) or [tensor networks](https://journals.aps.org/pra/abstract/10.1103/PhysRevA.90.032326))?
 * Our `GraphDecoder` implements two different approaches to syndrome graph generation. One is a "analytic" approach (much faster), and the other uses simulation to insert errors into the circuit. These produce slightly different syndrome graphs, but we get the same decoding results in our tests.
 
-## Team V2
+## Team
+
+### V2
 * [Shantanu Jha](https://github.com/Phionx)
 * [Henry Liu](https://github.com/liuhenry)
 * [Jessie Chen](https://github.com/JazzyCH)
 * [Allen Mi](https://github.com/Allenator)
 * [Aaron Householder](https://github.com/aaronhouseholder)
 
-## Team V1
+### V1
 * [Andy Ding](https://github.com/ZhenghaoDing)
 * [Shantanu Jha](https://github.com/Phionx)
 * [Henry Liu](https://github.com/liuhenry)
