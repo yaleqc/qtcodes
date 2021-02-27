@@ -4,14 +4,15 @@ channels:
   - conda-forge
 dependencies:
   - python=3
-  - ipykernel=5.4.2
-  - scipy=1.5.*
-  - networkx=2.4
-  - matplotlib=3.3.2
-  - tqdm=4.50.2
-  - numpy=1.19.4
-  - notebook=6.1.5
-  - jupyter=1.0.0
+  - pip
+  - ipykernel
+  - numpy
+  - scipy
+  - networkx
+  - matplotlib
+  - tqdm
+  - notebook
+  - jupyter
   - pip:
-    - qiskit==0.23.1
-    - pylatexenc==2.7
+    - qiskit
+    - pylatexenc
