@@ -4,11 +4,14 @@ Generates circuits for quantum error correction with surface code patches.
 """
 import copy
 import warnings
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import numpy as np
 import networkx as nx
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute
+from typing import TypeVar, Tuple, Dict, List
+from qiskit import QuantumRegister, QuantumCircuit, ClassicalRegister, execute
+
+from topological_codes import LatticeError, TopologicalQubit, TopologicalLattice
 
 try:
     from qiskit import Aer
@@ -19,9 +22,7 @@ except ImportError:
 
     HAS_AER = False
 
-
-class LatticeError(Exception):
-    pass
+TQubit = Tuple[float, float, float]
 
 
 class _Face:
@@ -90,7 +91,7 @@ class _FaceZ(_Face):
             circ.cx(self.bot_l, self.syndrome)
 
 
-class RotatedSurfaceCodeLattice:
+class RotatedSurfaceCodeLattice(TopologicalLattice):
     """
     This class is essentially a helper class that translates between the lattice
     abstraction of the surface code and the physical qubits in the circuit. This
@@ -98,7 +99,13 @@ class RotatedSurfaceCodeLattice:
     of the lattice + code entanglement ordering.
     """
 
-    def __init__(self, d, data_register, mx_register, mz_register):
+    def __init__(
+        self,
+        d: int,
+        data_register: QuantumRegister,
+        mx_register: QuantumRegister,
+        mz_register: QuantumRegister
+    ) -> None:
         """
         Initializes an instance of the rotated surface code lattice with our
         chosen layout and numbering.
@@ -156,8 +163,9 @@ class RotatedSurfaceCodeLattice:
                 top_l, bot_l = None, None
 
             self.measure_z.append(_FaceZ(mz, top_l, top_r, bot_l, bot_r))
+        super().__init__(d, data_register, mx_register, mz_register)
 
-    def entangle(self, circ):
+    def entangle(self, circ: QuantumCircuit) -> None:
         """
         Entangles the entire surface code by calling the entangle method of each
         syndrome face. Within a face, order is determined by the delegated
@@ -170,7 +178,9 @@ class RotatedSurfaceCodeLattice:
             self.measure_z[loc].entangle(circ)
             circ.barrier()
 
-    def parse_readout(self, readout_string):
+    def parse_readout(
+        self, readout_string: str
+    ) -> Tuple[int, Dict[str, List[TQubit]]]:
         """
         Helper method to turn a result string (e.g. 1 10100000 10010000) into an
         appropriate logical readout value and XOR-ed syndrome locations
@@ -205,13 +215,18 @@ class RotatedSurfaceCodeLattice:
         )
 
 
-class SurfaceCodeLogicalQubit(QuantumCircuit):
+class XXZZQubit(TopologicalQubit):
     """
     A single logical surface code qubit. At the physical level, this wraps a
     circuit, so we chose to subclass and extend QuantumCircuit.
     """
 
-    def __init__(self, d, *args, **kwargs):
+    def __init__(
+        self,
+        d: int,
+        *args,
+        **kwargs
+    ) -> None:
         """
         Initializes a new QuantumCircuit for this logical qubit and calculates
         the underlying surface code lattice ordering.
@@ -238,7 +253,7 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         self.__ancilla = QuantumRegister(1, name="ancilla")
         super().__init__(self.__data, self.__mz, self.__mx, self.__ancilla)
 
-    def stabilize(self):
+    def stabilize(self) -> None:
         """
         Run a single round of stabilization (entangle and measure).
         """
@@ -255,7 +270,7 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         self.reset(self.__mx)
         self.barrier()
 
-    def identity(self):
+    def identity(self) -> None:
         """
         Inserts an identity on the data and syndrome qubits. This is a hack to
         create an isolated error model.
@@ -267,7 +282,7 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         ]
         self.barrier()
 
-    def identity_data(self):
+    def identity_data(self) -> None:
         """
         Inserts an identity on the data qubits only. This is a hack to create an
         isolated error model.
@@ -275,7 +290,7 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         [self.id(x) for register in (self.__data,) for x in register]
         self.barrier()
 
-    def hadamard_reset(self):
+    def hadamard_reset(self) -> None:
         """
         A hack to initialize a + and - logical qubit for now...
         """
@@ -283,7 +298,7 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         [self.h(x) for x in self.__data]
         self.barrier()
 
-    def logical_x(self):
+    def logical_x(self) -> None:
         """
         Logical X operator on the qubit.
         """
@@ -291,7 +306,7 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
             self.x(self.__data[i])
         self.barrier()
 
-    def logical_z(self):
+    def logical_z(self) -> None:
         """
         Logical Z operator on the qubit.
         """
@@ -299,7 +314,7 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
             self.z(self.__data[i])
         self.barrier()
 
-    def readout_z(self):
+    def readout_z(self) -> None:
         """
         Convenience method to read-out the logical-Z projection.
         """
@@ -312,7 +327,7 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         self.measure(self.__ancilla, readout)
         self.barrier()
 
-    def readout_x(self):
+    def readout_x(self) -> None:
         """
         Convenience method to read-out the logical-X projection.
         """
@@ -327,5 +342,7 @@ class SurfaceCodeLogicalQubit(QuantumCircuit):
         self.measure(self.__ancilla, readout)
         self.barrier()
 
-    def parse_readout(self, readout_string):
+    def parse_readout(
+        self, readout_string: str
+    ) -> Tuple[int, Dict[str, List[TQubit]]]:
         return self.__lattice.parse_readout(readout_string)
