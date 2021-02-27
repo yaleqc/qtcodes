@@ -9,7 +9,7 @@ sys.path.insert(0, ".." + os.sep)
 
 import numpy as np
 import matplotlib.pyplot as plt
-from surface_code.fitters import GraphDecoder
+from topological_codes import XXZZGraphDecoder
 
 from qiskit import QuantumCircuit, execute, QuantumRegister, ClassicalRegister, Aer
 from tqdm import tqdm
@@ -31,10 +31,10 @@ class SurfaceCodeBenchmarkingTool:
     ):
         self.decoder = decoder
         if self.decoder is not None:
-            self.d = decoder.d
-            self.T = decoder.T
+            self.d = decoder.code_params["d"]
+            self.T = decoder.code_params["T"]
         self.filename = (
-            "surface_code_d_{}_T_{}.npz".format(int(decoder.d), int(decoder.T))
+            "surface_code_d_{}_T_{}.npz".format(int(self.d), int(self.T))
             if filename is None
             else filename
         )
@@ -184,8 +184,8 @@ class SurfaceCodeBenchmarkingTool:
         filename = self.filename if filename is None else filename
         np.savez(
             filename,
-            d=self.decoder.d,
-            T=self.decoder.T,
+            d=self.decoder.code_params["d"],
+            T=self.decoder.code_params["T"],
             noise=self.benchmark_data["noise"],
             logical_error_rate=self.benchmark_data["logical_error_rate"],
         )
@@ -195,7 +195,7 @@ class SurfaceCodeBenchmarkingTool:
         data = np.load(filename)
         self.d = int(data["d"])
         self.T = int(data["T"])
-        self.decoder = GraphDecoder(d=self.d, T=self.T)
+        self.decoder = XXZZGraphDecoder(d=self.d, T=self.T)
 
         # self.readout_circuit =
         self.benchmark_data["noise"] = data["noise"]
