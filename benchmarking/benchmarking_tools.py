@@ -195,7 +195,7 @@ class SurfaceCodeBenchmarkingTool:
         data = np.load(filename)
         self.d = int(data["d"])
         self.T = int(data["T"])
-        self.decoder = XXZZGraphDecoder(d=self.d, T=self.T)
+        self.decoder = XXZZGraphDecoder({"d": self.d, "T": self.T})
 
         # self.readout_circuit =
         self.benchmark_data["noise"] = data["noise"]

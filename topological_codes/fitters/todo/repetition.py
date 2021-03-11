@@ -28,13 +28,15 @@ from qiskit import QuantumCircuit, execute
 
 try:
     from qiskit.providers.aer import Aer
+
     HAS_AER = True
 except ImportError:
     from qiskit import BasicAer
+
     HAS_AER = False
 
 
-class GraphDecoder():
+class GraphDecoder:
     """
     Class to construct the graph corresponding to the possible syndromes
     of a quantum error correction code, and then run suitable decoders.
@@ -65,8 +67,8 @@ class GraphDecoder():
     def _separate_string(self, string):
 
         separated_string = []
-        for syndrome_type_string in string.split('  '):
-            separated_string.append(syndrome_type_string.split(' '))
+        for syndrome_type_string in string.split("  "):
+            separated_string.append(syndrome_type_string.split(" "))
         return separated_string
 
     def _string2nodes(self, string):
@@ -74,15 +76,11 @@ class GraphDecoder():
         separated_string = self._separate_string(string)
         nodes = []
         for syn_type, _ in enumerate(separated_string):
-            for syn_round in range(
-                    len(separated_string[syn_type])):
-                elements = \
-                    separated_string[syn_type][syn_round]
+            for syn_round in range(len(separated_string[syn_type])):
+                elements = separated_string[syn_type][syn_round]
                 for elem_num, element in enumerate(elements):
-                    if element == '1':
-                        nodes.append((syn_type,
-                                      syn_round,
-                                      elem_num))
+                    if element == "1":
+                        nodes.append((syn_type, syn_round, elem_num))
         return nodes
 
     def _make_syndrome_graph(self):
@@ -97,10 +95,10 @@ class GraphDecoder():
 
         S = nx.Graph()
 
-        qc = self.code.circuit['0']
+        qc = self.code.circuit["0"]
 
         blank_qc = QuantumCircuit()
-        for qreg in qc.qregs:x
+        for qreg in qc.qregs:
             blank_qc.add_register(qreg)
         for creg in qc.cregs:
             blank_qc.add_register(creg)
@@ -111,41 +109,46 @@ class GraphDecoder():
         for j in range(depth):
             qubits = qc.data[j][1]
             for qubit in qubits:
-                for error in ['x', 'y', 'z']:
+                for error in ["x", "y", "z"]:
                     temp_qc = copy.deepcopy(blank_qc)
                     temp_qc.name = str((j, qubit, error))
                     temp_qc.data = qc.data[0:j]
                     getattr(temp_qc, error)(qubit)
-                    temp_qc.data += qc.data[j:depth + 1]
+                    temp_qc.data += qc.data[j : depth + 1]
                     circuit_name[(j, qubit, error)] = temp_qc.name
                     error_circuit[temp_qc.name] = temp_qc
 
         if HAS_AER:
-            simulator = Aer.get_backend('qasm_simulator')
+            simulator = Aer.get_backend("qasm_simulator")
         else:
-            simulator = BasicAer.get_backend('qasm_simulator')
+            simulator = BasicAer.get_backend("qasm_simulator")
 
         job = execute(list(error_circuit.values()), simulator)
 
         for j in range(depth):
             qubits = qc.data[j][1]
             for qubit in qubits:
-                for error in ['x', 'y', 'z']:
+                for error in ["x", "y", "z"]:
 
                     raw_results = {}
-                    raw_results['0'] = job.result().get_counts(
-                        str((j, qubit, error)))
-                    results = self.code.process_results(raw_results)['0']
+                    raw_results["0"] = job.result().get_counts(str((j, qubit, error)))
+                    results = self.code.process_results(raw_results)["0"]
 
                     for string in results:
 
                         nodes = self._string2nodes(string)
 
-                        assert len(nodes) in [0, 2], "Error of type " + \
-                            error + " on qubit " + str(qubit) + \
-                            " at depth " + str(j) + " creates " + \
-                            str(len(nodes)) + \
-                            " nodes in syndrome graph, instead of 2."
+                        assert len(nodes) in [0, 2], (
+                            "Error of type "
+                            + error
+                            + " on qubit "
+                            + str(qubit)
+                            + " at depth "
+                            + str(j)
+                            + " creates "
+                            + str(len(nodes))
+                            + " nodes in syndrome graph, instead of 2."
+                        )
 
                         for node in nodes:
                             S.add_node(node)
@@ -167,33 +170,34 @@ class GraphDecoder():
             replaced with the corresponding -log(p/(1-p).
         """
 
-        results = results['0']
+        results = results["0"]
 
-        count = {element: {edge: 0 for edge in self.S.edges}
-                 for element in ['00', '01', '10', '11']}
+        count = {
+            element: {edge: 0 for edge in self.S.edges}
+            for element in ["00", "01", "10", "11"]
+        }
 
         for string in results:
 
             nodes = self._string2nodes(string)
 
             for edge in self.S.edges:
-                element = ''
+                element = ""
                 for j in range(2):
                     if edge[j] in nodes:
-                        element += '1'
+                        element += "1"
                     else:
-                        element += '0'
+                        element += "0"
                 count[element][edge] += results[string]
 
         for edge in self.S.edges:
             edge_data = self.S.get_edge_data(edge[0], edge[1])
             ratios = []
-            for elements in [('00', '11'), ('11', '00'),
-                             ('01', '10'), ('10', '01')]:
+            for elements in [("00", "11"), ("11", "00"), ("01", "10"), ("10", "01")]:
                 if count[elements[1]][edge] > 0:
-                    ratio = count[elements[0]][edge]/count[elements[1]][edge]
+                    ratio = count[elements[0]][edge] / count[elements[1]][edge]
                     ratios.append(ratio)
-            edge_data['distance'] = -np.log(min(ratios))
+            edge_data["distance"] = -np.log(min(ratios))
 
     def make_error_graph(self, string, subgraphs=None):
         """
@@ -208,11 +212,10 @@ class GraphDecoder():
 
         if subgraphs is None:
             subgraphs = []
-            for syndrome_type in string.split('  '):
-                subgraphs.append(['0'])
+            for syndrome_type in string.split("  "):
+                subgraphs.append(["0"])
 
-        set_subgraphs = [
-            subgraph for subs4type in subgraphs for subgraph in subs4type]
+        set_subgraphs = [subgraph for subs4type in subgraphs for subgraph in subs4type]
 
         E = {subgraph: nx.Graph() for subgraph in set_subgraphs}
 
@@ -222,12 +225,11 @@ class GraphDecoder():
             for syndrome_round in range(len(separated_string[syndrome_type])):
                 elements = separated_string[syndrome_type][syndrome_round]
                 for elem_num, element in enumerate(elements):
-                    if element == '1' or syndrome_type == 0:
+                    if element == "1" or syndrome_type == 0:
                         for subgraph in subgraphs[syndrome_type]:
                             E[subgraph].add_node(
-                                (syndrome_type,
-                                 syndrome_round,
-                                 elem_num))
+                                (syndrome_type, syndrome_round, elem_num)
+                            )
 
         # for each pair of nodes in error create an edge and weight with the
         # distance
@@ -235,8 +237,11 @@ class GraphDecoder():
             for source in E[subgraph]:
                 for target in E[subgraph]:
                     if target != (source):
-                        distance = int(nx.shortest_path_length(
-                            self.S, source, target, weight='distance'))
+                        distance = int(
+                            nx.shortest_path_length(
+                                self.S, source, target, weight="distance"
+                            )
+                        )
                         E[subgraph].add_edge(source, target, weight=-distance)
 
         return E
@@ -254,7 +259,7 @@ class GraphDecoder():
         """
 
         # this matching algorithm is designed for a single graph
-        E = self.make_error_graph(string)['0']
+        E = self.make_error_graph(string)["0"]
 
         # set up graph that is like E, but each syndrome node is connected to a
         # separate copy of the nearest logical node
@@ -271,16 +276,18 @@ class GraphDecoder():
             for target in syndrome_nodes:
                 if target != (source):
                     E_matching.add_edge(
-                        source, target, weight=E[source][target]['weight'])
+                        source, target, weight=E[source][target]["weight"]
+                    )
 
             potential_logical = {}
             for target in logical_nodes:
-                potential_logical[target] = E[source][target]['weight']
+                potential_logical[target] = E[source][target]["weight"]
             nearest_logical = max(potential_logical, key=potential_logical.get)
             E_matching.add_edge(
                 source,
                 nearest_logical + source,
-                weight=potential_logical[nearest_logical])
+                weight=potential_logical[nearest_logical],
+            )
             logical_neighbours.append(nearest_logical + source)
         for source in logical_neighbours:
             for target in logical_neighbours:
@@ -298,14 +305,14 @@ class GraphDecoder():
             if target[0] == 0 and source[0] != 0:
                 logicals[target[1]] = str((int(logicals[target[1]]) + 1) % 2)
 
-        logical_string = ''
+        logical_string = ""
         for logical in logicals:
-            logical_string += logical + ' '
+            logical_string += logical + " "
         logical_string = logical_string[:-1]
 
         return logical_string
 
-    def get_logical_prob(self, results, algorithm='matching'):
+    def get_logical_prob(self, results, algorithm="matching"):
         """
         Args:
             results (dict): A results dictionary, as produced by the
@@ -324,7 +331,7 @@ class GraphDecoder():
             incorrect_shots = 0
 
             corrected_results = {}
-            if algorithm == 'matching':
+            if algorithm == "matching":
                 for string in results[log]:
                     corr_str = self.matching(string)
                     if corr_str in corrected_results:
@@ -333,10 +340,9 @@ class GraphDecoder():
                         corrected_results[corr_str] = results[log][string]
             else:
                 warnings.warn(
-                    "The requested algorithm " +
-                    str(algorithm) +
-                    " is not known.",
-                    Warning)
+                    "The requested algorithm " + str(algorithm) + " is not known.",
+                    Warning,
+                )
 
             for string in corrected_results:
                 shots += corrected_results[string]
@@ -366,13 +372,13 @@ def postselection_decoding(results):
         postselected_results[log] = {}
         for string in results[log]:
 
-            syndrome_list = string.split('  ')
+            syndrome_list = string.split("  ")
             syndrome_list.pop(0)
-            syndrome_string = '  '.join(syndrome_list)
+            syndrome_string = "  ".join(syndrome_list)
 
             error_free = True
             for char in syndrome_string:
-                error_free = error_free and (char in ['0', ' '])
+                error_free = error_free and (char in ["0", " "])
 
             if error_free:
                 postselected_results[log][string] = results[log][string]
@@ -418,14 +424,14 @@ def lookuptable_decoding(training_results, real_results):
         for string in real_results[log]:
 
             p = {}
-            for testlog in ['0', '1']:
+            for testlog in ["0", "1"]:
                 if string in training_results[testlog]:
                     p[testlog] = training_results[testlog][string]
                 else:
                     p[testlog] = 0
 
             shots += real_results[log][string]
-            if p['1' * (log == '0') + '0' * (log == '1')] > p[log]:
+            if p["1" * (log == "0") + "0" * (log == "1")] > p[log]:
                 incorrect_shots += real_results[log][string]
 
         logical_prob[log] = incorrect_shots / shots

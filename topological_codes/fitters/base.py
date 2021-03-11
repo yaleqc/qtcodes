@@ -24,6 +24,7 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
         self,
         syndromes: Union[str, Dict[str, List[TQubit]]],
         logical_qubit_value: Optional[int] = None,
+        logical_readout_type: str = "Z",
     ) -> int:
         pass
 

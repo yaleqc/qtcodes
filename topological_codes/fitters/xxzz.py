@@ -263,7 +263,6 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         Returns:
             nx.Graph: Nodes are syndromes, edges are proxy for error probabilities
         """
-        paths = {}
         virtual_dict = nx.get_node_attributes(self.S[syndrome_graph_key], "virtual")
         time_dict = nx.get_node_attributes(self.S[syndrome_graph_key], "time")
         error_graph = nx.Graph()
@@ -290,8 +289,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
             )
 
             # If err_prob is specified, we also account for path degeneracies
-            deg, path = self._path_degeneracy(source, target, syndrome_graph_key)
-            paths[(source, target)] = path
+            deg = self._path_degeneracy(source, target, syndrome_graph_key)
             if err_prob:
                 distance = distance - math.log(deg) / (
                     math.log1p(-err_prob) - math.log(err_prob)
@@ -299,7 +297,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
             distance = -distance
             error_graph.add_edge(source, target, weight=distance)
 
-        return error_graph, paths
+        return error_graph
 
     def _path_degeneracy(self, a: TQubit, b: TQubit, syndrome_graph_key: str):
         """Calculate the number of shortest error paths that link two syndrome nodes
@@ -314,7 +312,6 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
 
         Returns:
             int: Number of degenerate shortest paths matching this syndrome pair
-            [nodes,]: List of nodes for one of the shortest paths
         """
         # Check which subgraph node is on. If x + y is even => X, else Z.
         # a_sum, b_sum = a[1] + a[2], b[1] + b[2]
@@ -326,9 +323,6 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
             raise nx.exception.NodeNotFound("syndrome_graph_key must be X or Z")
 
         shortest_paths = list(nx.all_shortest_paths(subgraph, a, b, weight="distance"))
-        one_path = shortest_paths[
-            0
-        ]  # We can pick any path to return as the error chain
         degeneracy = len(shortest_paths)
 
         # If either node is a virtual node, we also find degeneracies from the other
@@ -359,7 +353,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
                             )
                         )
                     )
-        return degeneracy, one_path
+        return degeneracy
 
     def _make_matching_graph(
         self, error_graph: nx.Graph, syndrome_graph_key: str
@@ -427,6 +421,16 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
 
         return subgraph
 
+    def _get_matched_graph(
+        self, matching_graph: nx.Graph, filtered_matches: List[Tuple[TQubit, TQubit]],
+    ) -> nx.Graph:
+        matched_graph = matching_graph.copy()
+        for u, v, _ in matching_graph.edges(data=True):
+            if (u, v) not in filtered_matches and (v, u) not in filtered_matches:
+                matched_graph.remove_edge(u, v)
+        matched_graph.remove_nodes_from(list(nx.isolates(matched_graph)))
+        return matched_graph
+
     def _run_mwpm(
         self, matching_graph: nx.Graph, syndrome_graph_key: str,
     ) -> List[Tuple[TQubit, TQubit]]:
@@ -448,117 +452,9 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
 
         return filtered_matches
 
-    def _get_matched_graph(
-        self, matching_graph: nx.Graph, filtered_matches: List[Tuple[TQubit, TQubit]],
-    ) -> nx.Graph:
-        matched_graph = matching_graph.copy()
-        for u, v, _ in matching_graph.edges(data=True):
-            if (u, v) not in filtered_matches and (v, u) not in filtered_matches:
-                matched_graph.remove_edge(u, v)
-        matched_graph.remove_nodes_from(list(nx.isolates(matched_graph)))
-        return matched_graph
-
-    def _calculate_qubit_flips(
-        self,
-        matches: List[Tuple[TQubit, TQubit]],
-        paths: Dict[Tuple[TQubit, TQubit], List[TQubit]],
-        syndrome_graph_key,
-    ) -> List[TQubit]:
-        """Return all data qubits with odd syndrome_graph_key flips
-
-        Args:
-            matches ([(node,node),]): MWPM chosen node pairs
-            paths ({(node,node):[node,]}): shortest path of nodes for each node pair
-            syndrome_graph_key (char): Which X/Z syndrome subgraph these nodes are from.
-
-        Returns:
-            [node,]: List of data qubits with odd syndrome_graph_key flips
-        """
-        data_qubit_flips: Dict[TQubit, int] = {}
-        for (source, target) in matches:
-            # Trim "paired virtual" nodes to nearest virtual node
-            if len(source) > 3:
-                source = source[:3]
-            if len(target) > 3:
-                target = target[:3]
-
-            # Paths dict is encoded in one direction, check other if not found
-            if (source, target) not in paths:
-                source, target = (target, source)
-
-            path = paths[(source, target)]  # This is an arbitrary shortest error path
-            for i in range(0, len(path) - 1):
-                start = path[i]
-                end = path[i + 1]
-                # Check if syndromes are in different physical locations
-                # If they're in the same location, this is a measurement error
-                if start[1:] != end[1:]:
-                    time = start[0]
-                    if time == -1:  # Grab time from non-virtual syndrome
-                        time = end[0]
-                    data_qubit = (
-                        time,
-                        (start[1] + end[1]) / 2,
-                        (start[2] + end[2]) / 2,
-                    )
-
-                    # Paired flips at the same time can be ignored
-                    if data_qubit in data_qubit_flips:
-                        data_qubit_flips[data_qubit] = (
-                            data_qubit_flips[data_qubit] + 1
-                        ) % 2
-                    else:
-                        data_qubit_flips[data_qubit] = 1
-
-        data_qubit_flip_locs = [x for x, y in data_qubit_flips.items() if y == 1]
-        return data_qubit_flip_locs
-
-    def _net_qubit_flips(
-        self, total_flips: Dict[str, List[TQubit]]
-    ) -> Dict[TQubitLoc, np.ndarray]:
-        """Return all data qubits physical locations (no time dim) with a net flip
-
-        Args:
-            total_flips ({str:[node,]}): 
-                key: flip type, either "X"/"Z"
-                value: list of physical qubits (t,i,j) with a flip
-
-        Returns:
-            {(i,j),np.ndarray}:
-                key: physical grid locaiton (i,j) of affected qubit
-                value: net flip matrix on qubit
-        """
-        flips_x = total_flips["Z"]  # recall that the Z syndrome graph detects X Flips
-        flips_z = total_flips["X"]  # recall that the X syndrome graph detects Z Flips
-        flipsx = {flip: "X" for flip in flips_x if flip not in flips_z}
-        flipsz = {flip: "Z" for flip in flips_z if flip not in flips_x}
-        flipsy = {flip: "Y" for flip in flips_x if flip in flips_z}
-        flips = {**flipsx, **flipsy, **flipsz}
-
-        individual_flips: Dict[TQubitLoc, Dict[float, str]] = defaultdict(dict)
-
-        for flip, error_key in flips.items():
-            individual_flips[flip[1:]][flip[0]] = error_key
-
-        physical_qubit_flips = {}
-        for qubit_loc, flip_record in individual_flips.items():
-            net_error = self.paulis["I"]
-            # print("Physical Qubit: " + str(qubit_loc))
-            for time, error in sorted(flip_record.items(), key=lambda item: item[0]):
-                # print("Error: " + error + " at time: " + str(time))
-                net_error = net_error.dot(self.paulis[error])
-            physical_qubit_flips[qubit_loc] = net_error
-
-        physical_qubit_flips = {
-            x: y
-            for x, y in physical_qubit_flips.items()
-            if not np.array_equal(y, self.paulis["I"])
-        }
-        return physical_qubit_flips
-
     def _corrections(
-        self, syndromes: Dict[str, List[TQubit]]
-    ) -> Dict[TQubitLoc, np.ndarray]:
+        self, syndromes: List[TQubit], syndrome_graph_key: str
+    ) -> List[Tuple[TQubit, TQubit]]:
         """
         Args:
             syndromes ({str,[node,]}):
@@ -579,26 +475,21 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         Additional Information:
             This method can be used to correct readout errors as shown in self.correct_readout. 
         """
-        flips: Dict[str, List[TQubit]] = {}
-        for syndrome_graph_key, syndrome_set in syndromes.items():
-            if not syndrome_set:
-                flips[syndrome_graph_key] = []
-                continue
-            error_graph, paths = self._make_error_graph(
-                syndrome_set, syndrome_graph_key
-            )  # TODO add option to use degeneracy weighting by setting err_prob
-            matching_graph = self._make_matching_graph(error_graph, syndrome_graph_key)
-            matches = self._run_mwpm(matching_graph, syndrome_graph_key)
-            flips[syndrome_graph_key] = self._calculate_qubit_flips(
-                matches, paths, syndrome_graph_key
-            )
-        net_flips = self._net_qubit_flips(flips)
-        return net_flips
+        if not syndromes:
+            return []
+
+        error_graph = self._make_error_graph(
+            syndromes, syndrome_graph_key
+        )  # TODO add option to use degeneracy weighting by setting err_prob
+        matching_graph = self._make_matching_graph(error_graph, syndrome_graph_key)
+        matches = self._run_mwpm(matching_graph, syndrome_graph_key)
+        return matches
 
     def correct_readout(
         self,
         syndromes: Union[str, Dict[str, List[TQubit]]],
         logical_qubit_value: Optional[int] = None,
+        logical_readout_type: str = "Z",
     ) -> int:
         """
         Args:
@@ -619,15 +510,29 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         # TODO is there a neater way to satisfy the type linter?
 
         # Logical Z readout will be performed with data qubits in the top row, this can be generalized later TODO
-        net_flips = self._corrections(syndromes)
-        top_row = [(0, i) for i in range(self.code_params["d"])]
-        for top_data_qubit in top_row:
-            if top_data_qubit in net_flips:
-                flip_matrix = net_flips[top_data_qubit]
-                error = self._find_pauli_matrix(flip_matrix)
-                if error == "X" or error == "Y":
-                    logical_qubit_value = (logical_qubit_value + 1) % 2
+        matches = self._corrections(
+            syndromes[logical_readout_type], logical_readout_type
+        )
+
+        for match in matches:
+            if self._is_crossing_readout_path(match, logical_readout_type):
+                logical_qubit_value = (logical_qubit_value + 1) % 2
         return logical_qubit_value
+
+    def _is_crossing_readout_path(
+        self, match: Tuple[TQubit, TQubit], logical_readout_type: str
+    ):
+        source, target = match
+        if logical_readout_type == "Z":
+            return (source[0] == -1 and source[1] == -0.5) or (
+                target[0] == -1 and target[1] == -0.5
+            )  # top
+        elif logical_readout_type == "X":
+            return (source[0] == -1 and source[2] == -0.5) or (
+                target[0] == -1 and target[2] == -0.5
+            )  # left
+        else:
+            raise ValueError("Please enter a valid logical_readout_type (X/Z).")
 
     def _find_pauli_matrix(self, matrix: np.ndarray) -> str:
         for key, pauli in self.paulis.items():
