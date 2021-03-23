@@ -15,7 +15,7 @@ from benchmarking_tools import SurfaceCodeBenchmarkingTool
 import glob
 import numpy as np
 
-dir = "data_identity_noise/T_1_d_vary_new/"
+dir = "data_identity_noise/T_1_d_vary_20210323/"
 data_files = glob.glob(dir + "*.npz")
 benchmarking_tools = []
 for file in data_files:
