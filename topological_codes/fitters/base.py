@@ -40,11 +40,11 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
     ) -> nx.Graph:
         pass
 
-    @abstractmethod
-    def _make_matching_graph(
-        self, error_graph: nx.Graph, syndrome_graph_key: str
-    ) -> nx.Graph:
-        pass
+    # @abstractmethod
+    # def _make_matching_graph(
+    #     self, error_graph: nx.Graph, syndrome_graph_key: str
+    # ) -> nx.Graph:
+    #     pass
 
     @abstractmethod
     def _run_mwpm(

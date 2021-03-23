@@ -266,6 +266,9 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         virtual_dict = nx.get_node_attributes(self.S[syndrome_graph_key], "virtual")
         time_dict = nx.get_node_attributes(self.S[syndrome_graph_key], "time")
         error_graph = nx.Graph()
+        make_even = (
+            len(nodes) % 2 != 0
+        )  # need to ensure there are an even number of nodes
         nodes += self.virtual[syndrome_graph_key]
 
         for node in nodes:
@@ -279,23 +282,37 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
                 )
 
         for source, target in combinations(nodes, 2):
-            # Distance is proportional to the probability of this error chain, so
-            # finding the maximum-weight perfect matching of the whole graph gives
-            # the most likely sequence of errors that led to these syndromes.
-            distance = float(
-                nx.shortest_path_length(
-                    self.S[syndrome_graph_key], source, target, weight="distance"
+            if (
+                source in self.virtual[syndrome_graph_key]
+                and target in self.virtual[syndrome_graph_key]
+            ):
+                distance = 0.0
+            else:
+                # Distance is proportional to the probability of this error chain, so
+                # finding the maximum-weight perfect matching of the whole graph gives
+                # the most likely sequence of errors that led to these syndromes.
+                distance = float(
+                    nx.shortest_path_length(
+                        self.S[syndrome_graph_key], source, target, weight="distance"
+                    )
                 )
-            )
 
-            # If err_prob is specified, we also account for path degeneracies
-            deg = self._path_degeneracy(source, target, syndrome_graph_key)
-            if err_prob:
-                distance = distance - math.log(deg) / (
-                    math.log1p(-err_prob) - math.log(err_prob)
-                )
-            distance = -distance
+                # If err_prob is specified, we also account for path degeneracies
+                deg = self._path_degeneracy(source, target, syndrome_graph_key)
+                if err_prob:
+                    distance = distance - math.log(deg) / (
+                        math.log1p(-err_prob) - math.log(err_prob)
+                    )
+                distance = -distance
             error_graph.add_edge(source, target, weight=distance)
+
+        if make_even:
+            source = (-1, -1, -1)
+            error_graph.add_node(
+                source, virtual=1, pos=(-1, -1), time=-1, pos_3D=(-1, -1, -1),
+            )
+            for target in self.virtual[syndrome_graph_key]:
+                error_graph.add_edge(source, target, weight=0)
 
         return error_graph
 
@@ -355,72 +372,6 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
                     )
         return degeneracy
 
-    def _make_matching_graph(
-        self, error_graph: nx.Graph, syndrome_graph_key: str
-    ) -> nx.Graph:
-        """Return subgraph of error graph to be matched.
-
-        Args:
-            error_graph (nx.Graph): Complete error graph to be matched.
-            syndrome_graph_key (char): Which X/Z syndrome subgraph these nodes are from.
-
-        Returns:
-            nx.Graph: Subgraph of error graph to be matched
-        """
-        time_dict = nx.get_node_attributes(self.S[syndrome_graph_key], "time")
-        subgraph = nx.Graph()
-        syndrome_nodes = [
-            x for x, y in error_graph.nodes(data=True) if y["virtual"] == 0
-        ]
-        virtual_nodes = [
-            x for x, y in error_graph.nodes(data=True) if y["virtual"] == 1
-        ]
-
-        # add and connect each syndrome node to subgraph
-        for node in syndrome_nodes:
-            if not subgraph.has_node(node):
-                subgraph.add_node(
-                    node,
-                    virtual=0,
-                    pos=(node[2], -node[1]),
-                    time=time_dict[node],
-                    pos_3D=(node[2], -node[1], time_dict[node]),
-                )
-        for source, target in combinations(syndrome_nodes, 2):
-            subgraph.add_edge(
-                source, target, weight=error_graph[source][target]["weight"]
-            )
-
-        # connect each syndrome node to its closest virtual node in subgraph
-        for source in syndrome_nodes:
-            potential_virtual: Dict[TQubit, float] = {}
-            for target in virtual_nodes:
-                potential_virtual[target] = error_graph[source][target]["weight"]
-            nearest_virtual = max(potential_virtual, key=lambda k: potential_virtual[k])
-            paired_virtual = (
-                nearest_virtual + source
-            )  # paired_virtual (virtual, syndrome) allows for the virtual node to be matched more than once
-            subgraph.add_node(
-                paired_virtual,
-                virtual=1,
-                pos=(nearest_virtual[2], -nearest_virtual[1]),
-                time=-1,
-                pos_3D=(nearest_virtual[2], -nearest_virtual[1], -1),
-            )  # add paired_virtual to subgraph
-            subgraph.add_edge(
-                source, paired_virtual, weight=potential_virtual[nearest_virtual]
-            )  # add (syndrome, paired_virtual) edge to subgraph
-
-        paired_virtual_nodes = [
-            x for x, y in subgraph.nodes(data=True) if y["virtual"] == 1
-        ]
-
-        # add 0 weight between paired virtual nodes
-        for source, target in combinations(paired_virtual_nodes, 2):
-            subgraph.add_edge(source, target, weight=0)
-
-        return subgraph
-
     def _get_matched_graph(
         self, matching_graph: nx.Graph, filtered_matches: List[Tuple[TQubit, TQubit]],
     ) -> nx.Graph:
@@ -444,11 +395,16 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
             [(node, node),]: List of matchings found from MWPM
         """
         matches = nx.max_weight_matching(matching_graph, maxcardinality=True)
+        # filtered_matches = [
+        #     (source, target)
+        #     for (source, target) in matches
+        #     if not (len(source) > 3 and len(target) > 3)
+        # ]  # remove 0 weighted matched edges between virtual syndrome nodes
         filtered_matches = [
             (source, target)
             for (source, target) in matches
-            if not (len(source) > 3 and len(target) > 3)
-        ]  # remove 0 weighted matched edges between virtual syndrome nodes
+            if not (source[0] == -1 and target[0] == -1)
+        ]
 
         return filtered_matches
 
@@ -481,8 +437,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         error_graph = self._make_error_graph(
             syndromes, syndrome_graph_key
         )  # TODO add option to use degeneracy weighting by setting err_prob
-        matching_graph = self._make_matching_graph(error_graph, syndrome_graph_key)
-        matches = self._run_mwpm(matching_graph, syndrome_graph_key)
+        matches = self._run_mwpm(error_graph, syndrome_graph_key)
         return matches
 
     def correct_readout(
