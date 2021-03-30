@@ -39,5 +39,5 @@ class RepetitionCode:
         entangler = TopologicalEntangler(self.circ, stabilizers, qubit_indices_lists)
         entangler.entangle()
         self.circ.barrier()
-        self.circ.measure(list(range(self.d)), list(range(self.d)))
+        self.circ.measure(list(range(self.d - 1)), list(range(self.d - 1)))
 
