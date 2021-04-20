@@ -43,7 +43,7 @@ class SurfaceCodeBenchmarkingTool:
         self.noise_model_func = noise_model_func
         self.benchmark_data = {"noise": [], "logical_error_rate": []}
 
-    def logical_error_rate(self, readout_strings, correct_logical_value):
+    def logical_error_rate(self, readout_strings, correct_logical_value, err_prob=None):
         """
         Args:
             readout_strings: a dictionary of readout strings along with counts
@@ -58,7 +58,9 @@ class SurfaceCodeBenchmarkingTool:
         total_errors = 0
         for readout, count in readout_strings.items():
             total_count += count
-            predicted_logical_value = self.decoder.correct_readout(readout)
+            predicted_logical_value = self.decoder.correct_readout(
+                readout, err_prob=err_prob
+            )
             if predicted_logical_value != correct_logical_value:
                 total_errors += count
 
@@ -158,7 +160,7 @@ class SurfaceCodeBenchmarkingTool:
             .get_counts()
         )
         logical_error_rate_value = self.logical_error_rate(
-            results, self.correct_logical_value
+            results, self.correct_logical_value, err_prob=noise_value
         )
         print("Done simulating noise: " + str(noise_value))
         return logical_error_rate_value

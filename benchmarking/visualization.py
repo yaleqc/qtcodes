@@ -15,7 +15,7 @@ from benchmarking_tools import SurfaceCodeBenchmarkingTool
 import glob
 import numpy as np
 
-dir = "data_identity_noise/T_1_d_vary_20210323/"
+dir = "data_identity_noise_w_deg/T_1_d_vary_20210323/"
 data_files = glob.glob(dir + "*.npz")
 benchmarking_tools = []
 for file in data_files:
@@ -41,7 +41,7 @@ for log_plot in [True, False]:
 
     plt.plot(
         benchmarking_tools[sorted_indxs[0]].benchmark_data["noise"],
-        0.5 * benchmarking_tools[sorted_indxs[0]].benchmark_data["noise"],
+        benchmarking_tools[sorted_indxs[0]].benchmark_data["noise"],
         "--",
         label="breakeven",
     )

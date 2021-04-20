@@ -29,9 +29,7 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def _convert_string_to_nodes(
-        self, readout_string: str
-    ) -> Tuple[int, Dict[str, List[TQubit]]]:
+    def _string2nodes(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
         pass
 
     @abstractmethod
@@ -39,12 +37,6 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
         self, nodes: List[TQubit], syndrome_graph_key: str, err_prob: Optional[int]
     ) -> nx.Graph:
         pass
-
-    # @abstractmethod
-    # def _make_matching_graph(
-    #     self, error_graph: nx.Graph, syndrome_graph_key: str
-    # ) -> nx.Graph:
-    #     pass
 
     @abstractmethod
     def _run_mwpm(

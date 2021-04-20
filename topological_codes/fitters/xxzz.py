@@ -38,7 +38,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
     of a quantum error correction code, and then run suitable decoders.
     """
 
-    def __init__(self, code_params: Dict):
+    def __init__(self, code_params: Dict) -> None:
         super().__init__(code_params)
         if "d" not in self.code_params or "T" not in self.code_params:
             raise ValueError("Please include d and T in code_params.")
@@ -409,7 +409,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         return filtered_matches
 
     def _corrections(
-        self, syndromes: List[TQubit], syndrome_graph_key: str
+        self, syndromes: List[TQubit], syndrome_graph_key: str, err_prob=None
     ) -> List[Tuple[TQubit, TQubit]]:
         """
         Args:
@@ -435,7 +435,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
             return []
 
         error_graph = self._make_error_graph(
-            syndromes, syndrome_graph_key
+            syndromes, syndrome_graph_key, err_prob=err_prob
         )  # TODO add option to use degeneracy weighting by setting err_prob
         matches = self._run_mwpm(error_graph, syndrome_graph_key)
         return matches
@@ -445,6 +445,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         syndromes: Union[str, Dict[str, List[TQubit]]],
         logical_qubit_value: Optional[int] = None,
         logical_readout_type: str = "Z",
+        err_prob=None,
     ) -> int:
         """
         Args:
@@ -457,16 +458,14 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
             This method can be used to benchmark logical error rates, as well as perform fault tolerant readout.
         """
         if type(syndromes) == str:
-            logical_qubit_value, syndromes = self._convert_string_to_nodes(
-                str(syndromes)
-            )
+            logical_qubit_value, syndromes = self._string2nodes(str(syndromes))
         syndromes = cast(Dict[str, List[TQubit]], syndromes)
         logical_qubit_value = cast(int, logical_qubit_value)
         # TODO is there a neater way to satisfy the type linter?
 
         # Logical Z readout will be performed with data qubits in the top row, this can be generalized later TODO
         matches = self._corrections(
-            syndromes[logical_readout_type], logical_readout_type
+            syndromes[logical_readout_type], logical_readout_type, err_prob=err_prob
         )
 
         for match in matches:
@@ -499,9 +498,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
                 return key
         raise Exception("Not a Pauli Matrix")
 
-    def _convert_string_to_nodes(
-        self, readout_string: str
-    ) -> Tuple[int, Dict[str, List[TQubit]]]:
+    def _string2nodes(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
         chunks = readout_string.split(" ")
 
         int_syndromes = [int(x, base=2) for x in chunks[-1:0:-1]]
