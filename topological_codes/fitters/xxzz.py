@@ -247,7 +247,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         self,
         nodes: List[TQubit],
         syndrome_graph_key: str,
-        err_prob: Optional[int] = None,
+        err_prob: Optional[float] = None,
     ):
         """Creates error syndrome subgraph from list of syndrome nodes. The output of
         this function is a graph that's ready for minimum weight perfect matching (MWPM).
@@ -409,7 +409,10 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         return filtered_matches
 
     def _corrections(
-        self, syndromes: List[TQubit], syndrome_graph_key: str, err_prob=None
+        self,
+        syndromes: List[TQubit],
+        syndrome_graph_key: str,
+        err_prob: Optional[float] = None,
     ) -> List[Tuple[TQubit, TQubit]]:
         """
         Args:
@@ -445,7 +448,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         syndromes: Union[str, Dict[str, List[TQubit]]],
         logical_qubit_value: Optional[int] = None,
         logical_readout_type: str = "Z",
-        err_prob=None,
+        err_prob: Optional[float] = None,
     ) -> int:
         """
         Args:

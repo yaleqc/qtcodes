@@ -21,10 +21,10 @@ expressed as solving a graph-theoretic problem.
 
 import copy
 import warnings
-import networkx as nx
+import retworkx as rx
 import numpy as np
 
-from qiskit import QuantumCircuit, execute
+from qiskit import *
 
 try:
     from qiskit.providers.aer import Aer
@@ -34,6 +34,11 @@ except ImportError:
     from qiskit import BasicAer
 
     HAS_AER = False
+
+
+from qiskit.ignis.verification.topological_codes import RepetitionCode
+import networkx as nx
+import matplotlib.pyplot as plt
 
 
 class GraphDecoder:
@@ -47,8 +52,9 @@ class GraphDecoder:
         Args:
             code (RepitionCode): The QEC Code object for which this decoder
                 will be used.
-            S (networkx.Graph): Graph describing connectivity between syndrome
+            S (retworkx.PyGraph): Graph describing connectivity between syndrome
                 elements. Will be generated automatically if not supplied.
+
         Additional information:
             The decoder for the supplied ``code`` is initialized by running
             ``_make_syndrome_graph()``. Since this process can take some
@@ -87,13 +93,14 @@ class GraphDecoder:
         """
         This method injects all possible Pauli errors into the circuit for
         ``code``.
+
         This is done by examining the qubits used in each gate of the
         circuit for a stored logical 0. A graph is then created with a node
         for each non-trivial syndrome element, and an edge between all such
         elements that can be created by the same error.
         """
 
-        S = nx.Graph()
+        S = rx.PyGraph(multigraph=False)
 
         qc = self.code.circuit["0"]
 
@@ -125,11 +132,11 @@ class GraphDecoder:
 
         job = execute(list(error_circuit.values()), simulator)
 
+        node_map = {}
         for j in range(depth):
             qubits = qc.data[j][1]
             for qubit in qubits:
                 for error in ["x", "y", "z"]:
-
                     raw_results = {}
                     raw_results["0"] = job.result().get_counts(str((j, qubit, error)))
                     results = self.code.process_results(raw_results)["0"]
@@ -149,21 +156,23 @@ class GraphDecoder:
                             + str(len(nodes))
                             + " nodes in syndrome graph, instead of 2."
                         )
-
                         for node in nodes:
-                            S.add_node(node)
+                            if node not in node_map:
+                                node_map[node] = S.add_node(node)
                         for source in nodes:
                             for target in nodes:
-                                if source != target:
-                                    S.add_edge(source, target, distance=1)
+                                if target != source:
+                                    S.add_edge(node_map[source], node_map[target], 1)
 
         return S
 
     def weight_syndrome_graph(self, results):
         """Generate weighted syndrome graph from result counts.
+
         Args:
             results (dict): A results dictionary, as produced by the
             `process_results` method of the code.
+
         Additional information:
             Uses `results` to estimate the probability of the errors that
             create the pairs of nodes in S. The edge weights are then
@@ -181,7 +190,7 @@ class GraphDecoder:
 
             nodes = self._string2nodes(string)
 
-            for edge in self.S.edges:
+            for edge in self.S.edge_list():
                 element = ""
                 for j in range(2):
                     if edge[j] in nodes:
@@ -190,14 +199,14 @@ class GraphDecoder:
                         element += "0"
                 count[element][edge] += results[string]
 
-        for edge in self.S.edges:
-            edge_data = self.S.get_edge_data(edge[0], edge[1])
+        for edge in self.S.edge_list():
             ratios = []
             for elements in [("00", "11"), ("11", "00"), ("01", "10"), ("10", "01")]:
                 if count[elements[1]][edge] > 0:
                     ratio = count[elements[0]][edge] / count[elements[1]][edge]
                     ratios.append(ratio)
-            edge_data["distance"] = -np.log(min(ratios))
+            self.S.remove_edge(edge[0], edge[1])
+            self.S.add_edge(edge[0], edge[1], -np.log(min(ratios)))
 
     def make_error_graph(self, string, subgraphs=None):
         """
@@ -205,6 +214,7 @@ class GraphDecoder:
             string (str): A string describing the output from the code.
             subgraphs (list): Used when multiple, semi-independent graphs need
             need to created.
+
         Returns:
             E: The subgraph(s) of S which corresponds to the non-trivial
             syndrome elements in the given string.
@@ -217,42 +227,51 @@ class GraphDecoder:
 
         set_subgraphs = [subgraph for subs4type in subgraphs for subgraph in subs4type]
 
-        E = {subgraph: nx.Graph() for subgraph in set_subgraphs}
+        E = {}
+        node_sets = {}
+        for subgraph in set_subgraphs:
+            E[subgraph] = rx.PyGraph(multigraph=False)
+            node_sets[subgraph] = set()
 
+        E = {subgraph: rx.PyGraph(multigraph=False) for subgraph in set_subgraphs}
         separated_string = self._separate_string(string)
-
         for syndrome_type, _ in enumerate(separated_string):
             for syndrome_round in range(len(separated_string[syndrome_type])):
                 elements = separated_string[syndrome_type][syndrome_round]
                 for elem_num, element in enumerate(elements):
                     if element == "1" or syndrome_type == 0:
                         for subgraph in subgraphs[syndrome_type]:
-                            E[subgraph].add_node(
-                                (syndrome_type, syndrome_round, elem_num)
-                            )
+                            node_data = (syndrome_type, syndrome_round, elem_num)
+                            if node_data not in node_sets[subgraph]:
+                                E[subgraph].add_node(node_data)
+                                node_sets[subgraph].add(node_data)
 
         # for each pair of nodes in error create an edge and weight with the
         # distance
-        for subgraph in set_subgraphs:
-            for source in E[subgraph]:
-                for target in E[subgraph]:
-                    if target != (source):
-                        distance = int(
-                            nx.shortest_path_length(
-                                self.S, source, target, weight="distance"
-                            )
-                        )
-                        E[subgraph].add_edge(source, target, weight=-distance)
+        distance_matrix = rx.graph_floyd_warshall_numpy(self.S, weight_fn=float)
+        s_node_map = {self.S[index]: index for index in self.S.node_indexes()}
 
+        for subgraph in set_subgraphs:
+            for source_index in E[subgraph].node_indexes():
+                for target_index in E[subgraph].node_indexes():
+                    source = E[subgraph][source_index]
+                    target = E[subgraph][target_index]
+                    if target != source:
+                        distance = int(
+                            distance_matrix[s_node_map[source]][s_node_map[target]]
+                        )
+                        E[subgraph].add_edge(source_index, target_index, -distance)
         return E
 
     def matching(self, string):
         """
         Args:
             string (str): A string describing the output from the code.
+
         Returns:
             str: A string with corrected logical values,
                 computed using minimum weight perfect matching.
+
         Additional information:
             This function can be run directly, or used indirectly to
             calculate a logical error probability with `get_logical_prob`
@@ -263,11 +282,13 @@ class GraphDecoder:
 
         # set up graph that is like E, but each syndrome node is connected to a
         # separate copy of the nearest logical node
-        E_matching = nx.Graph()
+        E_matching = rx.PyGraph(multigraph=False)
         syndrome_nodes = []
         logical_nodes = []
         logical_neighbours = []
-        for node in E:
+        node_map = {}
+        for node in E.nodes():
+            node_map[node] = E_matching.add_node(node)
             if node[0] == 0:
                 logical_nodes.append(node)
             else:
@@ -276,27 +297,37 @@ class GraphDecoder:
             for target in syndrome_nodes:
                 if target != (source):
                     E_matching.add_edge(
-                        source, target, weight=E[source][target]["weight"]
+                        node_map[source],
+                        node_map[target],
+                        E.get_edge_data(node_map[source], node_map[target]),
                     )
 
             potential_logical = {}
             for target in logical_nodes:
-                potential_logical[target] = E[source][target]["weight"]
+                potential_logical[target] = E.get_edge_data(
+                    node_map[source], node_map[target]
+                )
             nearest_logical = max(potential_logical, key=potential_logical.get)
+            nl_target = nearest_logical + source
+            if nl_target not in node_map:
+                node_map[nl_target] = E_matching.add_node(nl_target)
             E_matching.add_edge(
-                source,
-                nearest_logical + source,
-                weight=potential_logical[nearest_logical],
+                node_map[source],
+                node_map[nl_target],
+                potential_logical[nearest_logical],
             )
-            logical_neighbours.append(nearest_logical + source)
+            logical_neighbours.append(nl_target)
         for source in logical_neighbours:
             for target in logical_neighbours:
                 if target != (source):
-                    E_matching.add_edge(source, target, weight=0)
-
+                    E_matching.add_edge(node_map[source], node_map[target], 0)
         # do the matching on this
-        matches = nx.max_weight_matching(E_matching, maxcardinality=True)
-
+        matches = {
+            (E_matching[x[0]], E_matching[x[1]])
+            for x in rx.max_weight_matching(
+                E_matching, max_cardinality=True, weight_fn=lambda x: x
+            )
+        }
         # use it to construct and return a corrected logical string
         logicals = self._separate_string(string)[0]
         for (source, target) in matches:
@@ -318,6 +349,7 @@ class GraphDecoder:
             results (dict): A results dictionary, as produced by the
             `process_results` method of the code.
             algorithm (str): Choice of which decoder to use.
+
         Returns:
             dict: Dictionary of logical error probabilities for
             each of the encoded logical states whose results were given in
@@ -357,10 +389,13 @@ class GraphDecoder:
 def postselection_decoding(results):
     """
     Calculates the logical error probability using postselection decoding.
+
     This postselects all results with trivial syndrome.
+
     Args:
         results (dict): A results dictionary, as produced by the
             `process_results` method of a code.
+
     Returns:
         dict: Dictionary of logical error probabilities for
            each of the encoded logical states whose results were given in
@@ -400,15 +435,19 @@ def lookuptable_decoding(training_results, real_results):
     """
     Calculates the logical error probability using postselection decoding.
     This postselects all results with trivial syndrome.
+
     Args:
         training_results (dict): A results dictionary, as produced by the
             ``process_results`` method of a code.
         real_results (dict): A results dictionary, as produced by the
             ``process_results`` method of a code.
+
     Returns:
         dict: Dictionary of logical error probabilities for
             each of the encoded logical states whose results were given in
             the input.
+
+
     Additional information:
         Given a two dictionaries of results, as produced by a code object,
         thelogical error probability is calculated for lookup table
@@ -437,3 +476,13 @@ def lookuptable_decoding(training_results, real_results):
         logical_prob[log] = incorrect_shots / shots
 
     return logical_prob
+
+
+#%%
+if __name__ == "__main__":
+    code = RepetitionCode(3, 2)
+    dec = GraphDecoder(code)
+    readout = "0 0  00 01 10"
+    logical_string = dec.matching(readout)
+    print(logical_string)
+

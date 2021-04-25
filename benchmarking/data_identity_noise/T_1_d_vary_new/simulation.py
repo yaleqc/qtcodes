@@ -35,7 +35,7 @@ if __name__ == "__main__":
     for decoder_key in tqdm(decoder_keys):
         d = decoder_key[0]
         T = decoder_key[1]
-        qubit = XXZZQubit(d)
+        qubit = XXZZQubit({"d": d})
         qubit.stabilize()
         qubit.identity_data()
         qubit.stabilize()

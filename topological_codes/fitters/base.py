@@ -25,6 +25,7 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
         syndromes: Union[str, Dict[str, List[TQubit]]],
         logical_qubit_value: Optional[int] = None,
         logical_readout_type: str = "Z",
+        err_prob: Optional[float] = None,
     ) -> int:
         pass
 
@@ -34,7 +35,10 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
 
     @abstractmethod
     def _make_error_graph(
-        self, nodes: List[TQubit], syndrome_graph_key: str, err_prob: Optional[int]
+        self,
+        nodes: List[TQubit],
+        syndrome_graph_key: str,
+        err_prob: Optional[float] = None,
     ) -> nx.Graph:
         pass
 

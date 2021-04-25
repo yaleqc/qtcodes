@@ -1,128 +1,109 @@
-# -*- coding: utf-8 -*-
-"""
-Generates circuits for quantum error correction with surface code patches.
-"""
-import copy
-import warnings
-from abc import abstractmethod
-
-import numpy as np
-import networkx as nx
-from typing import TypeVar, Tuple, Dict, List
+from topological_codes import (
+    _Stabilizer,
+    LatticeError,
+    _TopologicalLattice,
+    TopologicalQubit,
+)
 from qiskit import QuantumRegister, QuantumCircuit, ClassicalRegister, execute
-
-from topological_codes import LatticeError, TopologicalQubit, TopologicalLattice
-
-try:
-    from qiskit import Aer
-
-    HAS_AER = True
-except ImportError:
-    from qiskit import BasicAer
-
-    HAS_AER = False
+from qiskit.circuit.quantumregister import Qubit
+from typing import Dict, List, Tuple
 
 TQubit = Tuple[float, float, float]
 
 
-class _Face:
-    """
-    Abstract class for a single *face* of the surface code, which is described
-    by a syndrome qubit and the four data qubits that surround it. If the face
-    exists on an edge of the surface code lattice, some of the data qubits may
-    be None.
-    """
-
-    def __init__(self, syndrome, top_l, top_r, bot_l, bot_r):
-        """
-        Initialize a face by passing in the single QubitRegisters of the circuit
-        in which this face will be embedded.
-        """
-        self.syndrome = syndrome
-        self.top_l = top_l
-        self.top_r = top_r
-        self.bot_l = bot_l
-        self.bot_r = bot_r
-
-    @abstractmethod
-    def entangle(self, circ):
-        pass
-
-
-class _FaceX(_Face):
+class _XXXX(_Stabilizer):
     """
     X-syndrome face of the rotated surface code.
     """
 
-    def entangle(self, circ):
+    def entangle(self) -> None:
         """
         Traverse in reverse "Z" pattern
         """
-        if (self.top_r and not self.top_l) or (self.bot_r and not self.bot_l):
+        syndrome = self.qubit_indices[0]
+        top_l = self.qubit_indices[1]
+        top_r = self.qubit_indices[2]
+        bot_l = self.qubit_indices[3]
+        bot_r = self.qubit_indices[4]
+
+        if (top_r and not top_l) or (bot_r and not bot_l):
             raise LatticeError("Inconsistent X syndrome connections")
 
-        circ.h(self.syndrome)
-        if self.top_r:
-            circ.cx(self.syndrome, self.top_r)
-            circ.cx(self.syndrome, self.top_l)
-        if self.bot_r:
-            circ.cx(self.syndrome, self.bot_r)
-            circ.cx(self.syndrome, self.bot_l)
-        circ.h(self.syndrome)
+        self.circ.h(syndrome)
+        if top_r:
+            self.circ.cx(syndrome, top_r)
+            self.circ.cx(syndrome, top_l)
+        if bot_r:
+            self.circ.cx(syndrome, bot_r)
+            self.circ.cx(syndrome, bot_l)
+        self.circ.h(syndrome)
 
 
-class _FaceZ(_Face):
+class _ZZZZ(_Stabilizer):
     """
     Z-syndrome face of the rotated surface code.
     """
 
-    def entangle(self, circ):
+    def entangle(self) -> None:
         """
         Traverse in reverse "N" pattern
         """
-        if (self.top_r and not self.bot_r) or (self.top_l and not self.bot_l):
+        syndrome = self.qubit_indices[0]
+        top_l = self.qubit_indices[1]
+        top_r = self.qubit_indices[2]
+        bot_l = self.qubit_indices[3]
+        bot_r = self.qubit_indices[4]
+
+        if (top_r and not bot_r) or (top_l and not bot_l):
             raise LatticeError("Inconsistent Z syndrome connections")
 
-        if self.top_r:
-            circ.cx(self.top_r, self.syndrome)
-            circ.cx(self.bot_r, self.syndrome)
-        if self.top_l:
-            circ.cx(self.top_l, self.syndrome)
-            circ.cx(self.bot_l, self.syndrome)
+        if top_r:
+            self.circ.cx(top_r, syndrome)
+            self.circ.cx(bot_r, syndrome)
+        if top_l:
+            self.circ.cx(top_l, syndrome)
+            self.circ.cx(bot_l, syndrome)
 
 
-class RotatedSurfaceCodeLattice(TopologicalLattice):
-    """
-    This class is essentially a helper class that translates between the lattice
-    abstraction of the surface code and the physical qubits in the circuit. This
-    promotes a clean separation of concerns and wraps the implementation details
-    of the lattice + code entanglement ordering.
-    """
-
+class _XXZZLattice(_TopologicalLattice):
     def __init__(
-        self,
-        d: int,
-        data_register: QuantumRegister,
-        mx_register: QuantumRegister,
-        mz_register: QuantumRegister
-    ) -> None:
+        self, circ: QuantumCircuit, params: Dict[str, int],
+    ):
+        # validation
+        required_params = ["d"]
+        for required_param in required_params:
+            if required_param not in params:
+                raise LatticeError(f"Please include a {required_param} param.")
+        if params["d"] % 2 != 1:
+            raise LatticeError("Surface code distance must be odd!")
+
+        # calculated params
+        params["T"] = -1  # -1 until a stabilizer round is added!
+        params["num_data"] = params["d"] ** 2
+        params["num_syn"] = (params["d"] ** 2 - 1) // 2
+
+        # create registers
+        qregisters: Dict[str, QuantumRegister] = {}  # quantum
+        qregisters["data"] = QuantumRegister(params["num_data"], name="data")
+        qregisters["mz"] = QuantumRegister(params["num_syn"], name="mz")
+        qregisters["mx"] = QuantumRegister(params["num_syn"], name="mx")
+        qregisters["ancilla"] = QuantumRegister(1, name="ancilla")
+
+        cregisters: Dict[str, ClassicalRegister] = {}  # classical
+        super().__init__(circ, qregisters, cregisters, params)
+
+    def gen_qubit_indices_and_stabilizers(self):
         """
         Initializes an instance of the rotated surface code lattice with our
         chosen layout and numbering.
-
-        Args:
-            d (int): surface code distance
-            data_register (QuantumRegister): grouped register of all data qubits
-            mx_register (QuantumRegister): grouped register of all measure-x qubits
-            mz_register (QuantumRegister): grouped register of all measure-z qubits
         """
-        self.d = d
-        self.measure_x = []
-        self.measure_z = []
+        qubit_indices = []
+        stabilizers = []
+        d = self.params["d"]
 
         per_row_x = (d ** 2 - 1) // 2 // (d + 1)
         per_row_z = (d ** 2 - 1) // 2 // (d - 1)
-        for mx in mx_register:
+        for mx in self.qregisters["mx"]:
             idx = mx.index
             row = idx // per_row_x
             offset = idx % per_row_x
@@ -131,30 +112,33 @@ class RotatedSurfaceCodeLattice(TopologicalLattice):
 
             if row == 0:  # First row
                 top_l, top_r = None, None
-                bot_l = data_register[idx * 2]
-                bot_r = data_register[idx * 2 + 1]
+                bot_l = self.qregisters["data"][idx * 2]
+                bot_r = self.qregisters["data"][idx * 2 + 1]
             elif row == d:  # Last row
                 bot_l, bot_r = None, None
-                top_l = data_register[idx * 2 + 1]
-                top_r = data_register[idx * 2 + 2]
+                top_l = self.qregisters["data"][idx * 2 + 1]
+                top_r = self.qregisters["data"][idx * 2 + 2]
             else:
-                top_l = data_register[start + (offset * 2) + row_parity]
-                top_r = data_register[start + (offset * 2) + row_parity + 1]
-                bot_l = data_register[start + d + (offset * 2) + row_parity]
-                bot_r = data_register[start + d + (offset * 2) + row_parity + 1]
-            self.measure_x.append(_FaceX(mx, top_l, top_r, bot_l, bot_r))
+                top_l = self.qregisters["data"][start + (offset * 2) + row_parity]
+                top_r = self.qregisters["data"][start + (offset * 2) + row_parity + 1]
+                bot_l = self.qregisters["data"][start + d + (offset * 2) + row_parity]
+                bot_r = self.qregisters["data"][
+                    start + d + (offset * 2) + row_parity + 1
+                ]
+            qubit_indices.append([mx, top_l, top_r, bot_l, bot_r])
+            stabilizers.append(_XXXX)
 
-        for mz in mz_register:
+        for mz in self.qregisters["mz"]:
             idx = mz.index
             row = idx // per_row_z
             offset = idx % per_row_z
             start = row * d
             row_parity = row % 2
 
-            top_l = data_register[start + (offset * 2) - row_parity]
-            top_r = data_register[start + (offset * 2) - row_parity + 1]
-            bot_l = data_register[start + d + (offset * 2) - row_parity]
-            bot_r = data_register[start + d + (offset * 2) - row_parity + 1]
+            top_l = self.qregisters["data"][start + (offset * 2) - row_parity]
+            top_r = self.qregisters["data"][start + (offset * 2) - row_parity + 1]
+            bot_l = self.qregisters["data"][start + d + (offset * 2) - row_parity]
+            bot_r = self.qregisters["data"][start + d + (offset * 2) - row_parity + 1]
 
             # Overwrite edge column syndromes
             if row_parity == 0 and offset == per_row_z - 1:  # Last column
@@ -162,52 +146,49 @@ class RotatedSurfaceCodeLattice(TopologicalLattice):
             elif row_parity == 1 and offset == 0:  # First column
                 top_l, bot_l = None, None
 
-            self.measure_z.append(_FaceZ(mz, top_l, top_r, bot_l, bot_r))
-        super().__init__(d, data_register, mx_register, mz_register)
+            qubit_indices.append([mz, top_l, top_r, bot_l, bot_r])
+            stabilizers.append(_ZZZZ)
+        return qubit_indices, stabilizers
 
-    def entangle(self, circ: QuantumCircuit) -> None:
-        """
-        Entangles the entire surface code by calling the entangle method of each
-        syndrome face. Within a face, order is determined by the delegated
-        method. Order between faces should not matter here, since the projection
-        will be determined by the measurement order.
-        """
-        syn_len = (self.d ** 2 - 1) // 2
-        for loc in range(syn_len):
-            self.measure_x[loc].entangle(circ)
-            self.measure_z[loc].entangle(circ)
-            circ.barrier()
+    def entangle_x(self):
+        num_x = len(self.qregisters["mx"])
+        self.entangle(self.qubit_indices[:num_x], self.stabilizers[:num_x])
+
+    def entangle_z(self):
+        num_x = len(self.qregisters["mx"])
+        self.entangle(self.qubit_indices[num_x:], self.stabilizers[num_x:])
 
     def parse_readout(
         self, readout_string: str
-    ) -> Tuple[int, Dict[str, List[TQubit]]]:
+    ):  # TODO -> Tuple[int, Dict[str, List[TQubit]]]:
         """
         Helper method to turn a result string (e.g. 1 10100000 10010000) into an
         appropriate logical readout value and XOR-ed syndrome locations
         according to our grid coordinate convention.
         """
-        syn_len = (self.d ** 2 - 1) // 2
         chunks = readout_string.split(" ")
 
         int_syndromes = [int(x, base=2) for x in chunks[-1:0:-1]]
         xor_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
 
-        mask_Z = "1" * syn_len
-        mask_X = mask_Z + "0" * syn_len
-        X_syndromes = [(x & int(mask_X, base=2)) >> syn_len for x in xor_syndromes]
+        mask_Z = "1" * self.params["num_syn"]
+        mask_X = mask_Z + "0" * self.params["num_syn"]
+        X_syndromes = [
+            (x & int(mask_X, base=2)) >> self.params["num_syn"] for x in xor_syndromes
+        ]
         Z_syndromes = [x & int(mask_Z, base=2) for x in xor_syndromes]
 
         X = []
         for T, syndrome in enumerate(X_syndromes):
-            for loc in range(syn_len):
+            for loc in range(self.params["num_syn"]):
                 if syndrome & 1 << loc:
-                    X.append((T, -0.5 + loc, 0.5 + loc % 2))
+                    X.append((float(T), -0.5 + loc, 0.5 + loc % 2))
 
         Z = []
         for T, syndrome in enumerate(Z_syndromes):
-            for loc in range(syn_len):
+            for loc in range(self.params["num_syn"]):
                 if syndrome & 1 << loc:
-                    Z.append((T, 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
+                    Z.append((float(T), 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
 
         return (
             int(chunks[0]),
@@ -221,12 +202,7 @@ class XXZZQubit(TopologicalQubit):
     circuit, so we chose to subclass and extend QuantumCircuit.
     """
 
-    def __init__(
-        self,
-        d: int,
-        *args,
-        **kwargs
-    ) -> None:
+    def __init__(self, params: Dict[str, int],) -> None:
         """
         Initializes a new QuantumCircuit for this logical qubit and calculates
         the underlying surface code lattice ordering.
@@ -234,40 +210,41 @@ class XXZZQubit(TopologicalQubit):
         Args:
             d (int): Number of physical "data" qubits. Only odd d is possible!
         """
-        if d % 2 != 1:
-            raise ArgumentError("Surface code distance must be odd!")
-        self.__d = d
-        self.__T = 0
-        self.__num_data = d ** 2
-        self.__num_syn = (d ** 2 - 1) // 2
+        super().__init__()
+        self.lattice = _XXZZLattice(self, params)
 
-        self.__data = QuantumRegister(self.__num_data, "data")
-        self.__mz = QuantumRegister(self.__num_syn, "mz")
-        self.__mx = QuantumRegister(self.__num_syn, "mx")
-
-        # We implement and assume the rotated lattice only, but this can be
-        # imagined to accept other layouts in the future.
-        self.__lattice = RotatedSurfaceCodeLattice(d, self.__data, self.__mx, self.__mz)
-
-        # Spare ancilla (e.g. for readout)
-        self.__ancilla = QuantumRegister(1, name="ancilla")
-        super().__init__(self.__data, self.__mz, self.__mx, self.__ancilla)
+    def __str__(self):
+        return QuantumCircuit.__str__(self)
 
     def stabilize(self) -> None:
         """
         Run a single round of stabilization (entangle and measure).
         """
+        self.lattice.params["T"] += 1
         syndrome_readouts = ClassicalRegister(
-            self.__num_syn * 2, name="c{}".format(self.__T)
+            self.lattice.params["num_syn"] * 2,
+            name="c{}".format(self.lattice.params["T"]),
         )
+        self.lattice.cregisters[
+            "syndrome{}".format(self.lattice.params["T"])
+        ] = syndrome_readouts
         self.add_register(syndrome_readouts)
-        self.__T += 1
 
-        self.__lattice.entangle(self)
-        self.measure(self.__mz, syndrome_readouts[0 : self.__num_syn])
-        self.measure(self.__mx, syndrome_readouts[self.__num_syn : self.__num_syn * 2])
-        self.reset(self.__mz)
-        self.reset(self.__mx)
+        self.lattice.entangle()
+
+        # measure syndromes
+        self.measure(
+            self.lattice.qregisters["mz"],
+            syndrome_readouts[0 : self.lattice.params["num_syn"]],
+        )
+        self.measure(
+            self.lattice.qregisters["mx"],
+            syndrome_readouts[
+                self.lattice.params["num_syn"] : self.lattice.params["num_syn"] * 2
+            ],
+        )
+        self.reset(self.lattice.qregisters["mz"])
+        self.reset(self.lattice.qregisters["mx"])
         self.barrier()
 
     def identity(self) -> None:
@@ -275,11 +252,7 @@ class XXZZQubit(TopologicalQubit):
         Inserts an identity on the data and syndrome qubits. This is a hack to
         create an isolated error model.
         """
-        [
-            self.id(x)
-            for register in (self.__data, self.__mz, self.__mx)
-            for x in register
-        ]
+        [self.id(x) for register in self.lattice.qregisters.values() for x in register]
         self.barrier()
 
     def identity_data(self) -> None:
@@ -287,31 +260,31 @@ class XXZZQubit(TopologicalQubit):
         Inserts an identity on the data qubits only. This is a hack to create an
         isolated error model.
         """
-        [self.id(x) for register in (self.__data,) for x in register]
+        [self.id(x) for x in self.lattice.qregisters["data"]]
         self.barrier()
 
     def hadamard_reset(self) -> None:
         """
         A hack to initialize a + and - logical qubit for now...
         """
-        [self.reset(x) for x in self.__data]
-        [self.h(x) for x in self.__data]
+        [self.reset(x) for x in self.lattice.qregisters["data"]]
+        [self.h(x) for x in self.lattice.qregisters["data"]]
         self.barrier()
 
     def logical_x(self) -> None:
         """
         Logical X operator on the qubit.
         """
-        for i in range(0, self.__num_data, self.__d):
-            self.x(self.__data[i])
+        for i in range(0, self.lattice.params["num_data"], self.lattice.params["d"]):
+            self.x(self.lattice.qregisters["data"][i])
         self.barrier()
 
     def logical_z(self) -> None:
         """
         Logical Z operator on the qubit.
         """
-        for i in range(self.__d):
-            self.z(self.__data[i])
+        for i in range(self.lattice.params["d"]):
+            self.z(self.lattice.qregisters["data"][i])
         self.barrier()
 
     def readout_z(self) -> None:
@@ -319,12 +292,22 @@ class XXZZQubit(TopologicalQubit):
         Convenience method to read-out the logical-Z projection.
         """
         readout = ClassicalRegister(1, name="readout")
+
+        # try adding readout cregister
+        # this will throw an error if a "readout" register is already a part of the circ
+        # TODO: add functionality to have multiple readout registers
         self.add_register(readout)
 
-        self.reset(self.__ancilla)
-        for i in range(self.__d):
-            self.cx(self.__data[i], self.__ancilla)
-        self.measure(self.__ancilla, readout)
+        self.lattice.cregisters["readout"] = readout
+
+        self.reset(self.lattice.qregisters["ancilla"])
+        for i in range(self.lattice.params["d"]):
+            self.cx(
+                self.lattice.qregisters["data"][i], self.lattice.qregisters["ancilla"]
+            )
+        self.measure(
+            self.lattice.qregisters["ancilla"], self.lattice.cregisters["readout"]
+        )
         self.barrier()
 
     def readout_x(self) -> None:
@@ -332,17 +315,27 @@ class XXZZQubit(TopologicalQubit):
         Convenience method to read-out the logical-X projection.
         """
         readout = ClassicalRegister(1, name="readout")
+
+        # try adding readout cregister
+        # this will throw an error if a "readout" register is already a part of the circ
+        # TODO: add functionality to have multiple readout registers
         self.add_register(readout)
 
-        self.reset(self.__ancilla)
-        self.h(self.__ancilla)
-        for i in range(0, self.__num_data, self.__d):
-            self.cx(self.__ancilla, self.__data[i])
-        self.h(self.__ancilla)
-        self.measure(self.__ancilla, readout)
+        self.lattice.cregisters["readout"] = readout
+
+        self.reset(self.lattice.qregisters["ancilla"])
+        self.h(self.lattice.qregisters["ancilla"])
+        for i in range(0, self.lattice.params["num_data"], self.lattice.params["d"]):
+            self.cx(
+                self.lattice.qregisters["ancilla"], self.lattice.qregisters["data"][i]
+            )
+        self.h(self.lattice.qregisters["ancilla"])
+        self.measure(
+            self.lattice.qregisters["ancilla"], self.lattice.cregisters["readout"]
+        )
         self.barrier()
 
     def parse_readout(
         self, readout_string: str
-    ) -> Tuple[int, Dict[str, List[TQubit]]]:
-        return self.__lattice.parse_readout(readout_string)
+    ):  # TODO: -> Tuple[int, Dict[str, List[TQubit]]]:
+        return self.lattice.parse_readout(readout_string)
