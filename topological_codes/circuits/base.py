@@ -62,9 +62,7 @@ class _TopologicalLattice(metaclass=ABCMeta):
             self.circ.barrier()
 
     @abstractmethod
-    def parse_readout(
-        self, readout_string: str
-    ):  # TODO: -> Tuple[int, Dict[str, List[TQubit]]]:
+    def parse_readout(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
         """
         Helper method to turn a result string (e.g. 1 10100000 10010000) into an
         appropriate logical readout value and XOR-ed syndrome locations
@@ -73,15 +71,18 @@ class _TopologicalLattice(metaclass=ABCMeta):
         pass
 
 
-class TopologicalQubit(QuantumCircuit, metaclass=ABCMeta):
+class TopologicalQubit(metaclass=ABCMeta):
     """
     A single topological code logical qubit. At the physical level, this wraps a
     circuit, so we chose to subclass and extend QuantumCircuit.
     """
 
-    def __init__(self, name: str):
-        super().__init__()
+    def __init__(self, circ: QuantumCircuit, name: str):
         self.name = name
+        self.circ = circ
+
+    def draw(self, **kwargs):
+        return self.circ.draw(**kwargs)
 
     @abstractmethod
     def stabilize(self) -> None:
@@ -116,7 +117,5 @@ class TopologicalQubit(QuantumCircuit, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def parse_readout(
-        self, readout_string: str
-    ):  # TODO: -> Tuple[int, Dict[str, List[TQubit]]]:
+    def parse_readout(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
         pass

@@ -75,7 +75,9 @@ class RepetitionQubit(TopologicalQubit):
     circuit, so we chose to subclass and extend TopologicalQubit which extends QuantumCircuit.
     """
 
-    def __init__(self, params: Dict[str, int], name: str = "tqubit") -> None:
+    def __init__(
+        self, params: Dict[str, int], name: str = "tqubit", circ: QuantumCircuit = None,
+    ) -> None:
         """
         Initializes a new QuantumCircuit for this logical qubit and calculates
         the underlying surface code lattice ordering.
@@ -83,8 +85,9 @@ class RepetitionQubit(TopologicalQubit):
         Args:
             d (int): Number of physical "data" qubits. Only odd d is possible!
         """
-        super().__init__(name)
-        self.lattice = _RepetitionLattice(self, params, name)
+        circ = circ if circ else QuantumCircuit()
+        super().__init__(circ, name)
+        self.lattice = _RepetitionLattice(circ, params, name)
 
     def stabilize(self) -> None:
         """
@@ -98,31 +101,35 @@ class RepetitionQubit(TopologicalQubit):
         self.lattice.cregisters[
             "syndrome{}".format(self.lattice.params["T"])
         ] = syndrome_readouts
-        self.add_register(syndrome_readouts)
+        self.circ.add_register(syndrome_readouts)
 
         self.lattice.entangle()
 
         # measure syndromes
-        self.measure(
+        self.circ.measure(
             self.lattice.qregisters["mp"], syndrome_readouts,
         )
-        self.reset(self.lattice.qregisters["mp"])
-        self.barrier()
+        self.circ.reset(self.lattice.qregisters["mp"])
+        self.circ.barrier()
 
     def identity(self) -> None:
-        [self.id(x) for register in self.lattice.qregisters.values() for x in register]
-        self.barrier()
+        [
+            self.circ.id(x)
+            for register in self.lattice.qregisters.values()
+            for x in register
+        ]
+        self.circ.barrier()
 
     def identity_data(self) -> None:
-        [self.id(x) for x in self.lattice.qregisters["data"]]
-        self.barrier()
+        [self.circ.id(x) for x in self.lattice.qregisters["data"]]
+        self.circ.barrier()
 
     def hadamard_reset(self) -> None:
         raise NotImplementedError("This has not been implemented yet.")
 
     def logical_x(self) -> None:
-        self.x(self.lattice.qregisters["data"])
-        self.barrier()
+        self.circ.x(self.lattice.qregisters["data"])
+        self.circ.barrier()
 
     def logical_z(self) -> None:
         raise NotImplementedError("This has not been implemented yet.")
@@ -138,12 +145,12 @@ class RepetitionQubit(TopologicalQubit):
         # try adding readout cregister
         # this will throw an error if a "readout" register is already a part of the circ
         # TODO: add functionality to have multiple readout registers
-        self.add_register(readout)
+        self.circ.add_register(readout)
         self.lattice.cregisters["readout"] = readout
-        self.measure(
+        self.circ.measure(
             self.lattice.qregisters["data"], self.lattice.cregisters["readout"]
         )
-        self.barrier()
+        self.circ.barrier()
 
     def readout_x(self) -> None:
         raise NotImplementedError("This has not been implemented yet.")

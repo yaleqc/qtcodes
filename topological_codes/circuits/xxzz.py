@@ -6,7 +6,7 @@ from topological_codes import (
 )
 from qiskit import QuantumRegister, QuantumCircuit, ClassicalRegister, execute
 from qiskit.circuit.quantumregister import Qubit
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 TQubit = Tuple[float, float, float]
 
@@ -200,7 +200,12 @@ class XXZZQubit(TopologicalQubit):
     circuit, so we chose to subclass and extend TopologicalQubit which extends QuantumCircuit.
     """
 
-    def __init__(self, params: Dict[str, int], name: str = "tqubit") -> None:
+    def __init__(
+        self,
+        params: Dict[str, int],
+        name: str = "tqubit",
+        circ: Optional[QuantumCircuit] = None,
+    ) -> None:
         """
         Initializes a new QuantumCircuit for this logical qubit and calculates
         the underlying surface code lattice ordering.
@@ -208,8 +213,10 @@ class XXZZQubit(TopologicalQubit):
         Args:
             d (int): Number of physical "data" qubits. Only odd d is possible!
         """
-        super().__init__(name)
-        self.lattice = _XXZZLattice(self, params, name)
+        circ = circ if circ else QuantumCircuit()
+
+        super().__init__(circ, name)
+        self.lattice = _XXZZLattice(circ, params, name)
 
     def stabilize(self) -> None:
         """
@@ -223,64 +230,68 @@ class XXZZQubit(TopologicalQubit):
         self.lattice.cregisters[
             "syndrome{}".format(self.lattice.params["T"])
         ] = syndrome_readouts
-        self.add_register(syndrome_readouts)
+        self.circ.add_register(syndrome_readouts)
 
         self.lattice.entangle()
 
         # measure syndromes
-        self.measure(
+        self.circ.measure(
             self.lattice.qregisters["mz"],
             syndrome_readouts[0 : self.lattice.params["num_syn"]],
         )
-        self.measure(
+        self.circ.measure(
             self.lattice.qregisters["mx"],
             syndrome_readouts[
                 self.lattice.params["num_syn"] : self.lattice.params["num_syn"] * 2
             ],
         )
-        self.reset(self.lattice.qregisters["mz"])
-        self.reset(self.lattice.qregisters["mx"])
-        self.barrier()
+        self.circ.reset(self.lattice.qregisters["mz"])
+        self.circ.reset(self.lattice.qregisters["mx"])
+        self.circ.barrier()
 
     def identity(self) -> None:
         """
         Inserts an identity on the data and syndrome qubits. This is a hack to
         create an isolated error model.
         """
-        [self.id(x) for register in self.lattice.qregisters.values() for x in register]
-        self.barrier()
+        [
+            self.circ.id(x)
+            for register in self.lattice.qregisters.values()
+            for x in register
+        ]
+        self.circ.barrier()
 
     def identity_data(self) -> None:
         """
         Inserts an identity on the data qubits only. This is a hack to create an
         isolated error model.
         """
-        [self.id(x) for x in self.lattice.qregisters["data"]]
-        self.barrier()
+        [self.circ.id(x) for x in self.lattice.qregisters["data"]]
+        self.circ.barrier()
 
     def hadamard_reset(self) -> None:
         """
         A hack to initialize a + and - logical qubit for now...
         """
-        [self.reset(x) for x in self.lattice.qregisters["data"]]
-        [self.h(x) for x in self.lattice.qregisters["data"]]
-        self.barrier()
+        [self.circ.reset(x) for x in self.lattice.qregisters["data"]]
+        [self.circ.h(x) for x in self.lattice.qregisters["data"]]
+        self.circ.barrier()
 
     def logical_x(self) -> None:
         """
         Logical X operator on the qubit.
         """
         for i in range(0, self.lattice.params["num_data"], self.lattice.params["d"]):
-            self.x(self.lattice.qregisters["data"][i])
-        self.barrier()
+            self.circ.x(self.lattice.qregisters["data"][i])
+        self.circ.barrier()
 
     def logical_z(self) -> None:
         """
         Logical Z operator on the qubit.
         """
         for i in range(self.lattice.params["d"]):
-            self.z(self.lattice.qregisters["data"][i])
-        self.barrier()
+            self.circ.z(self.lattice.qregisters["data"][i])
+        self.circ.barrier()
 
     def readout_z(self) -> None:
         """
@@ -291,19 +302,19 @@ class XXZZQubit(TopologicalQubit):
         # try adding readout cregister
         # this will throw an error if a "readout" register is already a part of the circ
         # TODO: add functionality to have multiple readout registers
-        self.add_register(readout)
+        self.circ.add_register(readout)
 
         self.lattice.cregisters["readout"] = readout
 
-        self.reset(self.lattice.qregisters["ancilla"])
+        self.circ.reset(self.lattice.qregisters["ancilla"])
         for i in range(self.lattice.params["d"]):
-            self.cx(
+            self.circ.cx(
                 self.lattice.qregisters["data"][i], self.lattice.qregisters["ancilla"]
             )
-        self.measure(
+        self.circ.measure(
             self.lattice.qregisters["ancilla"], self.lattice.cregisters["readout"]
         )
-        self.barrier()
+        self.circ.barrier()
 
     def readout_x(self) -> None:
         """
@@ -314,21 +325,21 @@ class XXZZQubit(TopologicalQubit):
         # try adding readout cregister
         # this will throw an error if a "readout" register is already a part of the circ
         # TODO: add functionality to have multiple readout registers
-        self.add_register(readout)
+        self.circ.add_register(readout)
 
         self.lattice.cregisters["readout"] = readout
 
-        self.reset(self.lattice.qregisters["ancilla"])
-        self.h(self.lattice.qregisters["ancilla"])
+        self.circ.reset(self.lattice.qregisters["ancilla"])
+        self.circ.h(self.lattice.qregisters["ancilla"])
         for i in range(0, self.lattice.params["num_data"], self.lattice.params["d"]):
-            self.cx(
+            self.circ.cx(
                 self.lattice.qregisters["ancilla"], self.lattice.qregisters["data"][i]
             )
-        self.h(self.lattice.qregisters["ancilla"])
-        self.measure(
+        self.circ.h(self.lattice.qregisters["ancilla"])
+        self.circ.measure(
             self.lattice.qregisters["ancilla"], self.lattice.cregisters["readout"]
         )
-        self.barrier()
+        self.circ.barrier()
 
     def parse_readout(
         self, readout_string: str
