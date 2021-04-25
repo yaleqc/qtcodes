@@ -9,6 +9,7 @@ from .circuits.base import (
     TopologicalQubit,
 )
 from .circuits.xxzz import XXZZQubit
+from .circuits.repetition import RepetitionQubit
 from .fitters.xxzz import XXZZGraphDecoder
 
 # will add more later

@@ -66,9 +66,7 @@ class _ZZZZ(_Stabilizer):
 
 
 class _XXZZLattice(_TopologicalLattice):
-    def __init__(
-        self, circ: QuantumCircuit, params: Dict[str, int],
-    ):
+    def __init__(self, circ: QuantumCircuit, params: Dict[str, int], name: str):
         # validation
         required_params = ["d"]
         for required_param in required_params:
@@ -84,17 +82,17 @@ class _XXZZLattice(_TopologicalLattice):
 
         # create registers
         qregisters: Dict[str, QuantumRegister] = {}  # quantum
-        qregisters["data"] = QuantumRegister(params["num_data"], name="data")
-        qregisters["mz"] = QuantumRegister(params["num_syn"], name="mz")
-        qregisters["mx"] = QuantumRegister(params["num_syn"], name="mx")
-        qregisters["ancilla"] = QuantumRegister(1, name="ancilla")
+        qregisters["data"] = QuantumRegister(params["num_data"], name=name + "_data")
+        qregisters["mz"] = QuantumRegister(params["num_syn"], name=name + "_mz")
+        qregisters["mx"] = QuantumRegister(params["num_syn"], name=name + "_mx")
+        qregisters["ancilla"] = QuantumRegister(1, name=name + "_ancilla")
 
         cregisters: Dict[str, ClassicalRegister] = {}  # classical
-        super().__init__(circ, qregisters, cregisters, params)
+        super().__init__(circ, qregisters, cregisters, params, name)
 
     def gen_qubit_indices_and_stabilizers(self):
         """
-        Initializes an instance of the rotated surface code lattice with our
+        Generates lattice blueprint for rotated surface code lattice with our
         chosen layout and numbering.
         """
         qubit_indices = []
@@ -199,10 +197,10 @@ class _XXZZLattice(_TopologicalLattice):
 class XXZZQubit(TopologicalQubit):
     """
     A single logical surface code qubit. At the physical level, this wraps a
-    circuit, so we chose to subclass and extend QuantumCircuit.
+    circuit, so we chose to subclass and extend TopologicalQubit which extends QuantumCircuit.
     """
 
-    def __init__(self, params: Dict[str, int],) -> None:
+    def __init__(self, params: Dict[str, int], name: str = "tqubit") -> None:
         """
         Initializes a new QuantumCircuit for this logical qubit and calculates
         the underlying surface code lattice ordering.
@@ -210,11 +208,8 @@ class XXZZQubit(TopologicalQubit):
         Args:
             d (int): Number of physical "data" qubits. Only odd d is possible!
         """
-        super().__init__()
-        self.lattice = _XXZZLattice(self, params)
-
-    def __str__(self):
-        return QuantumCircuit.__str__(self)
+        super().__init__(name)
+        self.lattice = _XXZZLattice(self, params, name)
 
     def stabilize(self) -> None:
         """
@@ -223,7 +218,7 @@ class XXZZQubit(TopologicalQubit):
         self.lattice.params["T"] += 1
         syndrome_readouts = ClassicalRegister(
             self.lattice.params["num_syn"] * 2,
-            name="c{}".format(self.lattice.params["T"]),
+            name=self.name + "_c{}".format(self.lattice.params["T"]),
         )
         self.lattice.cregisters[
             "syndrome{}".format(self.lattice.params["T"])
@@ -291,7 +286,7 @@ class XXZZQubit(TopologicalQubit):
         """
         Convenience method to read-out the logical-Z projection.
         """
-        readout = ClassicalRegister(1, name="readout")
+        readout = ClassicalRegister(1, name=self.name + "_readout")
 
         # try adding readout cregister
         # this will throw an error if a "readout" register is already a part of the circ
@@ -314,7 +309,7 @@ class XXZZQubit(TopologicalQubit):
         """
         Convenience method to read-out the logical-X projection.
         """
-        readout = ClassicalRegister(1, name="readout")
+        readout = ClassicalRegister(1, name=self.name + "_readout")
 
         # try adding readout cregister
         # this will throw an error if a "readout" register is already a part of the circ

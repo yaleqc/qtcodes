@@ -31,10 +31,12 @@ class _TopologicalLattice(metaclass=ABCMeta):
         qregisters: Dict[str, QuantumRegister],
         cregisters: Dict[str, ClassicalRegister],
         params: Dict[str, int],
+        name: str,
     ):
         self.circ = circ
         self.qregisters = qregisters
         self.cregisters = cregisters
+        self.name = name
 
         # add registerse to circ
         registers = list(self.qregisters.values()) + list(self.cregisters.values())
@@ -76,6 +78,10 @@ class TopologicalQubit(QuantumCircuit, metaclass=ABCMeta):
     A single topological code logical qubit. At the physical level, this wraps a
     circuit, so we chose to subclass and extend QuantumCircuit.
     """
+
+    def __init__(self, name: str):
+        super().__init__()
+        self.name = name
 
     @abstractmethod
     def stabilize(self) -> None:
