@@ -84,6 +84,9 @@ class TopologicalQubit(metaclass=ABCMeta):
     def draw(self, **kwargs):
         return self.circ.draw(**kwargs)
 
+    def __str__(self):
+        return self.circ.__str__()
+
     @abstractmethod
     def stabilize(self) -> None:
         pass

@@ -11,5 +11,6 @@ from .circuits.base import (
 from .circuits.xxzz import XXZZQubit
 from .circuits.repetition import RepetitionQubit
 from .fitters.xxzz import XXZZGraphDecoder
+from .circuits.circ import TopologicalRegister, TopologicalCircuit
 
 # will add more later
