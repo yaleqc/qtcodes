@@ -97,7 +97,7 @@ class SurfaceCodeBenchmarkingTool:
         for noise_value in tqdm(noise_values):
             results = (
                 execute(
-                    self.readout_circuit,
+                    self.readout_circuit.circ,
                     Aer.get_backend("qasm_simulator"),
                     noise_model=self.noise_model_func(noise_value),
                     shots=shots,
@@ -151,7 +151,7 @@ class SurfaceCodeBenchmarkingTool:
     def simulate_readout_single(self, noise_value):
         results = (
             execute(
-                self.readout_circuit,
+                self.readout_circuit.circ,
                 Aer.get_backend("qasm_simulator"),
                 noise_model=self.noise_model_func(noise_value),
                 shots=100000,

@@ -85,7 +85,8 @@ class RepetitionQubit(TopologicalQubit):
         Args:
             d (int): Number of physical "data" qubits. Only odd d is possible!
         """
-        circ = circ if circ else QuantumCircuit()
+        # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
+        circ = QuantumCircuit() if circ == None else circ
         super().__init__(circ, name)
         self.lattice = _RepetitionLattice(circ, params, name)
 
