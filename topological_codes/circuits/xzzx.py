@@ -77,12 +77,12 @@ class _XZZXLattice(_TopologicalLattice):
         stabilizers = []
         d = self.params["d"]
 
-        per_row_x = (d ** 2 - 1) // 2 // (d + 1)
-        per_row_z = (d ** 2 - 1) // 2 // (d - 1)
+        per_row_a = (d - 1) // 2
+        per_row_b = (d + 1) // 2
         for ma in self.qregisters["ma"]:
             idx = ma.index
-            row = idx // per_row_x
-            offset = idx % per_row_x
+            row = idx // per_row_a
+            offset = idx % per_row_a
             start = (row - 1) * d
             row_parity = row % 2
 
@@ -106,8 +106,8 @@ class _XZZXLattice(_TopologicalLattice):
 
         for mb in self.qregisters["mb"]:
             idx = mb.index
-            row = idx // per_row_z
-            offset = idx % per_row_z
+            row = idx // per_row_b
+            offset = idx % per_row_b
             start = row * d
             row_parity = row % 2
 
@@ -117,7 +117,7 @@ class _XZZXLattice(_TopologicalLattice):
             bot_r = self.qregisters["data"][start + d + (offset * 2) - row_parity + 1]
 
             # Overwrite edge column syndromes
-            if row_parity == 0 and offset == per_row_z - 1:  # Last column
+            if row_parity == 0 and offset == per_row_b - 1:  # Last column
                 top_r, bot_r = None, None
             elif row_parity == 1 and offset == 0:  # First column
                 top_l, bot_l = None, None

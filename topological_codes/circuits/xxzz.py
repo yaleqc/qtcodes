@@ -99,8 +99,8 @@ class _XXZZLattice(_TopologicalLattice):
         stabilizers = []
         d = self.params["d"]
 
-        per_row_x = (d ** 2 - 1) // 2 // (d + 1)
-        per_row_z = (d ** 2 - 1) // 2 // (d - 1)
+        per_row_x = (d - 1) // 2
+        per_row_z = (d + 1) // 2
         for mx in self.qregisters["mx"]:
             idx = mx.index
             row = idx // per_row_x
@@ -156,8 +156,113 @@ class _XXZZLattice(_TopologicalLattice):
         num_x = len(self.qregisters["mx"])
         self.entangle(self.qubit_indices[num_x:], self.stabilizers[num_x:])
 
+    def extract_final_stabilizer_and_logical_readout_x(
+        self, final_readout_string: str, penultimate_readout_string: str
+    ) -> Tuple[int, str]:
+        """
+        Extract final syndrome measurements and logical x readout from data qubit x readout.
+        """
+        readout_values = [int(q) for q in final_readout_string]
+        readout_values = readout_values[::-1]  # [q_0,q_1,...,q_24]
+
+        x_stabilizer = ""  # "X_{N}X_{N-1}..X_{0}"
+        d = self.params["d"]
+        per_row_x = (d - 1) // 2
+        per_row_z = (d + 1) // 2
+        for mx in self.qregisters["mx"]:
+            idx = mx.index
+            row = idx // per_row_x
+            offset = idx % per_row_x
+            start = (row - 1) * d
+            row_parity = row % 2
+
+            if row == 0:  # First row
+                top_l, top_r = 0, 0
+                bot_l = readout_values[idx * 2]
+                bot_r = readout_values[idx * 2 + 1]
+            elif row == d:  # Last row
+                bot_l, bot_r = 0, 0
+                top_l = readout_values[idx * 2 + 1]
+                top_r = readout_values[idx * 2 + 2]
+            else:
+                top_l = readout_values[start + (offset * 2) + row_parity]
+                top_r = readout_values[start + (offset * 2) + row_parity + 1]
+                bot_l = readout_values[start + d + (offset * 2) + row_parity]
+                bot_r = readout_values[start + d + (offset * 2) + row_parity + 1]
+            stabilizer_val = (top_l + top_r + bot_l + bot_r) % 2
+            x_stabilizer = str(stabilizer_val) + x_stabilizer
+
+        stabilizer_str = (
+            x_stabilizer + penultimate_readout_string[self.params["num_syn"] :]
+        )  # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where Z_{N}Z_{N-1}...Z_{0} is copied from penultimate
+
+        logical_readout = 0
+        for id in range(0, self.params["num_data"], self.params["d"]):
+            logical_readout = (logical_readout + readout_values[id]) % 2
+
+        return logical_readout, stabilizer_str
+
+    def extract_final_stabilizer_and_logical_readout_z(
+        self, final_readout_string: str, penultimate_readout_string: str
+    ) -> Tuple[int, str]:
+        """
+        Extract final syndrome measurements and logical z readout from data qubit z readout.
+        """
+        readout_values = [int(q) for q in final_readout_string]
+        readout_values = readout_values[::-1]  # [q_0,q_1,...,q_24]
+
+        z_stabilizer = ""  # "Z_{N}Z_{N-1}..Z_{0}"
+        d = self.params["d"]
+        per_row_x = (d - 1) // 2
+        per_row_z = (d + 1) // 2
+        for mz in self.qregisters["mz"]:
+            idx = mz.index
+            row = idx // per_row_z
+            offset = idx % per_row_z
+            start = row * d
+            row_parity = row % 2
+
+            top_l = readout_values[start + (offset * 2) - row_parity]
+            top_r = readout_values[start + (offset * 2) - row_parity + 1]
+            bot_l = readout_values[start + d + (offset * 2) - row_parity]
+            bot_r = readout_values[start + d + (offset * 2) - row_parity + 1]
+
+            # Overwrite edge column syndromes
+            if row_parity == 0 and offset == per_row_z - 1:  # Last column
+                top_r, bot_r = 0, 0
+            elif row_parity == 1 and offset == 0:  # First column
+                top_l, bot_l = 0, 0
+
+            stabilizer_val = (top_l + top_r + bot_l + bot_r) % 2
+            z_stabilizer = str(stabilizer_val) + z_stabilizer
+
+        stabilizer_str = (
+            penultimate_readout_string[: self.params["num_syn"]] + z_stabilizer
+        )  # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where X_{N}X_{N-1}...X_{0} is copied from penultimate
+
+        logical_readout = 0
+        for id in range(self.params["d"]):
+            logical_readout = (logical_readout + readout_values[id]) % 2
+
+        return logical_readout, stabilizer_str
+
+    def extract_final_stabilizer_and_logical_readout(
+        self,
+        final_readout_string: str,
+        penultimate_readout_string: str,
+        readout_type: str,
+    ):
+        if readout_type == "X":
+            return self.extract_final_stabilizer_and_logical_readout_x(
+                final_readout_string, penultimate_readout_string
+            )
+        elif readout_type == "Z":
+            return self.extract_final_stabilizer_and_logical_readout_z(
+                final_readout_string, penultimate_readout_string
+            )
+
     def parse_readout(
-        self, readout_string: str
+        self, readout_string: str, readout_type: Optional[str] = None
     ):  # TODO -> Tuple[int, Dict[str, List[TQubit]]]:
         """
         Helper method to turn a result string (e.g. 1 10100000 10010000) into an
@@ -166,7 +271,20 @@ class _XXZZLattice(_TopologicalLattice):
         """
         chunks = readout_string.split(" ")
 
-        int_syndromes = [int(x, base=2) for x in chunks[-1:0:-1]]
+        if len(chunks[0]) > 1:  # this is true when all data qubits are readout
+            assert readout_type is not None
+            (
+                logical_readout,
+                final_stabilizer,
+            ) = self.extract_final_stabilizer_and_logical_readout(
+                chunks[0], chunks[1], readout_type
+            )
+            chunks = [final_stabilizer,] + chunks[1:]
+        else:
+            logical_readout = int(chunks[0])
+            chunks = chunks[1:]
+
+        int_syndromes = [int(x, base=2) for x in chunks[::-1]]
         xor_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
 
         mask_Z = "1" * self.params["num_syn"]
@@ -189,7 +307,7 @@ class _XXZZLattice(_TopologicalLattice):
                     Z.append((float(T), 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
 
         return (
-            int(chunks[0]),
+            logical_readout,
             {"X": X, "Z": Z,},
         )
 
@@ -317,6 +435,23 @@ class XXZZQubit(TopologicalQubit):
         )
         self.circ.barrier()
 
+    def data_readout_z(self) -> None:
+        readout = ClassicalRegister(
+            self.lattice.params["num_data"], name=self.name + "_data_readout"
+        )
+
+        # try adding readout cregister
+        # this will throw an error if a "readout" register is already a part of the circ
+        # TODO: add functionality to have multiple readout registers
+        self.circ.add_register(readout)
+
+        self.lattice.cregisters["data_readout"] = readout
+
+        self.circ.measure(
+            self.lattice.qregisters["data"], self.lattice.cregisters["data_readout"]
+        )
+        self.circ.barrier()
+
     def readout_x(self) -> None:
         """
         Convenience method to read-out the logical-X projection.
@@ -342,7 +477,26 @@ class XXZZQubit(TopologicalQubit):
         )
         self.circ.barrier()
 
+    def data_readout_x(self) -> None:
+        readout = ClassicalRegister(
+            self.lattice.params["num_data"], name=self.name + "_data_readout"
+        )
+
+        # try adding readout cregister
+        # this will throw an error if a "readout" register is already a part of the circ
+        # TODO: add functionality to have multiple readout registers
+        self.circ.add_register(readout)
+
+        self.lattice.cregisters["data_readout"] = readout
+
+        # H|+> = |0>, H|-> = |1>
+        self.circ.h(self.lattice.qregisters["data"])
+        self.circ.measure(
+            self.lattice.qregisters["data"], self.lattice.cregisters["data_readout"]
+        )
+        self.circ.barrier()
+
     def parse_readout(
-        self, readout_string: str
+        self, readout_string: str, readout_type: Optional[str] = None
     ):  # TODO: -> Tuple[int, Dict[str, List[TQubit]]]:
-        return self.lattice.parse_readout(readout_string)
+        return self.lattice.parse_readout(readout_string, readout_type)
