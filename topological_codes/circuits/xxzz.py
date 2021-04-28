@@ -66,6 +66,10 @@ class _ZZZZ(_Stabilizer):
 
 
 class _XXZZLattice(_TopologicalLattice):
+    """
+    This class contains all the lattice geometry specifications regarding the XXZZ (CSS) Rotated Surface Code.
+    """
+
     def __init__(self, circ: QuantumCircuit, params: Dict[str, int], name: str):
         # validation
         required_params = ["d"]
@@ -88,55 +92,50 @@ class _XXZZLattice(_TopologicalLattice):
         qregisters["ancilla"] = QuantumRegister(1, name=name + "_ancilla")
 
         cregisters: Dict[str, ClassicalRegister] = {}  # classical
+
+        self.stabilizer_shortnames = {"mx": _XXXX, "mz": _ZZZZ}
+
         super().__init__(circ, qregisters, cregisters, params, name)
 
-    def gen_qubit_indices_and_stabilizers(self):
-        """
-        Generates lattice blueprint for rotated surface code lattice with our
-        chosen layout and numbering.
-        """
-        qubit_indices = []
-        stabilizers = []
-        d = self.params["d"]
+    def _geometry(self):
+        geometry = {"mx": [], "mz": []}
 
+        d = self.params["d"]
         per_row_x = (d - 1) // 2
         per_row_z = (d + 1) // 2
-        for mx in self.qregisters["mx"]:
-            idx = mx.index
-            row = idx // per_row_x
-            offset = idx % per_row_x
+        # mx geometry
+        for syn in range(self.params["num_syn"]):
+            row = syn // per_row_x
+            offset = syn % per_row_x
             start = (row - 1) * d
             row_parity = row % 2
 
             if row == 0:  # First row
                 top_l, top_r = None, None
-                bot_l = self.qregisters["data"][idx * 2]
-                bot_r = self.qregisters["data"][idx * 2 + 1]
+                bot_l = syn * 2
+                bot_r = syn * 2 + 1
             elif row == d:  # Last row
                 bot_l, bot_r = None, None
-                top_l = self.qregisters["data"][idx * 2 + 1]
-                top_r = self.qregisters["data"][idx * 2 + 2]
+                top_l = syn * 2 + 1
+                top_r = syn * 2 + 2
             else:
-                top_l = self.qregisters["data"][start + (offset * 2) + row_parity]
-                top_r = self.qregisters["data"][start + (offset * 2) + row_parity + 1]
-                bot_l = self.qregisters["data"][start + d + (offset * 2) + row_parity]
-                bot_r = self.qregisters["data"][
-                    start + d + (offset * 2) + row_parity + 1
-                ]
-            qubit_indices.append([mx, top_l, top_r, bot_l, bot_r])
-            stabilizers.append(_XXXX)
+                top_l = start + (offset * 2) + row_parity
+                top_r = start + (offset * 2) + row_parity + 1
+                bot_l = start + d + (offset * 2) + row_parity
+                bot_r = start + d + (offset * 2) + row_parity + 1
 
-        for mz in self.qregisters["mz"]:
-            idx = mz.index
-            row = idx // per_row_z
-            offset = idx % per_row_z
+            geometry["mx"].append([syn, top_l, top_r, bot_l, bot_r])
+
+        for syn in range(self.params["num_syn"]):
+            row = syn // per_row_z
+            offset = syn % per_row_z
             start = row * d
             row_parity = row % 2
 
-            top_l = self.qregisters["data"][start + (offset * 2) - row_parity]
-            top_r = self.qregisters["data"][start + (offset * 2) - row_parity + 1]
-            bot_l = self.qregisters["data"][start + d + (offset * 2) - row_parity]
-            bot_r = self.qregisters["data"][start + d + (offset * 2) - row_parity + 1]
+            top_l = start + (offset * 2) - row_parity
+            top_r = start + (offset * 2) - row_parity + 1
+            bot_l = start + d + (offset * 2) - row_parity
+            bot_r = start + d + (offset * 2) - row_parity + 1
 
             # Overwrite edge column syndromes
             if row_parity == 0 and offset == per_row_z - 1:  # Last column
@@ -144,8 +143,29 @@ class _XXZZLattice(_TopologicalLattice):
             elif row_parity == 1 and offset == 0:  # First column
                 top_l, bot_l = None, None
 
-            qubit_indices.append([mz, top_l, top_r, bot_l, bot_r])
-            stabilizers.append(_ZZZZ)
+            geometry["mz"].append([syn, top_l, top_r, bot_l, bot_r])
+        return geometry
+
+    def gen_qubit_indices_and_stabilizers(self):
+        """
+        Generates lattice blueprint for rotated surface code lattice with our
+        chosen layout and numbering.
+        """
+        self.geometry = self._geometry()
+
+        qubit_indices = []
+        stabilizers = []
+        for stabilizer, idx_lists in self.geometry.items():
+            stabilizer_cls = self.stabilizer_shortnames[stabilizer]
+            for idx_list in idx_lists:
+                syn = self.qregisters[stabilizer][idx_list[0]]
+                plaquette = [
+                    self.qregisters["data"][idx] if idx != None else None
+                    for idx in idx_list[1:]
+                ]
+                plaquette = [syn,] + plaquette
+                qubit_indices.append(plaquette)
+                stabilizers.append(stabilizer_cls)
         return qubit_indices, stabilizers
 
     def entangle_x(self):
@@ -166,30 +186,14 @@ class _XXZZLattice(_TopologicalLattice):
         readout_values = readout_values[::-1]  # [q_0,q_1,...,q_24]
 
         x_stabilizer = ""  # "X_{N}X_{N-1}..X_{0}"
-        d = self.params["d"]
-        per_row_x = (d - 1) // 2
-        per_row_z = (d + 1) // 2
-        for mx in self.qregisters["mx"]:
-            idx = mx.index
-            row = idx // per_row_x
-            offset = idx % per_row_x
-            start = (row - 1) * d
-            row_parity = row % 2
 
-            if row == 0:  # First row
-                top_l, top_r = 0, 0
-                bot_l = readout_values[idx * 2]
-                bot_r = readout_values[idx * 2 + 1]
-            elif row == d:  # Last row
-                bot_l, bot_r = 0, 0
-                top_l = readout_values[idx * 2 + 1]
-                top_r = readout_values[idx * 2 + 2]
-            else:
-                top_l = readout_values[start + (offset * 2) + row_parity]
-                top_r = readout_values[start + (offset * 2) + row_parity + 1]
-                bot_l = readout_values[start + d + (offset * 2) + row_parity]
-                bot_r = readout_values[start + d + (offset * 2) + row_parity + 1]
-            stabilizer_val = (top_l + top_r + bot_l + bot_r) % 2
+        for idx_list in self.geometry["mx"]:
+            stabilizer_val = (
+                sum(
+                    [readout_values[idx] if idx != None else 0 for idx in idx_list[1:]]
+                )  # [mx, top_l, top_r, bot_l, bot_r]
+                % 2
+            )
             x_stabilizer = str(stabilizer_val) + x_stabilizer
 
         stabilizer_str = (
@@ -197,8 +201,8 @@ class _XXZZLattice(_TopologicalLattice):
         )  # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where Z_{N}Z_{N-1}...Z_{0} is copied from penultimate
 
         logical_readout = 0
-        for id in range(0, self.params["num_data"], self.params["d"]):
-            logical_readout = (logical_readout + readout_values[id]) % 2
+        for idx in range(0, self.params["num_data"], self.params["d"]):
+            logical_readout = (logical_readout + readout_values[idx]) % 2
 
         return logical_readout, stabilizer_str
 
@@ -212,28 +216,14 @@ class _XXZZLattice(_TopologicalLattice):
         readout_values = readout_values[::-1]  # [q_0,q_1,...,q_24]
 
         z_stabilizer = ""  # "Z_{N}Z_{N-1}..Z_{0}"
-        d = self.params["d"]
-        per_row_x = (d - 1) // 2
-        per_row_z = (d + 1) // 2
-        for mz in self.qregisters["mz"]:
-            idx = mz.index
-            row = idx // per_row_z
-            offset = idx % per_row_z
-            start = row * d
-            row_parity = row % 2
 
-            top_l = readout_values[start + (offset * 2) - row_parity]
-            top_r = readout_values[start + (offset * 2) - row_parity + 1]
-            bot_l = readout_values[start + d + (offset * 2) - row_parity]
-            bot_r = readout_values[start + d + (offset * 2) - row_parity + 1]
-
-            # Overwrite edge column syndromes
-            if row_parity == 0 and offset == per_row_z - 1:  # Last column
-                top_r, bot_r = 0, 0
-            elif row_parity == 1 and offset == 0:  # First column
-                top_l, bot_l = 0, 0
-
-            stabilizer_val = (top_l + top_r + bot_l + bot_r) % 2
+        for idx_list in self.geometry["mz"]:
+            stabilizer_val = (
+                sum(
+                    [readout_values[idx] if idx != None else 0 for idx in idx_list[1:]]
+                )  # [mx, top_l, top_r, bot_l, bot_r]
+                % 2
+            )
             z_stabilizer = str(stabilizer_val) + z_stabilizer
 
         stabilizer_str = (
@@ -310,6 +300,62 @@ class _XXZZLattice(_TopologicalLattice):
             logical_readout,
             {"X": X, "Z": Z,},
         )
+
+    def logical_x(self) -> None:
+        """
+        Logical X operator on the qubit.
+        """
+        for i in range(0, self.params["num_data"], self.params["d"]):
+            self.circ.x(self.qregisters["data"][i])
+        self.circ.barrier()
+
+    def logical_z(self) -> None:
+        """
+        Logical Z operator on the qubit.
+        """
+        for i in range(self.params["d"]):
+            self.circ.z(self.qregisters["data"][i])
+        self.circ.barrier()
+
+    def readout_x(self) -> None:
+        """
+        Convenience method to read-out the logical-X projection.
+        """
+        readout = ClassicalRegister(1, name=self.name + "_readout")
+
+        # try adding readout cregister
+        # this will throw an error if a "readout" register is already a part of the circ
+        # TODO: add functionality to have multiple readout registers
+        self.circ.add_register(readout)
+
+        self.cregisters["readout"] = readout
+
+        self.circ.reset(self.qregisters["ancilla"])
+        self.circ.h(self.qregisters["ancilla"])
+        for i in range(0, self.params["num_data"], self.params["d"]):
+            self.circ.cx(self.qregisters["ancilla"], self.qregisters["data"][i])
+        self.circ.h(self.qregisters["ancilla"])
+        self.circ.measure(self.qregisters["ancilla"], self.cregisters["readout"])
+        self.circ.barrier()
+
+    def readout_z(self) -> None:
+        """
+        Convenience method to read-out the logical-Z projection.
+        """
+        readout = ClassicalRegister(1, name=self.name + "_readout")
+
+        # try adding readout cregister
+        # this will throw an error if a "readout" register is already a part of the circ
+        # TODO: add functionality to have multiple readout registers
+        self.circ.add_register(readout)
+
+        self.cregisters["readout"] = readout
+
+        self.circ.reset(self.qregisters["ancilla"])
+        for i in range(self.params["d"]):
+            self.circ.cx(self.qregisters["data"][i], self.qregisters["ancilla"])
+        self.circ.measure(self.qregisters["ancilla"], self.cregisters["readout"])
+        self.circ.barrier()
 
 
 class XXZZQubit(TopologicalQubit):
@@ -396,45 +442,6 @@ class XXZZQubit(TopologicalQubit):
         [self.circ.h(x) for x in self.lattice.qregisters["data"]]
         self.circ.barrier()
 
-    def logical_x(self) -> None:
-        """
-        Logical X operator on the qubit.
-        """
-        for i in range(0, self.lattice.params["num_data"], self.lattice.params["d"]):
-            self.circ.x(self.lattice.qregisters["data"][i])
-        self.circ.barrier()
-
-    def logical_z(self) -> None:
-        """
-        Logical Z operator on the qubit.
-        """
-        for i in range(self.lattice.params["d"]):
-            self.circ.z(self.lattice.qregisters["data"][i])
-        self.circ.barrier()
-
-    def readout_z(self) -> None:
-        """
-        Convenience method to read-out the logical-Z projection.
-        """
-        readout = ClassicalRegister(1, name=self.name + "_readout")
-
-        # try adding readout cregister
-        # this will throw an error if a "readout" register is already a part of the circ
-        # TODO: add functionality to have multiple readout registers
-        self.circ.add_register(readout)
-
-        self.lattice.cregisters["readout"] = readout
-
-        self.circ.reset(self.lattice.qregisters["ancilla"])
-        for i in range(self.lattice.params["d"]):
-            self.circ.cx(
-                self.lattice.qregisters["data"][i], self.lattice.qregisters["ancilla"]
-            )
-        self.circ.measure(
-            self.lattice.qregisters["ancilla"], self.lattice.cregisters["readout"]
-        )
-        self.circ.barrier()
-
     def data_readout_z(self) -> None:
         readout = ClassicalRegister(
             self.lattice.params["num_data"], name=self.name + "_data_readout"
@@ -449,31 +456,6 @@ class XXZZQubit(TopologicalQubit):
 
         self.circ.measure(
             self.lattice.qregisters["data"], self.lattice.cregisters["data_readout"]
-        )
-        self.circ.barrier()
-
-    def readout_x(self) -> None:
-        """
-        Convenience method to read-out the logical-X projection.
-        """
-        readout = ClassicalRegister(1, name=self.name + "_readout")
-
-        # try adding readout cregister
-        # this will throw an error if a "readout" register is already a part of the circ
-        # TODO: add functionality to have multiple readout registers
-        self.circ.add_register(readout)
-
-        self.lattice.cregisters["readout"] = readout
-
-        self.circ.reset(self.lattice.qregisters["ancilla"])
-        self.circ.h(self.lattice.qregisters["ancilla"])
-        for i in range(0, self.lattice.params["num_data"], self.lattice.params["d"]):
-            self.circ.cx(
-                self.lattice.qregisters["ancilla"], self.lattice.qregisters["data"][i]
-            )
-        self.circ.h(self.lattice.qregisters["ancilla"])
-        self.circ.measure(
-            self.lattice.qregisters["ancilla"], self.lattice.cregisters["readout"]
         )
         self.circ.barrier()
 
@@ -500,3 +482,27 @@ class XXZZQubit(TopologicalQubit):
         self, readout_string: str, readout_type: Optional[str] = None
     ):  # TODO: -> Tuple[int, Dict[str, List[TQubit]]]:
         return self.lattice.parse_readout(readout_string, readout_type)
+
+    def logical_x(self) -> None:
+        """
+        Logical X operator on the qubit.
+        """
+        self.lattice.logical_x()
+
+    def logical_z(self) -> None:
+        """
+        Logical Z operator on the qubit.
+        """
+        self.lattice.logical_z()
+
+    def readout_x(self) -> None:
+        """
+        Convenience method to read-out the logical-X projection.
+        """
+        self.lattice.readout_x()
+
+    def readout_z(self) -> None:
+        """
+        Convenience method to read-out the logical-Z projection.
+        """
+        self.lattice.readout_z()
