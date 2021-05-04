@@ -260,50 +260,22 @@ class XZZXQubit(TopologicalQubit):
     def logical_x(self) -> None:
         """
         Logical X operator on the qubit.
+        Defined as the left-most column.
         """
-        raise NotImplementedError("Need to fix this implementation.")
+
+        # Taking left-most column
         for i in range(0, self.lattice.params["num_data"], self.lattice.params["d"]):
-            self.circ.x(self.lattice.qregisters["data"][i])
-        self.circ.barrier()
-
-    def logical_z(self) -> None:
-        """
-        Logical Z operator on the qubit.
-        """
-        raise NotImplementedError("Need to fix this implementation.")
-        for i in range(self.lattice.params["d"]):
-            self.circ.z(self.lattice.qregisters["data"][i])
-        self.circ.barrier()
-
-    def readout_z(self) -> None:
-        """
-        Convenience method to read-out the logical-Z projection.
-        """
-        raise NotImplementedError("Need to fix this implementation.")
-        readout = ClassicalRegister(1, name=self.name + "_readout")
-
-        # try adding readout cregister
-        # this will throw an error if a "readout" register is already a part of the circ
-        # TODO: add functionality to have multiple readout registers
-        self.circ.add_register(readout)
-
-        self.lattice.cregisters["readout"] = readout
-
-        self.circ.reset(self.lattice.qregisters["ancilla"])
-        for i in range(self.lattice.params["d"]):
-            self.circ.cx(
-                self.lattice.qregisters["data"][i], self.lattice.qregisters["ancilla"]
-            )
-        self.circ.measure(
-            self.lattice.qregisters["ancilla"], self.lattice.cregisters["readout"]
-        )
+            if i % 2 == 1:
+                self.circ.x(self.lattice.qregisters["data"][i])
+            else:
+                self.circ.z(self.lattice.qregisters["data"][i])
         self.circ.barrier()
 
     def readout_x(self) -> None:
         """
         Convenience method to read-out the logical-X projection.
+        Defined as the left-most column.
         """
-        raise NotImplementedError("Need to fix this implementation.")
         readout = ClassicalRegister(1, name=self.name + "_readout")
 
         # try adding readout cregister
@@ -314,16 +286,93 @@ class XZZXQubit(TopologicalQubit):
         self.lattice.cregisters["readout"] = readout
 
         self.circ.reset(self.lattice.qregisters["ancilla"])
-        self.circ.h(self.lattice.qregisters["ancilla"])
+
+        # Taking left-most column
         for i in range(0, self.lattice.params["num_data"], self.lattice.params["d"]):
-            self.circ.cx(
-                self.lattice.qregisters["ancilla"], self.lattice.qregisters["data"][i]
-            )
-        self.circ.h(self.lattice.qregisters["ancilla"])
+            if i % 2 == 1:
+                # X readout
+                self.circ.h(self.lattice.qregisters["ancilla"])
+                self.circ.cx(
+                    self.lattice.qregisters["ancilla"],
+                    self.lattice.qregisters["data"][i],
+                )
+                self.circ.h(self.lattice.qregisters["ancilla"])
+            else:
+                # Z readout
+                self.circ.cx(
+                    self.lattice.qregisters["data"][i],
+                    self.lattice.qregisters["ancilla"],
+                )
+
+        self.circ.barrier()
         self.circ.measure(
             self.lattice.qregisters["ancilla"], self.lattice.cregisters["readout"]
         )
         self.circ.barrier()
+
+    def init_logical_x_plus(self):
+        self.circ.reset(self.lattice.qregisters["data"])
+        for i in range(self.lattice.params["num_data"]):
+            if i % 2 == 1:
+                self.circ.h(self.lattice.qregisters["data"][i])  # H|0> = |+>
+
+    def logical_z(self) -> None:
+        """
+        Logical Z operator on the qubit.
+        Defined as the top-most row.
+        """
+
+        # Taking top-most row
+        for i in range(self.lattice.params["d"]):
+            if i % 2 == 0:
+                self.circ.x(self.lattice.qregisters["data"][i])
+            else:
+                self.circ.z(self.lattice.qregisters["data"][i])
+        self.circ.barrier()
+
+    def readout_z(self) -> None:
+        """
+        Convenience method to read-out the logical-Z projection.
+        Defined as the top-most row.
+        """
+
+        readout = ClassicalRegister(1, name=self.name + "_readout")
+
+        # try adding readout cregister
+        # this will throw an error if a "readout" register is already a part of the circ
+        # TODO: add functionality to have multiple readout registers
+        self.circ.add_register(readout)
+
+        self.lattice.cregisters["readout"] = readout
+
+        self.circ.reset(self.lattice.qregisters["ancilla"])
+
+        # Taking top-most row
+        for i in range(self.lattice.params["d"]):
+            if i % 2 == 0:
+                # X Readout
+                self.circ.h(self.lattice.qregisters["ancilla"])
+                self.circ.cx(
+                    self.lattice.qregisters["ancilla"],
+                    self.lattice.qregisters["data"][i],
+                )
+                self.circ.h(self.lattice.qregisters["ancilla"])
+            else:
+                # Z Readout
+                self.circ.cx(
+                    self.lattice.qregisters["data"][i],
+                    self.lattice.qregisters["ancilla"],
+                )
+        self.circ.measure(
+            self.lattice.qregisters["ancilla"], self.lattice.cregisters["readout"]
+        )
+        self.circ.barrier()
+
+    def init_logical_z_plus(self):
+        self.circ.reset(self.lattice.qregisters["data"])
+        for i in range(self.lattice.params["num_data"]):
+            if i % 2 == 0:
+                self.circ.h(self.lattice.qregisters["data"][i])  # H|0> = |+>
 
     def parse_readout(
         self, readout_string: str
