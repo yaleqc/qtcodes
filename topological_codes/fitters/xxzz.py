@@ -11,6 +11,10 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from typing import Tuple, List, Dict, Optional, TypeVar, Union, cast
+from .base import TopologicalGraphDecoder
+from .visualization import VisualizationMixin
+from .mwpm import MWPMDecodingMixin
 
 from qiskit import QuantumCircuit, execute
 
@@ -24,18 +28,24 @@ except ImportError:
     HAS_AER = False
 
 
-class GraphDecoder:
+TQubit = Tuple[float, float, float]  # (time,row,column) ==> (t,i,j)
+TQubitLoc = Tuple[float, float]  # (row,column) ==> (i,j)
+
+
+class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
     """
     Class to construct the graph corresponding to the possible syndromes
     of a quantum error correction code, and then run suitable decoders.
     """
 
-    def __init__(self, d, T):
+    def __init__(self, code_params: Dict) -> None:
+        super().__init__(code_params)
+        if "d" not in self.code_params or "T" not in self.code_params:
+            raise ValueError("Please include d and T in code_params.")
 
-        self.d = d
-        self.T = T
         self.virtual = self._specify_virtual()
-        self.S = {"X": nx.Graph(), "Z": nx.Graph()}  # syndrome graphs
+        self.S["X"] = nx.Graph()
+        self.S["Z"] = nx.Graph()
         self._make_syndrome_graph()
 
         self.paulis = {
@@ -45,7 +55,7 @@ class GraphDecoder:
             "I": np.array([[1, 0], [0, 1]]),
         }
 
-    def _specify_virtual(self):
+    def _specify_virtual(self) -> Dict[str, List[TQubit]]:
         """
         Define coordinates of Z and X virtual syndrome nodes. Our convention is that Z
         virtual syndrome nodes are top/bottom and X virtual nodes are left/right.
@@ -54,31 +64,31 @@ class GraphDecoder:
             virtual (dictionary): where virtual["X"] holds a list of tuples specifying virtual X syndrome nodes
             and equivalently for virtual["Z"]
         """
-        virtual = {}
+        virtual: Dict[str, List[TQubit]] = {}
         virtual["X"] = []
         virtual["Z"] = []
-        for j in range(0, self.d, 2):
+        for j in range(0, self.code_params["d"], 2):
             # Z virtual nodes
             virtual["Z"].append((-1, -0.5, j - 0.5))  # top
-            virtual["Z"].append((-1, self.d - 0.5, j + 0.5))  # bottom
+            virtual["Z"].append((-1, self.code_params["d"] - 0.5, j + 0.5))  # bottom
 
             # X virtual nodes
             virtual["X"].append((-1, j + 0.5, -0.5))  # left
-            virtual["X"].append((-1, j - 0.5, self.d - 0.5))  # right
+            virtual["X"].append((-1, j - 0.5, self.code_params["d"] - 0.5))  # right
         return virtual
 
-    def _make_syndrome_graph(self):
+    def _make_syndrome_graph(self) -> None:
         """
         Populates self.S["X"] and self.S["Z"] syndrome nx.Graph()'s with nodes specified by time and position. 
         Args:
         Returns:
         """
         start_nodes = {"Z": (0.5, 0.5), "X": (0.5, 1.5)}
-        for syndrome_key in ["X", "Z"]:
+        for syndrome_graph_key in ["X", "Z"]:
             # subgraphs for each time step
-            for t in range(0, self.T):
-                start_node = start_nodes[syndrome_key]
-                self.S[syndrome_key].add_node(
+            for t in range(0, self.code_params["T"]):
+                start_node = start_nodes[syndrome_graph_key]
+                self.S[syndrome_graph_key].add_node(
                     (t,) + start_node,
                     virtual=0,
                     pos=(start_node[1], -start_node[0]),
@@ -89,31 +99,38 @@ class GraphDecoder:
                         t,
                     ),  # y-coord is flipped for plot purposes
                 )
-                self.populate_syndrome_graph(
-                    (t,) + start_node, t, [], syndrome_key, edge_weight=1
+                self._populate_syndrome_graph(
+                    (t,) + start_node, t, [], syndrome_graph_key, edge_weight=1
                 )
 
             # connect physical qubits in same location across subgraphs of adjacent times
             syndrome_nodes_t0 = [
-                x for x, y in self.S[syndrome_key].nodes(data=True) if y["time"] == 0
+                x
+                for x, y in self.S[syndrome_graph_key].nodes(data=True)
+                if y["time"] == 0
             ]
             for node in syndrome_nodes_t0:
                 space_label = (node[1], node[2])
-                for t in range(0, self.T - 1):
-                    self.S[syndrome_key].add_edge(
+                for t in range(0, self.code_params["T"] - 1):
+                    self.S[syndrome_graph_key].add_edge(
                         (t,) + space_label, (t + 1,) + space_label, distance=1
                     )
 
-    def populate_syndrome_graph(
-        self, current_node, t, visited_nodes, syndrome_key, edge_weight=1
-    ):
-        """Recursive function to populate syndrome subgraph at time t with syndrome_key X/Z. The current_node
+    def _populate_syndrome_graph(
+        self,
+        current_node: TQubit,
+        t: int,
+        visited_nodes: List[TQubit],
+        syndrome_graph_key: str,
+        edge_weight: int = 1,
+    ) -> None:
+        """Recursive function to populate syndrome subgraph at time t with syndrome_graph_key X/Z. The current_node
         is connected to neighboring nodes without revisiting a node.
 
         Args:
             current_node ((t, x, y)): Current syndrome node to be connected with neighboring nodes.
             visited_nodes ([(t, x, y),]): List of syndrome nodes which have already been traver.
-            syndrome_key (char): Which X/Z syndrome subgraph these nodes are from.
+            syndrome_graph_key (char): Which X/Z syndrome subgraph these nodes are from.
             edge_weight (float, optional): Weight of edge between two adjacent syndrome nodes. Defaults to 1.
 
         Returns:
@@ -131,13 +148,13 @@ class GraphDecoder:
         normal_neighbors = [
             n
             for n in neighbors
-            if self.valid_syndrome(n, syndrome_key)
+            if self._valid_syndrome(n, syndrome_graph_key)
             and (t, n[0], n[1]) not in visited_nodes
         ]  # syndrome node neighbors of current_node not already visited
         virtual_neighbors = [
             n
             for n in neighbors
-            if (-1, n[0], n[1]) in self.virtual[syndrome_key]
+            if (-1, n[0], n[1]) in self.virtual[syndrome_graph_key]
             and (-1, n[0], n[1]) not in visited_nodes
         ]  # virtual node neighbors of current_node not already visited
 
@@ -150,15 +167,15 @@ class GraphDecoder:
             target_node = (
                 t,
             ) + target  # target_node has time t with x and y coordinates from target
-            if not self.S[syndrome_key].has_node(target_node):
-                self.S[syndrome_key].add_node(
+            if not self.S[syndrome_graph_key].has_node(target_node):
+                self.S[syndrome_graph_key].add_node(
                     target_node,
                     virtual=0,
                     pos=(target[1], -target[0]),
                     time=t,
                     pos_3D=(target[1], -target[0], t),
                 )  # add target_node to syndrome subgraph if it doesn't already exist
-            self.S[syndrome_key].add_edge(
+            self.S[syndrome_graph_key].add_edge(
                 current_node, target_node, distance=edge_weight
             )  # add edge between current_node and target_node
 
@@ -167,54 +184,71 @@ class GraphDecoder:
             target_node = (
                 -1,
             ) + target  # virtual target_node has time -1 with x and y coordinates from target
-            if not self.S[syndrome_key].has_node(target_node):
-                self.S[syndrome_key].add_node(
+            if not self.S[syndrome_graph_key].has_node(target_node):
+                self.S[syndrome_graph_key].add_node(
                     target_node,
                     virtual=1,
                     pos=(target[1], -target[0]),
                     time=-1,
-                    pos_3D=(target[1], -target[0], (self.T - 1) / 2),
+                    pos_3D=(target[1], -target[0], (self.code_params["T"] - 1) / 2),
                 )  # add virtual target_node to syndrome subgraph with z coordinate (T-1)/2 for nice plotting, if it doesn't already exist
-            self.S[syndrome_key].add_edge(
+            self.S[syndrome_graph_key].add_edge(
                 current_node, target_node, distance=edge_weight
             )  # add edge between current_node and virtual target_node
 
         # recursively traverse normal neighbors
         for target in normal_neighbors:
-            self.populate_syndrome_graph(
-                (t,) + target, t, visited_nodes, syndrome_key, edge_weight=1
+            self._populate_syndrome_graph(
+                (t,) + target, t, visited_nodes, syndrome_graph_key, edge_weight=1
             )
 
         # recursively traverse virtual neighbors
         for target in virtual_neighbors:
-            self.populate_syndrome_graph(
-                (-1,) + target, t, visited_nodes, syndrome_key, edge_weight=1
+            self._populate_syndrome_graph(
+                (-1,) + target, t, visited_nodes, syndrome_graph_key, edge_weight=1
             )
 
-    def valid_syndrome(self, node, syndrome_key):
-        """Checks whether a node is a syndrome node under our syndrome_key, which is either X or Z.
+    def _valid_syndrome(self, node: TQubitLoc, syndrome_graph_key: str) -> bool:
+        """Checks whether a node is a syndrome node under our syndrome_graph_key, which is either X or Z.
 
         Args:
             node ((t, x, y)): Node in graph.
-            syndrome_key (char): Which X/Z syndrome subgraph these nodes are from.
+            syndrome_graph_key (char): Which X/Z syndrome subgraph these nodes are from.
 
         Returns:
             Boolean T/F: whether node is a syndrome node
         """
         i = node[0]
         j = node[1]
-        if syndrome_key == "Z":
-            if i > 0 and i < self.d - 1 and j < self.d and j > -1:
+        if syndrome_graph_key == "Z":
+            if (
+                i > 0
+                and i < self.code_params["d"] - 1
+                and j < self.code_params["d"]
+                and j > -1
+            ):
                 return True
             else:
                 return False
-        elif syndrome_key == "X":
-            if j > 0 and j < self.d - 1 and i < self.d and i > -1:
+        elif syndrome_graph_key == "X":
+            if (
+                j > 0
+                and j < self.code_params["d"] - 1
+                and i < self.code_params["d"]
+                and i > -1
+            ):
                 return True
             else:
                 return False
+        else:
+            raise ValueError("Please enter a valid syndrome_graph_key: X or Z")
 
-    def make_error_graph(self, nodes, syndrome_key, err_prob=None):
+    def _make_error_graph(
+        self,
+        nodes: List[TQubit],
+        syndrome_graph_key: str,
+        err_prob: Optional[float] = None,
+    ):
         """Creates error syndrome subgraph from list of syndrome nodes. The output of
         this function is a graph that's ready for minimum weight perfect matching (MWPM).
 
@@ -223,17 +257,19 @@ class GraphDecoder:
 
         Args:
             nodes ([(t, x, y),]): List of changes of syndrome nodes in time.
-            syndrome_key (char): Which X/Z syndrome subgraph these nodes are from.
+            syndrome_graph_key (char): Which X/Z syndrome subgraph these nodes are from.
             err_prob (float, optional): Probability of IID data qubit X/Z flip. Defaults to None.
 
         Returns:
             nx.Graph: Nodes are syndromes, edges are proxy for error probabilities
         """
-        paths = {}
-        virtual_dict = nx.get_node_attributes(self.S[syndrome_key], "virtual")
-        time_dict = nx.get_node_attributes(self.S[syndrome_key], "time")
+        virtual_dict = nx.get_node_attributes(self.S[syndrome_graph_key], "virtual")
+        time_dict = nx.get_node_attributes(self.S[syndrome_graph_key], "time")
         error_graph = nx.Graph()
-        nodes += self.virtual[syndrome_key]
+        make_even = (
+            len(nodes) % 2 != 0
+        )  # need to ensure there are an even number of nodes
+        nodes += self.virtual[syndrome_graph_key]
 
         for node in nodes:
             if not error_graph.has_node(node):
@@ -246,28 +282,41 @@ class GraphDecoder:
                 )
 
         for source, target in combinations(nodes, 2):
-            # Distance is proportional to the probability of this error chain, so
-            # finding the maximum-weight perfect matching of the whole graph gives
-            # the most likely sequence of errors that led to these syndromes.
-            distance = int(
-                nx.shortest_path_length(
-                    self.S[syndrome_key], source, target, weight="distance"
+            if (
+                source in self.virtual[syndrome_graph_key]
+                and target in self.virtual[syndrome_graph_key]
+            ):
+                distance = 0.0
+            else:
+                # Distance is proportional to the probability of this error chain, so
+                # finding the maximum-weight perfect matching of the whole graph gives
+                # the most likely sequence of errors that led to these syndromes.
+                distance = float(
+                    nx.shortest_path_length(
+                        self.S[syndrome_graph_key], source, target, weight="distance"
+                    )
                 )
-            )
 
-            # If err_prob is specified, we also account for path degeneracies
-            deg, path = self._path_degeneracy(source, target, syndrome_key)
-            paths[(source, target)] = path
-            if err_prob:
-                distance = distance - math.log(deg) / (
-                    math.log1p(-err_prob) - math.log(err_prob)
-                )
-            distance = -distance
+                # If err_prob is specified, we also account for path degeneracies
+                deg = self._path_degeneracy(source, target, syndrome_graph_key)
+                if err_prob:
+                    distance = distance - math.log(deg) / (
+                        math.log1p(-err_prob) - math.log(err_prob)
+                    )
+                distance = -distance
             error_graph.add_edge(source, target, weight=distance)
 
-        return error_graph, paths
+        if make_even:
+            source = (-1, -1, -1)
+            error_graph.add_node(
+                source, virtual=1, pos=(-1, -1), time=-1, pos_3D=(-1, -1, -1),
+            )
+            for target in self.virtual[syndrome_graph_key]:
+                error_graph.add_edge(source, target, weight=0)
 
-    def _path_degeneracy(self, a, b, syndrome_key):
+        return error_graph
+
+    def _path_degeneracy(self, a: TQubit, b: TQubit, syndrome_graph_key: str):
         """Calculate the number of shortest error paths that link two syndrome nodes
         through both space and time.
 
@@ -276,25 +325,21 @@ class GraphDecoder:
             b (tuple): Ending or starting syndrome node (degeneracy is symmetric)
 
         Raises:
-            nx.exception.NodeNotFound: syndrome_key must be X or Z
+            nx.exception.NodeNotFound: syndrome_graph_key must be X or Z
 
         Returns:
             int: Number of degenerate shortest paths matching this syndrome pair
-            [nodes,]: List of nodes for one of the shortest paths
         """
         # Check which subgraph node is on. If x + y is even => X, else Z.
         # a_sum, b_sum = a[1] + a[2], b[1] + b[2]
-        if syndrome_key == "X":
+        if syndrome_graph_key == "X":
             subgraph = self.S["X"]
-        elif syndrome_key == "Z":
+        elif syndrome_graph_key == "Z":
             subgraph = self.S["Z"]
         else:
-            raise nx.exception.NodeNotFound("syndrome_key must be X or Z")
+            raise nx.exception.NodeNotFound("syndrome_graph_key must be X or Z")
 
         shortest_paths = list(nx.all_shortest_paths(subgraph, a, b, weight="distance"))
-        one_path = shortest_paths[
-            0
-        ]  # We can pick any path to return as the error chain
         degeneracy = len(shortest_paths)
 
         # If either node is a virtual node, we also find degeneracies from the other
@@ -309,7 +354,7 @@ class GraphDecoder:
 
         # Compute additional degeneracies to edge boundaries
         if source:
-            virtual_nodes = self.virtual[syndrome_key]
+            virtual_nodes = self.virtual[syndrome_graph_key]
             shortest_distance = nx.shortest_path_length(
                 subgraph, a, b, weight="distance"
             )
@@ -325,200 +370,86 @@ class GraphDecoder:
                             )
                         )
                     )
-        return degeneracy, one_path
+        return degeneracy
 
-    def matching_graph(self, error_graph, syndrome_key):
-        """Return subgraph of error graph to be matched.
+    def _get_matched_graph(
+        self, matching_graph: nx.Graph, filtered_matches: List[Tuple[TQubit, TQubit]],
+    ) -> nx.Graph:
+        matched_graph = matching_graph.copy()
+        for u, v, _ in matching_graph.edges(data=True):
+            if (u, v) not in filtered_matches and (v, u) not in filtered_matches:
+                matched_graph.remove_edge(u, v)
+        matched_graph.remove_nodes_from(list(nx.isolates(matched_graph)))
+        return matched_graph
 
-        Args:
-            error_graph (nx.Graph): Complete error graph to be matched.
-            syndrome_key (char): Which X/Z syndrome subgraph these nodes are from.
-
-        Returns:
-            nx.Graph: Subgraph of error graph to be matched
-        """
-        time_dict = nx.get_node_attributes(self.S[syndrome_key], "time")
-        subgraph = nx.Graph()
-        syndrome_nodes = [
-            x for x, y in error_graph.nodes(data=True) if y["virtual"] == 0
-        ]
-        virtual_nodes = [
-            x for x, y in error_graph.nodes(data=True) if y["virtual"] == 1
-        ]
-
-        # add and connect each syndrome node to subgraph
-        for node in syndrome_nodes:
-            if not subgraph.has_node(node):
-                subgraph.add_node(
-                    node,
-                    virtual=0,
-                    pos=(node[2], -node[1]),
-                    time=time_dict[node],
-                    pos_3D=(node[2], -node[1], time_dict[node]),
-                )
-        for source, target in combinations(syndrome_nodes, 2):
-            subgraph.add_edge(
-                source, target, weight=error_graph[source][target]["weight"]
-            )
-
-        # connect each syndrome node to its closest virtual node in subgraph
-        for source in syndrome_nodes:
-            potential_virtual = {}
-            for target in virtual_nodes:
-                potential_virtual[target] = error_graph[source][target]["weight"]
-            nearest_virtual = max(potential_virtual, key=potential_virtual.get)
-            paired_virtual = (
-                nearest_virtual + source
-            )  # paired_virtual (virtual, syndrome) allows for the virtual node to be matched more than once
-            subgraph.add_node(
-                paired_virtual,
-                virtual=1,
-                pos=(nearest_virtual[2], -nearest_virtual[1]),
-                time=-1,
-                pos_3D=(nearest_virtual[2], -nearest_virtual[1], -1),
-            )  # add paired_virtual to subgraph
-            subgraph.add_edge(
-                source, paired_virtual, weight=potential_virtual[nearest_virtual]
-            )  # add (syndrome, paired_virtual) edge to subgraph
-
-        paired_virtual_nodes = [
-            x for x, y in subgraph.nodes(data=True) if y["virtual"] == 1
-        ]
-
-        # add 0 weight between paired virtual nodes
-        for source, target in combinations(paired_virtual_nodes, 2):
-            subgraph.add_edge(source, target, weight=0)
-
-        return subgraph
-
-    def matching(self, matching_graph, syndrome_key, return_graph=False):
+    def _run_mwpm(
+        self, matching_graph: nx.Graph, syndrome_graph_key: str,
+    ) -> List[Tuple[TQubit, TQubit]]:
         """Return matches of minimum weight perfect matching (MWPM) on matching_graph.
 
         Args:
             matching_graph (nx.Graph): Graph to run MWPM.
-            syndrome_key (char): Which X/Z syndrome subgraph these nodes are from.
+            syndrome_graph_key (char): Which X/Z syndrome subgraph these nodes are from.
 
         Returns:
             [(node, node),]: List of matchings found from MWPM
         """
         matches = nx.max_weight_matching(matching_graph, maxcardinality=True)
+        # filtered_matches = [
+        #     (source, target)
+        #     for (source, target) in matches
+        #     if not (len(source) > 3 and len(target) > 3)
+        # ]  # remove 0 weighted matched edges between virtual syndrome nodes
         filtered_matches = [
             (source, target)
             for (source, target) in matches
-            if not (len(source) > 3 and len(target) > 3)
-        ]  # remove 0 weighted matched edges between virtual syndrome nodes
-        if return_graph:
-            matched_graph = matching_graph.copy()
-            for u, v, _ in matching_graph.edges(data=True):
-                if (u, v) not in filtered_matches and (v, u) not in filtered_matches:
-                    matched_graph.remove_edge(u, v)
-            matched_graph.remove_nodes_from(list(nx.isolates(matched_graph)))
-            return filtered_matches, matched_graph
+            if not (source[0] == -1 and target[0] == -1)
+        ]
+
         return filtered_matches
 
-    def calculate_qubit_flips(self, matches, paths, syndrome_key):
-        data_qubit_flips = {}
-        for (source, target) in matches:
-            # Trim "paired virtual" nodes to nearest virtual node
-            if len(source) > 3:
-                source = source[:3]
-            if len(target) > 3:
-                target = target[:3]
-
-            # Paths dict is encoded in one direction, check other if not found
-            if (source, target) not in paths:
-                source, target = (target, source)
-
-            path = paths[(source, target)]  # This is an arbitrary shortest error path
-            for i in range(0, len(path) - 1):
-                start = path[i]
-                end = path[i + 1]
-                # Check if syndromes are in different physical locations
-                # If they're in the same location, this is a measurement error
-                if start[1:] != end[1:]:
-                    time = start[0]
-                    if time == -1:  # Grab time from non-virtual syndrome
-                        time = end[0]
-                    data_qubit = (
-                        time,
-                        (start[1] + end[1]) / 2,
-                        (start[2] + end[2]) / 2,
-                    )
-
-                    # Paired flips at the same time can be ignored
-                    if data_qubit in data_qubit_flips:
-                        data_qubit_flips[data_qubit] = (
-                            data_qubit_flips[data_qubit] + 1
-                        ) % 2
-                    else:
-                        data_qubit_flips[data_qubit] = 1
-
-        data_qubit_flip_locs = [x for x, y in data_qubit_flips.items() if y == 1]
-        return data_qubit_flip_locs
-
-    def net_qubit_flips(self, flips):
-        flips_x = flips["Z"]  # recall that the Z syndrome graph detects X Flips
-        flips_z = flips["X"]  # recall that the X syndrome graph detects Z Flips
-        flipsx = {flip: "X" for flip in flips_x if flip not in flips_z}
-        flipsz = {flip: "Z" for flip in flips_z if flip not in flips_x}
-        flipsy = {flip: "Y" for flip in flips_x if flip in flips_z}
-        flips = {**flipsx, **flipsy, **flipsz}
-
-        individual_flips = defaultdict(dict)
-
-        for flip, error_key in flips.items():
-            individual_flips[flip[1:]][flip[0]] = error_key
-
-        physical_qubit_flips = {}
-        for qubit_loc, flip_record in individual_flips.items():
-            net_error = self.paulis["I"]
-            # print("Physical Qubit: " + str(qubit_loc))
-            for time, error in sorted(flip_record.items(), key=lambda item: item[0]):
-                # print("Error: " + error + " at time: " + str(time))
-                net_error = net_error.dot(self.paulis[error])
-            physical_qubit_flips[qubit_loc] = net_error
-
-        physical_qubit_flips = {
-            x: y
-            for x, y in physical_qubit_flips.items()
-            if not np.array_equal(y, self.paulis["I"])
-        }
-        return physical_qubit_flips
-
-    def corrections(self, syndromes):
+    def _corrections(
+        self,
+        syndromes: List[TQubit],
+        syndrome_graph_key: str,
+        err_prob: Optional[float] = None,
+    ) -> List[Tuple[TQubit, TQubit]]:
         """
         Args:
-            syndromes: Dictionary with syndromes["X"] containing tuples of the form 
-            (t,i,j) where t specifies time and (i,j) specify position of 
-            the X syndrome node changed from its value at (t-1,i,j), 
-            and similarly, syndromes["Z"] for Z syndrome nodes. 
-            TODO change errors to a string format.
+            syndromes ({str,[node,]}):
+                key: syndrome_graph_key, either "X", "Z"
+                value: activated syndrome nodes (t,i,j)
+
+                Dictionary with syndromes["X"] containing tuples of the form 
+                (t,i,j) where t specifies time and (i,j) specify position of 
+                the X syndrome node changed from its value at (t-1,i,j), 
+                and similarly, syndromes["Z"] for Z syndrome nodes. 
+
         Returns:
-            net_flips: dictionary with key representing physical (data) qubit
-            and value representing the net error matrix on that data qubit. 
-            e.g. key: (0,0), value: [[0,1],[1,0]] (X error)
+            net_flips ({(i,j):np.ndarray}): 
+                dictionary with key representing physical (data) qubit
+                and value representing the net error matrix on that data qubit. 
+                e.g. key: (0,0), value: [[0,1],[1,0]] (X error)
+
         Additional Information:
             This method can be used to correct readout errors as shown in self.correct_readout. 
         """
-        flips = {}
-        for syndrome_key, syndrome_set in syndromes.items():
-            if not syndrome_set:
-                flips[syndrome_key] = []
-                continue
-            error_graph, paths = self.make_error_graph(
-                syndrome_set, syndrome_key
-            )  # TODO add option to use degeneracy weighting by setting err_prob
-            matching_graph = self.matching_graph(error_graph, syndrome_key)
-            matches = self.matching(matching_graph, syndrome_key)
-            flips[syndrome_key] = self.calculate_qubit_flips(
-                matches, paths, syndrome_key
-            )
-        net_flips = self.net_qubit_flips(flips)
-        return net_flips
+        if not syndromes:
+            return []
+
+        error_graph = self._make_error_graph(
+            syndromes, syndrome_graph_key, err_prob=err_prob
+        )  # TODO add option to use degeneracy weighting by setting err_prob
+        matches = self._run_mwpm(error_graph, syndrome_graph_key)
+        return matches
 
     def correct_readout(
-        self, readout_string=None, logical_qubit_value=None, syndromes=None
-    ):
+        self,
+        syndromes: Union[str, Dict[str, List[TQubit]]],
+        logical_qubit_value: Optional[int] = None,
+        logical_readout_type: str = "Z",
+        err_prob: Optional[float] = None,
+    ) -> int:
         """
         Args:
             readout: string like "1 00000000 00000000" representing "R S2 S1" (d=3, T=2) where 
@@ -529,23 +460,38 @@ class GraphDecoder:
         Additional Information:
             This method can be used to benchmark logical error rates, as well as perform fault tolerant readout.
         """
-        if readout_string is not None:
-            logical_qubit_value, syndromes = self._convert_string_to_nodes(
-                readout_string
-            )
+        if type(syndromes) == str:
+            logical_qubit_value, syndromes = self._string2nodes(str(syndromes))
+        syndromes = cast(Dict[str, List[TQubit]], syndromes)
+        logical_qubit_value = cast(int, logical_qubit_value)
+        # TODO is there a neater way to satisfy the type linter?
 
         # Logical Z readout will be performed with data qubits in the top row, this can be generalized later TODO
-        net_flips = self.corrections(syndromes)
-        top_row = [(0, i) for i in range(self.d)]
-        for top_data_qubit in top_row:
-            if top_data_qubit in net_flips:
-                flip_matrix = net_flips[top_data_qubit]
-                error = self._find_pauli_matrix(flip_matrix)
-                if error == "X" or error == "Y":
-                    logical_qubit_value = (logical_qubit_value + 1) % 2
+        matches = self._corrections(
+            syndromes[logical_readout_type], logical_readout_type, err_prob=err_prob
+        )
+
+        for match in matches:
+            if self._is_crossing_readout_path(match, logical_readout_type):
+                logical_qubit_value = (logical_qubit_value + 1) % 2
         return logical_qubit_value
 
-    def _find_pauli_matrix(self, matrix):
+    def _is_crossing_readout_path(
+        self, match: Tuple[TQubit, TQubit], logical_readout_type: str
+    ):
+        source, target = match
+        if logical_readout_type == "Z":
+            return (source[0] == -1 and source[1] == -0.5) or (
+                target[0] == -1 and target[1] == -0.5
+            )  # top
+        elif logical_readout_type == "X":
+            return (source[0] == -1 and source[2] == -0.5) or (
+                target[0] == -1 and target[2] == -0.5
+            )  # left
+        else:
+            raise ValueError("Please enter a valid logical_readout_type (X/Z).")
+
+    def _find_pauli_matrix(self, matrix: np.ndarray) -> str:
         for key, pauli in self.paulis.items():
             prod = matrix @ pauli
             if prod[0, 0] == 0:
@@ -555,7 +501,7 @@ class GraphDecoder:
                 return key
         raise Exception("Not a Pauli Matrix")
 
-    def _convert_string_to_nodes(self, readout_string):
+    def _string2nodes(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
         chunks = readout_string.split(" ")
 
         int_syndromes = [int(x, base=2) for x in chunks[-1:0:-1]]
@@ -568,26 +514,18 @@ class GraphDecoder:
         for T, syndrome in enumerate(X_syndromes):
             for loc in range(4):
                 if syndrome & 1 << loc:
-                    X.append((T, -0.5 + loc, 0.5 + loc % 2))
+                    X.append((float(T), -0.5 + loc, 0.5 + loc % 2))
 
         Z = []
         for T, syndrome in enumerate(Z_syndromes):
             for loc in range(4):
                 if syndrome & 1 << loc:
-                    Z.append((T, 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
+                    Z.append((float(T), 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
 
         return (
             int(chunks[0]),
             {"X": X, "Z": Z,},
         )
-
-    def graph_2D(self, G, edge_label):
-        pos = nx.get_node_attributes(G, "pos")
-        nx.draw_networkx(G, pos)
-        labels = nx.get_edge_attributes(G, edge_label)
-        labels = {x: round(y, 3) for (x, y) in labels.items()}
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
-        plt.show()
 
     def graph_3D(self, G, edge_label, angle=[-116, 22]):
         """Plots a graph with edge labels in 3D.
@@ -605,7 +543,8 @@ class GraphDecoder:
 
         # Define color range based on time
         colors = {
-            x: plt.cm.plasma((y["time"] + 1) / self.T) for x, y in G.nodes(data=True)
+            x: plt.cm.plasma((y["time"] + 1) / self.code_params["T"])
+            for x, y in G.nodes(data=True)
         }
 
         # 3D network plot
@@ -670,3 +609,8 @@ class GraphDecoder:
         ax.zaxis.pane.set_edgecolor("w")
 
         plt.show()
+
+
+class XXZZGraphDecoder(VisualizationMixin, MWPMDecodingMixin, XXZZGraphDecoderBase):
+    pass
+

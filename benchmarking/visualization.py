@@ -4,20 +4,18 @@ visualization script for benchmark data
 """
 
 #%%
-import sys
 import os
 
-sys.path.insert(0, ".." + os.sep)
 import matplotlib.pyplot as plt
 
 plt.rcParams.update({"font.size": 14, "pdf.fonttype": 42, "ps.fonttype": 42})
 
-from benchmarking.benchmarking_tools import SurfaceCodeBenchmarkingTool
+from benchmarking_tools import SurfaceCodeBenchmarkingTool
 
 import glob
 import numpy as np
 
-dir = "data_identity_noise/T_vary_d_3/"
+dir = "data_identity_noise_w_deg/T_1_d_vary_20210323/"
 data_files = glob.glob(dir + "*.npz")
 benchmarking_tools = []
 for file in data_files:
@@ -43,7 +41,7 @@ for log_plot in [True, False]:
 
     plt.plot(
         benchmarking_tools[sorted_indxs[0]].benchmark_data["noise"],
-        0.5 * benchmarking_tools[sorted_indxs[0]].benchmark_data["noise"],
+        benchmarking_tools[sorted_indxs[0]].benchmark_data["noise"],
         "--",
         label="breakeven",
     )

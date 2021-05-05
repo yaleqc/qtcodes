@@ -70,14 +70,14 @@ In general, we try to follow the existing structure of [`qiskit.ignis.verificati
 
 There are two main interfaces — corresponding to the encoder and decoder, respectively:
 
-### `SurfaceCode` in [`surface_code.circuits`](surface_code/circuits.py)
+### `SurfaceCode` in [`topological_codes.circuits`](topological_codes/circuits/xxzz.py)
 
 `SurfaceCode(d, T)` generates a `QuantumCircuit` for creating a logical state and measuring stabilizers. The class is parameterized with the code distance `d` (which should be odd) and the number of syndrome measurement rounds `T` (usually `T = d`). This class also handles parsing of the physical device readout into a form suitable for decoding. Please see the [encoder tutorial](tutorials/1_surface_code_encoding.ipynb) for a full walkthrough.
 <p align="center">
 <img width="615" alt="circuit" src="https://user-images.githubusercontent.com/293681/86277098-23ed3400-bba4-11ea-8305-c6d19eb73899.png">
 </p>
 
-### `GraphDecoder` in [`surface_code.fitters`](surface_code/fitters.py)
+### `GraphDecoder` in [`topological_codes.fitters`](topological_codes/fitters.py/xxzz.py)
 
 `GraphDecoder(d, T)` implements minimum-weight perfect matching (MWPM) on the syndrome measurements of the physical circuit. This class is similar to the existing `GraphDecoder` for repetition codes, but introduces a new framework to handle the 2D lattice.
 
@@ -100,6 +100,15 @@ The scope of the project is quite large, so we focused on completing a "minimum 
 * Our `GraphDecoder` implements two different approaches to syndrome graph generation. One is a "analytic" approach (much faster), and the other uses simulation to insert errors into the circuit. These produce slightly different syndrome graphs, but we get the same decoding results in our tests.
 
 ## Team
+
+### V2
+* [Shantanu Jha](https://github.com/Phionx)
+* [Henry Liu](https://github.com/liuhenry)
+* [Jessie Chen](https://github.com/JazzyCH)
+* [Allen Mi](https://github.com/Allenator)
+* [Aaron Householder](https://github.com/aaronhouseholder)
+
+### V1
 * [Andy Ding](https://github.com/ZhenghaoDing)
 * [Shantanu Jha](https://github.com/Phionx)
 * [Henry Liu](https://github.com/liuhenry)

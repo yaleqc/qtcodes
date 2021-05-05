@@ -9,7 +9,7 @@ sys.path.insert(0, ".." + os.sep)
 
 import numpy as np
 import matplotlib.pyplot as plt
-from surface_code.fitters import GraphDecoder
+from topological_codes import XXZZGraphDecoder
 
 from qiskit import QuantumCircuit, execute, QuantumRegister, ClassicalRegister, Aer
 from tqdm import tqdm
@@ -31,10 +31,10 @@ class SurfaceCodeBenchmarkingTool:
     ):
         self.decoder = decoder
         if self.decoder is not None:
-            self.d = decoder.d
-            self.T = decoder.T
+            self.d = decoder.code_params["d"]
+            self.T = decoder.code_params["T"]
         self.filename = (
-            "surface_code_d_{}_T_{}.npz".format(int(decoder.d), int(decoder.T))
+            "surface_code_d_{}_T_{}.npz".format(int(self.d), int(self.T))
             if filename is None
             else filename
         )
@@ -43,7 +43,7 @@ class SurfaceCodeBenchmarkingTool:
         self.noise_model_func = noise_model_func
         self.benchmark_data = {"noise": [], "logical_error_rate": []}
 
-    def logical_error_rate(self, readout_strings, correct_logical_value):
+    def logical_error_rate(self, readout_strings, correct_logical_value, err_prob=None):
         """
         Args:
             readout_strings: a dictionary of readout strings along with counts
@@ -58,7 +58,9 @@ class SurfaceCodeBenchmarkingTool:
         total_errors = 0
         for readout, count in readout_strings.items():
             total_count += count
-            predicted_logical_value = self.decoder.correct_readout(readout)
+            predicted_logical_value = self.decoder.correct_readout(
+                readout, err_prob=err_prob
+            )
             if predicted_logical_value != correct_logical_value:
                 total_errors += count
 
@@ -95,7 +97,7 @@ class SurfaceCodeBenchmarkingTool:
         for noise_value in tqdm(noise_values):
             results = (
                 execute(
-                    self.readout_circuit,
+                    self.readout_circuit.circ,
                     Aer.get_backend("qasm_simulator"),
                     noise_model=self.noise_model_func(noise_value),
                     shots=shots,
@@ -149,7 +151,7 @@ class SurfaceCodeBenchmarkingTool:
     def simulate_readout_single(self, noise_value):
         results = (
             execute(
-                self.readout_circuit,
+                self.readout_circuit.circ,
                 Aer.get_backend("qasm_simulator"),
                 noise_model=self.noise_model_func(noise_value),
                 shots=100000,
@@ -158,7 +160,7 @@ class SurfaceCodeBenchmarkingTool:
             .get_counts()
         )
         logical_error_rate_value = self.logical_error_rate(
-            results, self.correct_logical_value
+            results, self.correct_logical_value, err_prob=noise_value
         )
         print("Done simulating noise: " + str(noise_value))
         return logical_error_rate_value
@@ -184,8 +186,8 @@ class SurfaceCodeBenchmarkingTool:
         filename = self.filename if filename is None else filename
         np.savez(
             filename,
-            d=self.decoder.d,
-            T=self.decoder.T,
+            d=self.decoder.code_params["d"],
+            T=self.decoder.code_params["T"],
             noise=self.benchmark_data["noise"],
             logical_error_rate=self.benchmark_data["logical_error_rate"],
         )
@@ -195,7 +197,7 @@ class SurfaceCodeBenchmarkingTool:
         data = np.load(filename)
         self.d = int(data["d"])
         self.T = int(data["T"])
-        self.decoder = GraphDecoder(d=self.d, T=self.T)
+        self.decoder = XXZZGraphDecoder({"d": self.d, "T": self.T})
 
         # self.readout_circuit =
         self.benchmark_data["noise"] = data["noise"]
