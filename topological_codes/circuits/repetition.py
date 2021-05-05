@@ -43,11 +43,12 @@ class _RepetitionLattice(_TopologicalLattice):
 
         # create registers
         qregisters: Dict[str, QuantumRegister] = {}  # quantum
-        qregisters["data"] = QuantumRegister(params["num_data"], name=name + "_data")
+        qregisters["data"] = QuantumRegister(params["num_data"], name=name + "_data") # gives each qubit in register a unique name
         qregisters["mp"] = QuantumRegister(params["num_syn"], name=name + "_mp")
 
         cregisters: Dict[str, ClassicalRegister] = {}  # classical
         super().__init__(circ, qregisters, cregisters, params, name)
+
 
     def gen_qubit_indices_and_stabilizers(self):
         """
@@ -133,7 +134,8 @@ class RepetitionQubit(TopologicalQubit):
         self.circ.barrier()
 
     def logical_z(self) -> None:
-        raise NotImplementedError("This has not been implemented yet.")
+        self.circ.z(self.lattice.qregisters["data"])
+        self.circ.barrier()
 
     def readout_z(self) -> None:
         """

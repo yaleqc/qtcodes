@@ -102,6 +102,9 @@ class _XXZZLattice(_TopologicalLattice[TQubit]):
         # create registers
         qregisters: Dict[str, QuantumRegister] = {}  # quantum
         qregisters["data"] = QuantumRegister(params["num_data"], name=name + "_data")
+        # We use name=name (that we initialize the lattice with) + "_data" 
+        # so that each qubit inside each register will have a unique name
+        # i.e. treg_0_data_0, treg_0_data_1, treg_0_data_2...
         qregisters["mz"] = QuantumRegister(params["num_syn"], name=name + "_mz")
         qregisters["mx"] = QuantumRegister(params["num_syn"], name=name + "_mx")
         qregisters["ancilla"] = QuantumRegister(1, name=name + "_ancilla")
@@ -115,7 +118,6 @@ class _XXZZLattice(_TopologicalLattice[TQubit]):
     def _geometry(self):
         """
         Construct the lattice geometry for reuse across this class.
-
         Returns:
             geometry (Dict[str, List[List[int]]]): 
                 key: syndrome/plaquette type
@@ -173,11 +175,9 @@ class _XXZZLattice(_TopologicalLattice[TQubit]):
         """
         Generates lattice blueprint for rotated surface code lattice with our
         chosen layout and numbering.
-
         Returns:
             qubit_indices (List[List[Qubit]]):
                 List of lists of Qubits that comprise each plaquette.
-
             stabilizers (List[_Stabilizer]):
                 List of stabilizers for each plaquette.
         """
@@ -218,7 +218,6 @@ class _XXZZLattice(_TopologicalLattice[TQubit]):
         """
         Extract final X syndrome measurements and logical X readout from 
         lattice readout along the X syndrome graph.
-
         Args:
             final_readout_string (str):
                 readout string of length equal to the number of data qubits
@@ -228,8 +227,6 @@ class _XXZZLattice(_TopologicalLattice[TQubit]):
             previous_syndrome_string (str):
                 syndrome readout string form the previous round 
                 of syndrome/stabilizer measurements
-
-
         Returns:
             logical_readout (int):
                 logical readout value
@@ -270,7 +267,6 @@ class _XXZZLattice(_TopologicalLattice[TQubit]):
         """
         Extract final Z syndrome measurements and logical Z readout from 
         lattice readout along the Z syndrome graph.
-
         Args:
             final_readout_string (str):
                 readout string of length equal to the number of data qubits
@@ -280,8 +276,6 @@ class _XXZZLattice(_TopologicalLattice[TQubit]):
             previous_syndrome_string (str):
                 syndrome readout string form the previous round 
                 of syndrome/stabilizer measurements
-
-
         Returns:
             logical_readout (int):
                 logical readout value
@@ -401,7 +395,6 @@ class _XXZZLattice(_TopologicalLattice[TQubit]):
         Helper method to turn a result string (e.g. 1 10100000 10010000) into an
         appropriate logical readout value and XOR-ed syndrome locations
         according to our grid coordinate convention.
-
         Args:
             readout_string (str):
                 Readout of the form "1 10100000 10010000"
