@@ -13,7 +13,7 @@ TQubit = Tuple[float, float, float]
 
 class _XXXX(_Stabilizer):
     """
-    X-syndrome plaquette of the rotated surface code.
+    X-syndrome plaquette of the rotated CSS (XXXX/ZZZZ) surface code.
     """
 
     def entangle(self) -> None:
@@ -256,7 +256,7 @@ class _XXZZLattice(_TopologicalLattice[TQubit]):
 
         stabilizer_str = (
             x_stabilizer + previous_syndrome_string[self.params["num_syn"] :]
-        )  # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where Z_{N}Z_{N-1}...Z_{0} is copied from penultimate
+        )  # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where Z_{N}Z_{N-1}...Z_{0} is copied from previous syndrome measurement string
 
         logical_readout = 0
         for idx in range(0, self.params["num_data"], self.params["d"]):
@@ -308,7 +308,7 @@ class _XXZZLattice(_TopologicalLattice[TQubit]):
 
         stabilizer_str = (
             previous_syndrome_string[: self.params["num_syn"]] + z_stabilizer
-        )  # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where X_{N}X_{N-1}...X_{0} is copied from penultimate
+        )  # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where X_{N}X_{N-1}...X_{0} is copied from previous syndrome measurement string
 
         logical_readout = 0
         for id in range(self.params["d"]):
@@ -404,7 +404,8 @@ class _XXZZLattice(_TopologicalLattice[TQubit]):
 
         Args:
             readout_string (str):
-                Readout of the form "1 10100000 10010000"
+                Readout of the form "0 00000000 00000000" (logical_readout syndrome_1 syndrome_0)
+                or of the form "000000000 00000000 00000000" (lattice_readout syndrome_1 syndrome_0)
         Returns:
             logical_readout (int): 
                 logical readout value
@@ -553,12 +554,14 @@ class XXZZQubit(TopologicalQubit[TQubit]):
     def logical_x(self) -> None:
         """
         Logical X operator on the topological qubit.
+        Defined as the left-most column on the X Syndrome Graph.
         """
         self.lattice.logical_x()
 
     def logical_z(self) -> None:
         """
         Logical Z operator on the topological qubit.
+        Defined as the top-most row on the Z Syndrome Graph.
         """
         self.lattice.logical_z()
 
@@ -574,30 +577,6 @@ class XXZZQubit(TopologicalQubit[TQubit]):
         """
         self.lattice.readout_z()
 
-    def lattice_readout_z(self) -> None:
-        """
-        Readout all data qubits that constitute the lattice.
-        This readout can be used to extract a final round of Z stabilizer measurments,
-        as well as a logical Z readout.
-        """
-        self.lattice.params["num_lattice_readout"] += 1
-
-        readout = ClassicalRegister(
-            self.lattice.params["num_data"],
-            name=self.name
-            + "_data_readout_"
-            + str(self.lattice.params["num_lattice_readout"]),
-        )
-
-        self.circ.add_register(readout)
-
-        self.lattice.cregisters["data_readout"] = readout
-
-        self.circ.measure(
-            self.lattice.qregisters["data"], self.lattice.cregisters["data_readout"]
-        )
-        self.circ.barrier()
-
     def lattice_readout_x(self) -> None:
         """
         Readout all data qubits that constitute the lattice.
@@ -609,17 +588,41 @@ class XXZZQubit(TopologicalQubit[TQubit]):
         readout = ClassicalRegister(
             self.lattice.params["num_data"],
             name=self.name
-            + "_data_readout_"
+            + "_lattice_readout_"
             + str(self.lattice.params["num_lattice_readout"]),
         )
 
         self.circ.add_register(readout)
-        self.lattice.cregisters["data_readout"] = readout
+        self.lattice.cregisters["lattice_readout"] = readout
 
         # H|+> = |0>, H|-> = |1>
         self.circ.h(self.lattice.qregisters["data"])
         self.circ.measure(
-            self.lattice.qregisters["data"], self.lattice.cregisters["data_readout"]
+            self.lattice.qregisters["data"], self.lattice.cregisters["lattice_readout"]
+        )
+        self.circ.barrier()
+
+    def lattice_readout_z(self) -> None:
+        """
+        Readout all data qubits that constitute the lattice.
+        This readout can be used to extract a final round of Z stabilizer measurments,
+        as well as a logical Z readout.
+        """
+        self.lattice.params["num_lattice_readout"] += 1
+
+        readout = ClassicalRegister(
+            self.lattice.params["num_data"],
+            name=self.name
+            + "_lattice_readout_"
+            + str(self.lattice.params["num_lattice_readout"]),
+        )
+
+        self.circ.add_register(readout)
+
+        self.lattice.cregisters["lattice_readout"] = readout
+
+        self.circ.measure(
+            self.lattice.qregisters["data"], self.lattice.cregisters["lattice_readout"]
         )
         self.circ.barrier()
 

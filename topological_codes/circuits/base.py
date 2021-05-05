@@ -129,5 +129,13 @@ class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def lattice_readout_x(self) -> None:
+        pass
+
+    @abstractmethod
+    def lattice_readout_z(self) -> None:
+        pass
+
+    @abstractmethod
     def parse_readout(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
         pass
