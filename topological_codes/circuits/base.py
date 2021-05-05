@@ -24,7 +24,11 @@ class _Stabilizer(metaclass=ABCMeta):
         pass
 
 
-class _TopologicalLattice(metaclass=ABCMeta):
+class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
+    """
+    This abstract class contains a blueprint for lattice construction.
+    """
+
     def __init__(
         self,
         circ: QuantumCircuit,
@@ -71,10 +75,11 @@ class _TopologicalLattice(metaclass=ABCMeta):
         pass
 
 
-class TopologicalQubit(metaclass=ABCMeta):
+class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
     """
-    A single topological code logical qubit. At the physical level, this wraps a
-    circuit, so we chose to subclass and extend QuantumCircuit.
+    A single topological code logical qubit. 
+    This stores a QuantumCircuit object onto which the topological circuit is built.
+    This abstract class contains a list of abstract methods that should be implemented by subclasses.
     """
 
     def __init__(self, circ: QuantumCircuit, name: str):
@@ -100,7 +105,11 @@ class TopologicalQubit(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def hadamard_reset(self) -> None:
+    def logical_x_plus_reset(self) -> None:
+        pass
+
+    @abstractmethod
+    def logical_z_plus_reset(self) -> None:
         pass
 
     @abstractmethod
@@ -112,11 +121,11 @@ class TopologicalQubit(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def readout_z(self) -> None:
+    def readout_x(self) -> None:
         pass
 
     @abstractmethod
-    def readout_x(self) -> None:
+    def readout_z(self) -> None:
         pass
 
     @abstractmethod
