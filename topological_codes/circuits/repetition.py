@@ -1,4 +1,4 @@
-from topological_codes import (
+from .base import (
     _Stabilizer,
     LatticeError,
     _TopologicalLattice,

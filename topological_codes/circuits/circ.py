@@ -1,4 +1,6 @@
-from topological_codes import XXZZQubit, RepetitionQubit, TopologicalQubit
+from .base import TopologicalQubit
+from .xxzz import XXZZQubit
+from .repetition import RepetitionQubit
 from qiskit import QuantumCircuit
 from typing import Union, Dict
 
