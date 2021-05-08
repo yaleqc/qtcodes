@@ -32,7 +32,7 @@ class _Parity(_Stabilizer):
         self.circ.cx(right, syndrome)
 
 
-class _RepetitionLattice(_TopologicalLattice[TQubit]):
+class _RepetitionLattice(_TopologicalLattice):
     """
     This class contains all the lattice geometry specifications regarding the Repetition Code.
     """
@@ -172,122 +172,6 @@ class _RepetitionLattice(_TopologicalLattice[TQubit]):
 
         return logical_readout, p_stabilizer
 
-    def parse_readout(
-        self, readout_string: str, readout_type: str = "Z"
-    ) -> Tuple[int, Dict[str, List[TQubit]]]:
-        """
-        Helper method to turn a result string (e.g. 0000 000 000) into an
-        appropriate logical readout value and XOR-ed syndrome locations
-        according to our grid coordinate convention.
-
-        Args:
-            readout_string (str):
-                Readout of the form "0000 000 000" (lattice_readout syndrome_1 syndrome_0)
-        Returns:
-            logical_readout (int):
-                logical readout value
-            syndromes (Dict[str, List[TQubit]]]):
-                key: syndrome type
-                value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)
-        """
-        assert readout_type == "Z", "Rep code only supports Z readout."
-
-        chunks = readout_string.split(" ")
-
-        (
-            logical_readout,
-            final_stabilizer,
-        ) = self.extract_final_stabilizer_and_logical_readout_z(chunks[0])
-
-        chunks = [final_stabilizer,] + chunks[1:]
-
-        int_syndromes = [int(x, base=2) for x in chunks[::-1]]
-        p_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
-
-        P = []
-        for T, syndrome in enumerate(p_syndromes):
-            for loc in range(self.params["num_syn"]):
-                if syndrome & 1 << loc:
-                    P.append((float(T), 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
-        return (
-            logical_readout,
-            {"P": P},
-        )
-
-
-class RepetitionQubit(TopologicalQubit[TQubit]):
-    """
-    A single logical repetition code qubit. At the physical level, this wraps a
-    circuit, so we chose to subclass and extend TopologicalQubit which extends QuantumCircuit.
-    """
-
-    def __init__(
-        self,
-        params: Dict[str, int],
-        name: str = "tqubit",
-        circ: Optional[QuantumCircuit] = None,
-    ) -> None:
-        """
-        Initializes this Topological Qubit class.
-
-        Args:
-            params (Dict[str,int]):
-                Contains params such as d, where d is the number of
-                physical "data" qubits within the rep code.
-            name (str):
-                Useful when combining multiple TopologicalQubits together.
-                Prepended to all registers.
-            circ (Optional[QuantumCircuit]):
-                QuantumCircuit on top of which the topological qubit is built.
-                This is often shared amongst multiple TQubits.
-                If none is provided, then a new QuantumCircuit is initialized and stored.
-
-        """
-        # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
-        circ = QuantumCircuit() if circ is None else circ
-        super().__init__(circ, name)
-        self.lattice = _RepetitionLattice(params, name, circ)
-
-    def stabilize(self) -> None:
-        """
-        Run a single round of stabilization (entangle and measure).
-        """
-        self.lattice.params["T"] += 1
-        syndrome_readouts = ClassicalRegister(
-            self.lattice.params["num_syn"],
-            name=self.name + "_c{}".format(self.lattice.params["T"]),
-        )
-        self.lattice.cregisters[
-            "syndrome{}".format(self.lattice.params["T"])
-        ] = syndrome_readouts
-        self.circ.add_register(syndrome_readouts)
-
-        self.lattice.entangle()
-
-        # measure syndromes
-        self.circ.measure(
-            self.lattice.qregisters["mp"], syndrome_readouts,
-        )
-        self.circ.reset(self.lattice.qregisters["mp"])
-        self.circ.barrier()
-
-    def identity(self) -> None:
-        """
-        Inserts an identity on the data and syndrome qubits.
-        This allows us to create an isolated noise model by inserting errors only on identity gates.
-        """
-        for register in self.lattice.qregisters.values():
-            self.circ.id(register)
-        self.circ.barrier()
-
-    def identity_data(self) -> None:
-        """
-        Inserts an identity on the data qubits only.
-        This allows us to create an isolated noise model by inserting errors only on identity gates.
-        """
-        self.circ.id(self.lattice.qregisters["data"])
-        self.circ.barrier()
-
     def logical_x_plus_reset(self) -> None:
         """
         Initialize/reset to a logical |x+> state.
@@ -298,7 +182,7 @@ class RepetitionQubit(TopologicalQubit[TQubit]):
         """
         Initialize/reset to a logical |z+> state.
         """
-        self.circ.reset(self.lattice.qregisters["data"])
+        self.circ.reset(self.qregisters["data"])
         self.circ.barrier()
 
     def logical_x(self) -> None:
@@ -306,7 +190,7 @@ class RepetitionQubit(TopologicalQubit[TQubit]):
         Logical X operator on the topological qubit.
         Defined as the left-most column on the X Syndrome Graph.
         """
-        self.circ.x(self.lattice.qregisters["data"])
+        self.circ.x(self.qregisters["data"])
         self.circ.barrier()
 
     def logical_z(self) -> None:
@@ -340,30 +224,118 @@ class RepetitionQubit(TopologicalQubit[TQubit]):
         This readout can be used to extract a final round of Parity stabilizer measurments,
         as well as a logical Z readout.
         """
-        self.lattice.params["num_lattice_readout"] += 1
+        self.params["num_lattice_readout"] += 1
 
         readout = ClassicalRegister(
-            self.lattice.params["num_data"],
+            self.params["num_data"],
             name=self.name
             + "_lattice_readout_"
-            + str(self.lattice.params["num_lattice_readout"]),
+            + str(self.params["num_lattice_readout"]),
         )
 
         self.circ.add_register(readout)
 
-        self.lattice.cregisters["lattice_readout"] = readout
+        self.cregisters["lattice_readout"] = readout
 
-        self.circ.measure(
-            self.lattice.qregisters["data"], self.lattice.cregisters["lattice_readout"]
-        )
+        self.circ.measure(self.qregisters["data"], self.cregisters["lattice_readout"])
         self.circ.barrier()
 
     def parse_readout(
-        self, readout_string: str, readout_type: str = "Z"
+        self, readout_string: str, readout_type: Optional[str] = None
     ) -> Tuple[int, Dict[str, List[TQubit]]]:
         """
-        Wrapper on helper method to turn a result string (e.g. 1 10100000 10010000) into an
+        Helper method to turn a result string (e.g. 0000 000 000) into an
         appropriate logical readout value and XOR-ed syndrome locations
         according to our grid coordinate convention.
+
+        Args:
+            readout_string (str):
+                Readout of the form "0000 000 000" (lattice_readout syndrome_1 syndrome_0)
+        Returns:
+            logical_readout (int):
+                logical readout value
+            syndromes (Dict[str, List[TQubit]]]):
+                key: syndrome type
+                value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)
         """
-        return self.lattice.parse_readout(readout_string, readout_type)
+        readout_type = readout_type if readout_type else "Z"
+        assert readout_type == "Z", "Rep code only supports Z readout."
+
+        chunks = readout_string.split(" ")
+
+        (
+            logical_readout,
+            final_stabilizer,
+        ) = self.extract_final_stabilizer_and_logical_readout_z(chunks[0])
+
+        chunks = [final_stabilizer,] + chunks[1:]
+
+        int_syndromes = [int(x, base=2) for x in chunks[::-1]]
+        p_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
+
+        P = []
+        for T, syndrome in enumerate(p_syndromes):
+            for loc in range(self.params["num_syn"]):
+                if syndrome & 1 << loc:
+                    P.append((float(T), 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
+        return (
+            logical_readout,
+            {"P": P},
+        )
+
+
+class RepetitionQubit(TopologicalQubit):
+    """
+    A single logical repetition code qubit. At the physical level, this wraps a
+    circuit, so we chose to subclass and extend TopologicalQubit which extends QuantumCircuit.
+    """
+
+    def __init__(
+        self,
+        params: Dict[str, int],
+        name: str = "tqubit",
+        circ: Optional[QuantumCircuit] = None,
+    ) -> None:
+        """
+        Initializes this Topological Qubit class.
+
+        Args:
+            params (Dict[str,int]):
+                Contains params such as d, where d is the number of
+                physical "data" qubits within the rep code.
+            name (str):
+                Useful when combining multiple TopologicalQubits together.
+                Prepended to all registers.
+            circ (Optional[QuantumCircuit]):
+                QuantumCircuit on top of which the topological qubit is built.
+                This is often shared amongst multiple TQubits.
+                If none is provided, then a new QuantumCircuit is initialized and stored.
+
+        """
+        # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
+        circ = QuantumCircuit() if circ is None else circ
+        lattice = _RepetitionLattice(params, name, circ)
+        super().__init__(lattice, name, circ)
+
+    def stabilize(self) -> None:
+        """
+        Run a single round of stabilization (entangle and measure).
+        """
+        self.lattice.params["T"] += 1
+        syndrome_readouts = ClassicalRegister(
+            self.lattice.params["num_syn"],
+            name=self.name + "_c{}".format(self.lattice.params["T"]),
+        )
+        self.lattice.cregisters[
+            "syndrome{}".format(self.lattice.params["T"])
+        ] = syndrome_readouts
+        self.circ.add_register(syndrome_readouts)
+
+        self.lattice.entangle()
+
+        # measure syndromes
+        self.circ.measure(
+            self.lattice.qregisters["mp"], syndrome_readouts,
+        )
+        self.circ.reset(self.lattice.qregisters["mp"])
+        self.circ.barrier()

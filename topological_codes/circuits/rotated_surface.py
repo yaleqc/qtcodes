@@ -432,7 +432,7 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         )
 
 
-class RotatedQubit(TopologicalQubit[TQubit]):
+class RotatedQubit(TopologicalQubit[TQubit], metaclass=ABCMeta):
     """
     A single logical surface code qubit.
     """
@@ -441,7 +441,7 @@ class RotatedQubit(TopologicalQubit[TQubit]):
     @abstractmethod
     def lattice_type(self):
         """
-        Subclass of _RotatedLattice
+        Subclass of _TopologicalLattice
         """
 
     def __init__(
@@ -470,9 +470,8 @@ class RotatedQubit(TopologicalQubit[TQubit]):
 
         # == None is necessary, as `not QuantumCircuit()` is True
         circ = QuantumCircuit() if circ is None else circ
-
-        super().__init__(circ, name)
-        self.lattice = self.lattice_type(params, name, circ)
+        lattice: _RotatedLattice = self.lattice_type(params, name, circ)
+        super().__init__(lattice, name, circ)
 
     def stabilize(self) -> None:
         """
@@ -504,84 +503,3 @@ class RotatedQubit(TopologicalQubit[TQubit]):
         self.circ.reset(self.lattice.qregisters["mz"])
         self.circ.reset(self.lattice.qregisters["mx"])
         self.circ.barrier()
-
-    def identity(self) -> None:
-        """
-        Inserts an identity on the data and syndrome qubits.
-        This allows us to create an isolated noise model by inserting errors only on identity gates.
-        """
-        for register in self.lattice.qregisters.values():
-            self.circ.id(register)
-        self.circ.barrier()
-
-    def identity_data(self) -> None:
-        """
-        Inserts an identity on the data qubits only.
-        This allows us to create an isolated noise model by inserting errors only on identity gates.
-        """
-        self.circ.id(self.lattice.qregisters["data"])
-        self.circ.barrier()
-
-    def logical_x_plus_reset(self) -> None:
-        """
-        Initialize/reset to a logical |x+> state.
-        """
-        self.lattice.logical_x_plus_reset()
-
-    def logical_z_plus_reset(self) -> None:
-        """
-        Initialize/reset to a logical |z+> state.
-        """
-        self.lattice.logical_z_plus_reset()
-
-    def logical_x(self) -> None:
-        """
-        Logical X operator on the topological qubit.
-        Defined as the left-most column on the X Syndrome Graph.
-        """
-        self.lattice.logical_x()
-
-    def logical_z(self) -> None:
-        """
-        Logical Z operator on the topological qubit.
-        Defined as the top-most row on the Z Syndrome Graph.
-        """
-        self.lattice.logical_z()
-
-    def readout_x(self) -> None:
-        """
-        Convenience method to read-out the logical-X projection.
-        """
-        self.lattice.readout_x()
-
-    def readout_z(self) -> None:
-        """
-        Convenience method to read-out the logical-Z projection.
-        """
-        self.lattice.readout_z()
-
-    def lattice_readout_x(self) -> None:
-        """
-        Readout all data qubits that constitute the lattice.
-        This readout can be used to extract a final round of X stabilizer measurments,
-        as well as a logical X readout.
-        """
-        self.lattice.lattice_readout_x()
-
-    def lattice_readout_z(self) -> None:
-        """
-        Readout all data qubits that constitute the lattice.
-        This readout can be used to extract a final round of Z stabilizer measurments,
-        as well as a logical Z readout.
-        """
-        self.lattice.lattice_readout_z()
-
-    def parse_readout(
-        self, readout_string: str, readout_type: Optional[str] = None
-    ) -> Tuple[int, Dict[str, List[TQubit]]]:
-        """
-        Wrapper on helper method to turn a result string (e.g. 1 10100000 10010000) into an
-        appropriate logical readout value and XOR-ed syndrome locations
-        according to our grid coordinate convention.
-        """
-        return self.lattice.parse_readout(readout_string, readout_type)

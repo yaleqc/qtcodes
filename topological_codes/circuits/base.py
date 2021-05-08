@@ -49,6 +49,8 @@ class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
         self.cregisters = cregisters
         self.name = name
 
+        assert "data" in self.qregisters, "There should be a data qubits register."
+
         # add registerse to circ
         registers = list(self.qregisters.values()) + list(self.cregisters.values())
         self.circ.add_register(*registers)
@@ -97,56 +99,6 @@ class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
             stabilizer = stabilizer_cls(self.circ, qubit_indices[i])
             stabilizer.entangle()
             self.circ.barrier()
-
-    @abstractmethod
-    def parse_readout(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
-        """
-        Helper method to turn a result string (e.g. 1 10100000 10010000) into an
-        appropriate logical readout value and XOR-ed syndrome locations
-        according to our grid coordinate convention.
-        """
-
-
-class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
-    """
-    A single topological code logical qubit.
-    This stores a QuantumCircuit object onto which the topological circuit is built.
-    This abstract class contains a list of abstract methods
-    that should be implemented by subclasses.
-    """
-
-    def __init__(self, circ: QuantumCircuit, name: str):
-        self.name = name
-        self.circ = circ
-
-    def draw(self, **kwargs):
-        """
-        Convenience method to draw quantum circuit.
-        """
-        return self.circ.draw(**kwargs)
-
-    def __str__(self):
-        return self.circ.__str__()
-
-    @abstractmethod
-    def stabilize(self) -> None:
-        """
-        Run a single round of stabilization (entangle and measure).
-        """
-
-    @abstractmethod
-    def identity(self) -> None:
-        """
-        Inserts an identity on the data and syndrome qubits.
-        This allows us to create an isolated noise model by inserting errors only on identity gates.
-        """
-
-    @abstractmethod
-    def identity_data(self) -> None:
-        """
-        Inserts an identity on the data qubits only.
-        This allows us to create an isolated noise model by inserting errors only on identity gates.
-        """
 
     @abstractmethod
     def logical_x_plus_reset(self) -> None:
@@ -201,7 +153,9 @@ class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def parse_readout(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
+    def parse_readout(
+        self, readout_string: str, readout_type: Optional[str] = None
+    ) -> Tuple[int, Dict[str, List[TQubit]]]:
         """
         Helper method to turn a result string (e.g. 1 10100000 10010000) into an
         appropriate logical readout value and XOR-ed syndrome locations
@@ -221,3 +175,113 @@ class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
                 key: syndrome type
                 value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)
         """
+
+
+class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
+    """
+    A single topological code logical qubit.
+    This stores a QuantumCircuit object onto which the topological circuit is built.
+    This abstract class contains a list of abstract methods
+    that should be implemented by subclasses.
+    """
+
+    def __init__(self, lattice: _TopologicalLattice, name: str, circ: QuantumCircuit):
+        self.lattice = lattice
+        self.name = name
+        self.circ = circ
+
+    def draw(self, **kwargs):
+        """
+        Convenience method to draw quantum circuit.
+        """
+        return self.circ.draw(**kwargs)
+
+    def __str__(self):
+        return self.circ.__str__()
+
+    @abstractmethod
+    def stabilize(self) -> None:
+        """
+        Run a single round of stabilization (entangle and measure).
+        """
+
+    def identity(self) -> None:
+        """
+        Inserts an identity on the data and syndrome qubits.
+        This allows us to create an isolated noise model by inserting errors only on identity gates.
+        """
+        for register in self.lattice.qregisters.values():
+            self.circ.id(register)
+        self.circ.barrier()
+
+    def identity_data(self) -> None:
+        """
+        Inserts an identity on the data qubits only.
+        This allows us to create an isolated noise model by inserting errors only on identity gates.
+        """
+        self.circ.id(self.lattice.qregisters["data"])
+        self.circ.barrier()
+
+    def logical_x_plus_reset(self) -> None:
+        """
+        Initialize/reset to a logical |x+> state.
+        """
+        self.lattice.logical_x_plus_reset()
+
+    def logical_z_plus_reset(self) -> None:
+        """
+        Initialize/reset to a logical |z+> state.
+        """
+        self.lattice.logical_z_plus_reset()
+
+    def logical_x(self) -> None:
+        """
+        Logical X operator on the topological qubit.
+        Defined as the left-most column on the X Syndrome Graph.
+        """
+        self.lattice.logical_x()
+
+    def logical_z(self) -> None:
+        """
+        Logical Z operator on the topological qubit.
+        Defined as the top-most row on the Z Syndrome Graph.
+        """
+        self.lattice.logical_z()
+
+    def readout_x(self) -> None:
+        """
+        Convenience method to read-out the logical-X projection.
+        """
+        self.lattice.readout_x()
+
+    def readout_z(self) -> None:
+        """
+        Convenience method to read-out the logical-Z projection.
+        """
+        self.lattice.readout_z()
+
+    def lattice_readout_x(self) -> None:
+        """
+        Readout all data qubits that constitute the lattice.
+        This readout can be used to extract a final round of X stabilizer measurments,
+        as well as a logical X readout.
+        """
+        self.lattice.lattice_readout_x()
+
+    def lattice_readout_z(self) -> None:
+        """
+        Readout all data qubits that constitute the lattice.
+        This readout can be used to extract a final round of Z stabilizer measurments,
+        as well as a logical Z readout.
+        """
+        self.lattice.lattice_readout_z()
+
+    def parse_readout(
+        self, readout_string: str, readout_type: Optional[str] = None
+    ) -> Tuple[int, Dict[str, List[TQubit]]]:
+        """
+        Wrapper on helper method to turn a result string (e.g. 1 10100000 10010000) into an
+        appropriate logical readout value and XOR-ed syndrome locations
+        according to our grid coordinate convention.
+        """
+        return self.lattice.parse_readout(readout_string, readout_type)
