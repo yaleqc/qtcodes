@@ -2,7 +2,7 @@ from .base import TopologicalQubit
 from .xxzz import XXZZQubit
 from .repetition import RepetitionQubit
 from qiskit import QuantumCircuit
-from typing import Union, Dict
+from typing import Union, Dict, cast
 
 
 class TopologicalRegister:
@@ -45,10 +45,11 @@ class TopologicalCircuit:
         self.treg = treg
         self.circ = treg.circ
 
-    def _get_index(self, tqubit: Union[TopologicalQubit, int]):
-        if type(tqubit) == int:
+    def _get_index(self, tqubit: Union[TopologicalQubit, int]) -> TopologicalQubit:
+        if isinstance(tqubit, int):
+            tqubit = cast(int, tqubit)
             tqubit = self.treg[tqubit]
-        assert isinstance(tqubit, TopologicalQubit)
+        tqubit = cast(TopologicalQubit, tqubit)
         return tqubit
 
     def x(self, tqubit: Union[TopologicalQubit, int]):

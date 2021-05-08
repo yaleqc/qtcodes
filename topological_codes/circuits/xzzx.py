@@ -3,8 +3,8 @@ XZZX Surface Code Encoder Classes
 """
 from typing import Tuple
 from qiskit import ClassicalRegister
-from .base import _Stabilizer
-from .rotated_surface import _RotatedLattice, RotatedQubit
+from topological_codes.circuits.base import _Stabilizer
+from topological_codes.circuits.rotated_surface import _RotatedLattice, RotatedQubit
 
 TQubit = Tuple[float, float, float]
 
