@@ -9,7 +9,7 @@ sys.path.insert(0, ".." + os.sep)
 
 import numpy as np
 import matplotlib.pyplot as plt
-from topological_codes import XXZZGraphDecoder
+from topological_codes import RotatedGraphDecoder
 
 from qiskit import QuantumCircuit, execute, QuantumRegister, ClassicalRegister, Aer
 from tqdm import tqdm
@@ -31,8 +31,8 @@ class SurfaceCodeBenchmarkingTool:
     ):
         self.decoder = decoder
         if self.decoder is not None:
-            self.d = decoder.code_params["d"]
-            self.T = decoder.code_params["T"]
+            self.d = decoder.params["d"]
+            self.T = decoder.params["T"]
         self.filename = (
             "surface_code_d_{}_T_{}.npz".format(int(self.d), int(self.T))
             if filename is None
@@ -49,7 +49,7 @@ class SurfaceCodeBenchmarkingTool:
             readout_strings: a dictionary of readout strings along with counts
             e.g. {"1 00000000 00000000":48, "1 00100000 00100000":12, ...} in the case of d=3 and T=2
 
-            correct_logical_value: integer (0/1) depicting original encoded logical value 
+            correct_logical_value: integer (0/1) depicting original encoded logical value
 
         Returns:
             error_rate: float = (number of unsuccessful logical value predictions) / (total number of predictions )
@@ -97,7 +97,7 @@ class SurfaceCodeBenchmarkingTool:
         for noise_value in tqdm(noise_values):
             results = (
                 execute(
-                    self.readout_circuit.circ,
+                    self.readout_circuit,
                     Aer.get_backend("qasm_simulator"),
                     noise_model=self.noise_model_func(noise_value),
                     shots=shots,
@@ -138,20 +138,21 @@ class SurfaceCodeBenchmarkingTool:
         ],
         save_data=True,
     ):
-        self.benchmark_data["noise"] = sorted(noise_values)
+        noise_values = sorted(noise_values)
         self.correct_logical_value = correct_logical_value
         p = Pool(4)  # TODO change on HPC
 
-        self.benchmark_data["logical_error_rate"] = p.map(
-            self.simulate_readout_single, noise_values
-        )
+        logical_error_rates = p.map(self.simulate_readout_single, noise_values)
+
+        self.benchmark_data["noise"] = noise_values
+        self.benchmark_data["logical_error_rate"] = logical_error_rates
         self.save_data()
         return self.benchmark_data
 
     def simulate_readout_single(self, noise_value):
         results = (
             execute(
-                self.readout_circuit.circ,
+                self.readout_circuit,
                 Aer.get_backend("qasm_simulator"),
                 noise_model=self.noise_model_func(noise_value),
                 shots=100000,
@@ -163,6 +164,9 @@ class SurfaceCodeBenchmarkingTool:
             results, self.correct_logical_value, err_prob=noise_value
         )
         print("Done simulating noise: " + str(noise_value))
+        self.benchmark_data["noise"].append(noise_value)
+        self.benchmark_data["logical_error_rate"].append(logical_error_rate_value)
+        self.save_data()
         return logical_error_rate_value
 
     def plot_benchmark_data(
@@ -186,8 +190,8 @@ class SurfaceCodeBenchmarkingTool:
         filename = self.filename if filename is None else filename
         np.savez(
             filename,
-            d=self.decoder.code_params["d"],
-            T=self.decoder.code_params["T"],
+            d=self.decoder.params["d"],
+            T=self.decoder.params["T"],
             noise=self.benchmark_data["noise"],
             logical_error_rate=self.benchmark_data["logical_error_rate"],
         )
@@ -197,7 +201,7 @@ class SurfaceCodeBenchmarkingTool:
         data = np.load(filename)
         self.d = int(data["d"])
         self.T = int(data["T"])
-        self.decoder = XXZZGraphDecoder({"d": self.d, "T": self.T})
+        self.decoder = RotatedGraphDecoder({"d": self.d, "T": self.T})
 
         # self.readout_circuit =
         self.benchmark_data["noise"] = data["noise"]

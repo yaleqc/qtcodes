@@ -75,7 +75,7 @@ class _XXZZLattice(_RotatedLattice):
 
     stabilizer_shortnames = {"mx": _XXXX, "mz": _ZZZZ}
 
-    def logical_x_plus_reset(self) -> None:
+    def logical_plus_x_reset(self) -> None:
         """
         Initialize/reset to a logical |x+> state.
         """
@@ -83,7 +83,7 @@ class _XXZZLattice(_RotatedLattice):
         self.circ.h(self.qregisters["data"])
         self.circ.barrier()
 
-    def logical_z_plus_reset(self) -> None:
+    def logical_plus_z_reset(self) -> None:
         """
         Initialize/reset to a logical |z+> state.
         """

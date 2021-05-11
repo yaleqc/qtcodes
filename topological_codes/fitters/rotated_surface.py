@@ -2,46 +2,33 @@
 """
 Graph decoder for surface codes
 """
-import copy
 import math
-from itertools import combinations, product
-from collections import defaultdict
+from itertools import combinations
 
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from typing import Tuple, List, Dict, Optional, TypeVar, Union, cast
+from typing import Tuple, List, Dict, Optional, Union, cast
 from .base import TopologicalGraphDecoder
 from .visualization import VisualizationMixin
 from .mwpm import MWPMDecodingMixin
-
-from qiskit import QuantumCircuit, execute
-
-try:
-    from qiskit import Aer
-
-    HAS_AER = True
-except ImportError:
-    from qiskit import BasicAer
-
-    HAS_AER = False
 
 
 TQubit = Tuple[float, float, float]  # (time,row,column) ==> (t,i,j)
 TQubitLoc = Tuple[float, float]  # (row,column) ==> (i,j)
 
 
-class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
+class RotatedGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
     """
     Class to construct the graph corresponding to the possible syndromes
     of a quantum error correction code, and then run suitable decoders.
     """
 
-    def __init__(self, code_params: Dict) -> None:
-        super().__init__(code_params)
-        if "d" not in self.code_params or "T" not in self.code_params:
-            raise ValueError("Please include d and T in code_params.")
+    def __init__(self, params: Dict) -> None:
+        super().__init__(params)
+        if "d" not in self.params or "T" not in self.params:
+            raise ValueError("Please include d and T in params.")
 
         self.virtual = self._specify_virtual()
         self.S["X"] = nx.Graph()
@@ -67,26 +54,26 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         virtual: Dict[str, List[TQubit]] = {}
         virtual["X"] = []
         virtual["Z"] = []
-        for j in range(0, self.code_params["d"], 2):
+        for j in range(0, self.params["d"], 2):
             # Z virtual nodes
             virtual["Z"].append((-1, -0.5, j - 0.5))  # top
-            virtual["Z"].append((-1, self.code_params["d"] - 0.5, j + 0.5))  # bottom
+            virtual["Z"].append((-1, self.params["d"] - 0.5, j + 0.5))  # bottom
 
             # X virtual nodes
             virtual["X"].append((-1, j + 0.5, -0.5))  # left
-            virtual["X"].append((-1, j - 0.5, self.code_params["d"] - 0.5))  # right
+            virtual["X"].append((-1, j - 0.5, self.params["d"] - 0.5))  # right
         return virtual
 
     def _make_syndrome_graph(self) -> None:
         """
-        Populates self.S["X"] and self.S["Z"] syndrome nx.Graph()'s with nodes specified by time and position. 
+        Populates self.S["X"] and self.S["Z"] syndrome nx.Graph()'s with nodes specified by time and position.
         Args:
         Returns:
         """
         start_nodes = {"Z": (0.5, 0.5), "X": (0.5, 1.5)}
         for syndrome_graph_key in ["X", "Z"]:
             # subgraphs for each time step
-            for t in range(0, self.code_params["T"]):
+            for t in range(0, self.params["T"]):
                 start_node = start_nodes[syndrome_graph_key]
                 self.S[syndrome_graph_key].add_node(
                     (t,) + start_node,
@@ -111,7 +98,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
             ]
             for node in syndrome_nodes_t0:
                 space_label = (node[1], node[2])
-                for t in range(0, self.code_params["T"] - 1):
+                for t in range(0, self.params["T"] - 1):
                     self.S[syndrome_graph_key].add_edge(
                         (t,) + space_label, (t + 1,) + space_label, distance=1
                     )
@@ -190,7 +177,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
                     virtual=1,
                     pos=(target[1], -target[0]),
                     time=-1,
-                    pos_3D=(target[1], -target[0], (self.code_params["T"] - 1) / 2),
+                    pos_3D=(target[1], -target[0], (self.params["T"] - 1) / 2),
                 )  # add virtual target_node to syndrome subgraph with z coordinate (T-1)/2 for nice plotting, if it doesn't already exist
             self.S[syndrome_graph_key].add_edge(
                 current_node, target_node, distance=edge_weight
@@ -221,22 +208,12 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         i = node[0]
         j = node[1]
         if syndrome_graph_key == "Z":
-            if (
-                i > 0
-                and i < self.code_params["d"] - 1
-                and j < self.code_params["d"]
-                and j > -1
-            ):
+            if i > 0 and i < self.params["d"] - 1 and j < self.params["d"] and j > -1:
                 return True
             else:
                 return False
         elif syndrome_graph_key == "X":
-            if (
-                j > 0
-                and j < self.code_params["d"] - 1
-                and i < self.code_params["d"]
-                and i > -1
-            ):
+            if j > 0 and j < self.params["d"] - 1 and i < self.params["d"] and i > -1:
                 return True
             else:
                 return False
@@ -301,7 +278,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
                 deg = self._path_degeneracy(source, target, syndrome_graph_key)
                 if err_prob:
                     distance = distance - math.log(deg) / (
-                        math.log1p(-err_prob) - math.log(err_prob)
+                        math.log1p(-1.0 * err_prob) - math.log(err_prob)
                     )
                 distance = -distance
             error_graph.add_edge(source, target, weight=distance)
@@ -382,24 +359,16 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         matched_graph.remove_nodes_from(list(nx.isolates(matched_graph)))
         return matched_graph
 
-    def _run_mwpm(
-        self, matching_graph: nx.Graph, syndrome_graph_key: str,
-    ) -> List[Tuple[TQubit, TQubit]]:
+    def _run_mwpm(self, matching_graph: nx.Graph) -> List[Tuple[TQubit, TQubit]]:
         """Return matches of minimum weight perfect matching (MWPM) on matching_graph.
 
         Args:
             matching_graph (nx.Graph): Graph to run MWPM.
-            syndrome_graph_key (char): Which X/Z syndrome subgraph these nodes are from.
 
         Returns:
             [(node, node),]: List of matchings found from MWPM
         """
         matches = nx.max_weight_matching(matching_graph, maxcardinality=True)
-        # filtered_matches = [
-        #     (source, target)
-        #     for (source, target) in matches
-        #     if not (len(source) > 3 and len(target) > 3)
-        # ]  # remove 0 weighted matched edges between virtual syndrome nodes
         filtered_matches = [
             (source, target)
             for (source, target) in matches
@@ -420,27 +389,27 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
                 key: syndrome_graph_key, either "X", "Z"
                 value: activated syndrome nodes (t,i,j)
 
-                Dictionary with syndromes["X"] containing tuples of the form 
-                (t,i,j) where t specifies time and (i,j) specify position of 
-                the X syndrome node changed from its value at (t-1,i,j), 
-                and similarly, syndromes["Z"] for Z syndrome nodes. 
+                Dictionary with syndromes["X"] containing tuples of the form
+                (t,i,j) where t specifies time and (i,j) specify position of
+                the X syndrome node changed from its value at (t-1,i,j),
+                and similarly, syndromes["Z"] for Z syndrome nodes.
 
         Returns:
-            net_flips ({(i,j):np.ndarray}): 
+            net_flips ({(i,j):np.ndarray}):
                 dictionary with key representing physical (data) qubit
-                and value representing the net error matrix on that data qubit. 
+                and value representing the net error matrix on that data qubit.
                 e.g. key: (0,0), value: [[0,1],[1,0]] (X error)
 
         Additional Information:
-            This method can be used to correct readout errors as shown in self.correct_readout. 
+            This method can be used to correct readout errors as shown in self.correct_readout.
         """
         if not syndromes:
             return []
 
         error_graph = self._make_error_graph(
             syndromes, syndrome_graph_key, err_prob=err_prob
-        )  # TODO add option to use degeneracy weighting by setting err_prob
-        matches = self._run_mwpm(error_graph, syndrome_graph_key)
+        )
+        matches = self._run_mwpm(error_graph)
         return matches
 
     def correct_readout(
@@ -452,7 +421,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
     ) -> int:
         """
         Args:
-            readout: string like "1 00000000 00000000" representing "R S2 S1" (d=3, T=2) where 
+            readout: string like "1 00000000 00000000" representing "R S2 S1" (d=3, T=2) where
             S1 is the first set of changed syndrome nodes (XOR'd with quiescent state syndrome measurements)
             S1 has the form: X3X2X1X0Z3Z2Z1Z0 in the case of d = 3. R represents the logical Z readout result.
         Returns:
@@ -464,9 +433,8 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
             logical_qubit_value, syndromes = self._string2nodes(str(syndromes))
         syndromes = cast(Dict[str, List[TQubit]], syndromes)
         logical_qubit_value = cast(int, logical_qubit_value)
-        # TODO is there a neater way to satisfy the type linter?
 
-        # Logical Z readout will be performed with data qubits in the top row, this can be generalized later TODO
+        # TODO Logical Z readout will be performed with data qubits in the top row, this can be generalized later
         matches = self._corrections(
             syndromes[logical_readout_type], logical_readout_type, err_prob=err_prob
         )
@@ -491,39 +459,66 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         else:
             raise ValueError("Please enter a valid logical_readout_type (X/Z).")
 
-    def _find_pauli_matrix(self, matrix: np.ndarray) -> str:
-        for key, pauli in self.paulis.items():
-            prod = matrix @ pauli
-            if prod[0, 0] == 0:
-                continue
-            prod = prod / prod[0, 0]
-            if np.all(prod == np.eye(2)):
-                return key
-        raise Exception("Not a Pauli Matrix")
-
     def _string2nodes(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
+        """
+        Converts readout string to readout nodes.
+
+        This duplicates the logic in parse_readout. TODO consolidate into a mixin util.
+
+        Turns a readout string (e.g. 1 10100000 10010000) into an
+        appropriate logical readout value and XOR-ed syndrome locations
+        according to our grid coordinate convention.
+
+        Args:
+            readout_string (str):
+                Readout of the form "0 00000000 00000000" (logical_readout syndrome_1 syndrome_0)
+                or of the form "000000000 00000000 00000000" (lattice_readout syndrome_1 syndrome_0)
+
+            readout_type (Optional[str]):
+                "X" or "Z" needed to accurately parse a lattice readout to extract a final round of
+                syndrome measurements and logical readout.
+        Returns:
+            logical_readout (int):
+                logical readout value
+            syndromes (Dict[str, List[TQubit]]]):
+                key: syndrome type
+                value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)
+        """
+        d = self.params["d"]
+        num_syn = (d ** 2 - 1) // 2
         chunks = readout_string.split(" ")
 
-        int_syndromes = [int(x, base=2) for x in chunks[-1:0:-1]]
+        logical_readout = int(chunks[0])
+        chunks = chunks[1:]
+
+        int_syndromes = [int(x, base=2) for x in chunks[::-1]]
         xor_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
 
-        X_syndromes = [(x & 0xF0) >> 4 for x in xor_syndromes]
-        Z_syndromes = [x & 0xF for x in xor_syndromes]
+        mask_z = "1" * num_syn
+        mask_x = mask_z + "0" * num_syn
+        x_syndromes = [(x & int(mask_x, base=2)) >> num_syn for x in xor_syndromes]
+        z_syndromes = [x & int(mask_z, base=2) for x in xor_syndromes]
 
         X = []
-        for T, syndrome in enumerate(X_syndromes):
-            for loc in range(4):
+        per_row_x = d // 2
+        for T, syndrome in enumerate(x_syndromes):
+            for loc in range(num_syn):
                 if syndrome & 1 << loc:
-                    X.append((float(T), -0.5 + loc, 0.5 + loc % 2))
+                    row = -0.5 + loc // per_row_x
+                    col = (0.5 + (loc // per_row_x) % 2) + (loc % per_row_x) * 2
+                    X.append((float(T), row, col))
 
         Z = []
-        for T, syndrome in enumerate(Z_syndromes):
-            for loc in range(4):
+        per_row_z = d // 2 + 1
+        for T, syndrome in enumerate(z_syndromes):
+            for loc in range(num_syn):
                 if syndrome & 1 << loc:
-                    Z.append((float(T), 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
+                    row = 0.5 + loc // per_row_z
+                    col = (0.5 - (loc // per_row_z) % 2) + (loc % per_row_z) * 2
+                    Z.append((float(T), row, col))
 
         return (
-            int(chunks[0]),
+            logical_readout,
             {"X": X, "Z": Z,},
         )
 
@@ -543,7 +538,7 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
 
         # Define color range based on time
         colors = {
-            x: plt.cm.plasma((y["time"] + 1) / self.code_params["T"])
+            x: plt.cm.plasma((y["time"] + 1) / self.params["T"])
             for x, y in G.nodes(data=True)
         }
 
@@ -611,6 +606,10 @@ class XXZZGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
         plt.show()
 
 
-class XXZZGraphDecoder(VisualizationMixin, MWPMDecodingMixin, XXZZGraphDecoderBase):
-    pass
-
+class RotatedGraphDecoder(
+    VisualizationMixin, MWPMDecodingMixin, RotatedGraphDecoderBase
+):
+    """
+    Rotated Surface Code Graph Decoder.
+    Works for the XXZZ (CSS) and XZZX Surface Codes.
+    """

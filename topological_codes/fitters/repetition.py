@@ -34,8 +34,8 @@ TQubitLoc = Tuple[float, float]  # (row,column) ==> (i,j)
 
 
 class RepetitionGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
-    def __init__(self, code_params: Dict) -> None:
-        self.code_params = code_params
+    def __init__(self, params: Dict) -> None:
+        self.params = params
         self.S: Dict[str, nx.Graph] = {}  # syndrome graphs
 
     def _make_syndrome_graph(self) -> None:
