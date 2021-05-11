@@ -172,13 +172,13 @@ class _RepetitionLattice(_TopologicalLattice):
 
         return logical_readout, p_stabilizer
 
-    def logical_x_plus_reset(self) -> None:
+    def logical_plus_x_reset(self) -> None:
         """
         Initialize/reset to a logical |x+> state.
         """
         raise NotImplementedError("Not applicable/relevant to the Rep Code.")
 
-    def logical_z_plus_reset(self) -> None:
+    def logical_plus_z_reset(self) -> None:
         """
         Initialize/reset to a logical |z+> state.
         """

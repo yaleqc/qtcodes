@@ -315,13 +315,13 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             )
 
     @abstractmethod
-    def logical_x_plus_reset(self) -> None:
+    def logical_plus_x_reset(self) -> None:
         """
         Initialize/reset to a logical |x+> state.
         """
 
     @abstractmethod
-    def logical_z_plus_reset(self) -> None:
+    def logical_plus_z_reset(self) -> None:
         """
         Initialize/reset to a logical |z+> state.
         """
@@ -382,6 +382,10 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             readout_string (str):
                 Readout of the form "0 00000000 00000000" (logical_readout syndrome_1 syndrome_0)
                 or of the form "000000000 00000000 00000000" (lattice_readout syndrome_1 syndrome_0)
+
+            readout_type (Optional[str]):
+                "X" or "Z" needed to accurately parse a lattice readout to extract a final round of
+                syndrome measurements and logical readout.
         Returns:
             logical_readout (int):
                 logical readout value
@@ -390,6 +394,8 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
                 value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)
         """
         chunks = readout_string.split(" ")
+        d = self.params["d"]
+        num_syn = self.params["num_syn"]
 
         if len(chunks[0]) > 1:  # this is true when all data qubits are readout
             assert readout_type is not None
@@ -407,24 +413,28 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         int_syndromes = [int(x, base=2) for x in chunks[::-1]]
         xor_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
 
-        mask_z = "1" * self.params["num_syn"]
-        mask_x = mask_z + "0" * self.params["num_syn"]
-        x_syndromes = [
-            (x & int(mask_x, base=2)) >> self.params["num_syn"] for x in xor_syndromes
-        ]
+        mask_z = "1" * num_syn
+        mask_x = mask_z + "0" * num_syn
+        x_syndromes = [(x & int(mask_x, base=2)) >> num_syn for x in xor_syndromes]
         z_syndromes = [x & int(mask_z, base=2) for x in xor_syndromes]
 
         X = []
+        per_row_x = d // 2
         for T, syndrome in enumerate(x_syndromes):
-            for loc in range(self.params["num_syn"]):
+            for loc in range(num_syn):
                 if syndrome & 1 << loc:
-                    X.append((float(T), -0.5 + loc, 0.5 + loc % 2))
+                    row = -0.5 + loc // per_row_x
+                    col = (0.5 + (loc // per_row_x) % 2) + (loc % per_row_x) * 2
+                    X.append((float(T), row, col))
 
         Z = []
+        per_row_z = d // 2 + 1
         for T, syndrome in enumerate(z_syndromes):
-            for loc in range(self.params["num_syn"]):
+            for loc in range(num_syn):
                 if syndrome & 1 << loc:
-                    Z.append((float(T), 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
+                    row = 0.5 + loc // per_row_z
+                    col = (0.5 - (loc // per_row_z) % 2) + (loc % per_row_z) * 2
+                    Z.append((float(T), row, col))
 
         return (
             logical_readout,

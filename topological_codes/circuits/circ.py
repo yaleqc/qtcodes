@@ -147,7 +147,7 @@ class TopologicalCircuit:
                 Either already a TopologicalQubit or an int index in treg
         """
         tqubit = self._get_index(tqubit)
-        tqubit.logical_x_plus_reset()
+        tqubit.logical_plus_x_reset()
 
     def reset_z(self, tqubit: Union[TopologicalQubit, int]):
         """
@@ -158,7 +158,7 @@ class TopologicalCircuit:
                 Either already a TopologicalQubit or an int index in treg
         """
         tqubit = self._get_index(tqubit)
-        tqubit.logical_z_plus_reset()
+        tqubit.logical_plus_z_reset()
 
     def x(self, tqubit: Union[TopologicalQubit, int]):
         """

@@ -101,13 +101,13 @@ class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
             self.circ.barrier()
 
     @abstractmethod
-    def logical_x_plus_reset(self) -> None:
+    def logical_plus_x_reset(self) -> None:
         """
         Initialize/reset to a logical |x+> state.
         """
 
     @abstractmethod
-    def logical_z_plus_reset(self) -> None:
+    def logical_plus_z_reset(self) -> None:
         """
         Initialize/reset to a logical |z+> state.
         """
@@ -222,17 +222,17 @@ class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
         self.circ.id(self.lattice.qregisters["data"])
         self.circ.barrier()
 
-    def logical_x_plus_reset(self) -> None:
+    def logical_plus_x_reset(self) -> None:
         """
         Initialize/reset to a logical |x+> state.
         """
-        self.lattice.logical_x_plus_reset()
+        self.lattice.logical_plus_x_reset()
 
-    def logical_z_plus_reset(self) -> None:
+    def logical_plus_z_reset(self) -> None:
         """
         Initialize/reset to a logical |z+> state.
         """
-        self.lattice.logical_z_plus_reset()
+        self.lattice.logical_plus_z_reset()
 
     def logical_x(self) -> None:
         """
