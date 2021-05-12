@@ -24,7 +24,7 @@ def noise_model_func(p_err):
 
 
 if __name__ == "__main__":
-    decoder_keys = [(d, 1) for d in range(3, 11, 2)]
+    decoder_keys = [(d, 1) for d in range(3, 13, 2)]
     tools = []
     print("Setting up decoders!\n")
     for decoder_key in tqdm(decoder_keys):

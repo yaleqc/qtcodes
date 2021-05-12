@@ -239,6 +239,7 @@ class RotatedSurfaceAnalysis:
             np.array(self.data["physical_error_rates"]),
             np.array(self.data["logical_error_rates"])
             / (self.params["T"] if per_round else 1.0),
+            ".:",
             **kwargs,
         )
         if log:
@@ -281,7 +282,7 @@ class RotatedSurfaceBatchAnalysis:
             plt.plot(
                 self.analyses[0].data["physical_error_rates"],
                 self.analyses[0].data["physical_error_rates"],
-                "--",
+                "-",
                 label="breakeven",
             )
             plt.legend(loc="upper left", prop={"size": 6})
