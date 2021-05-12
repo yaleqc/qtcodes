@@ -1,6 +1,0 @@
-python3 simulation.py 3 1 | tee_simulation_d_3_T_1.out
-python3 simulation.py 5 1 | tee_simulation_d_5_T_1.out
-python3 simulation.py 7 1 | tee_simulation_d_7_T_1.out
-python3 simulation.py 9 1 | tee_simulation_d_9_T_1.out
-python3 simulation.py 11 1 | tee_simulation_d_11_T_1.out
-python3 simulation.py 13 1 | tee_simulation_d_13_T_1.out
