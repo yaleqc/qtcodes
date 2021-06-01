@@ -6,8 +6,6 @@ import sys
 import os
 import glob
 
-from qiskit.circuit.quantumcircuit import QuantumCircuit
-
 sys.path.insert(0, ".." + os.sep)
 
 import numpy as np
@@ -51,7 +49,7 @@ class RotatedSurfaceBenchmark:
             readout_strings: a dictionary of readout strings along with counts
             e.g. {"1 00000000 00000000":48, "1 00100000 00100000":12, ...} in the case of d=3 and T=2
 
-            correct_logical_value: integer (0/1) depicting original encoded logical value
+            err_prob (Optional[float]): Probability of IID data qubit X/Z flip. Defaults to None.
 
         Returns:
             error_rate (float): = (number of unsuccessful logical value predictions) / (total number of predictions )
@@ -73,6 +71,7 @@ class RotatedSurfaceBenchmark:
         physical_error_rates: Optional[List[float]] = None,
         save_data: bool = True,
         shots: int = 2048,
+        deg_weight: bool = True,
     ) -> None:
         """
         Sweep physical error rates and calculate the associated logical error rate.
@@ -86,6 +85,9 @@ class RotatedSurfaceBenchmark:
 
             shots (int):
                 Shots in the circuit simulation.
+
+            deg_weight (bool):
+                Whether or not to use degeneracy weighting.
 
         """
         self.data["physical_error_rates"] = []
@@ -110,7 +112,7 @@ class RotatedSurfaceBenchmark:
                 .get_counts()
             )
             logical_error_rate_value = self.logical_error_rate(
-                results, self.correct_logical_value
+                results, err_prob=physical_error_rate if deg_weight else None
             )
             self.data["physical_error_rates"].append(physical_error_rate)
             self.data["logical_error_rates"].append(logical_error_rate_value)
@@ -119,11 +121,11 @@ class RotatedSurfaceBenchmark:
             pbar.set_description(f"Done with noise: {physical_error_rate}")
 
         # final sort
-        physical_error_rates = np.array(self.data["physical_error_rates"])
-        logical_error_rates = np.array(self.data["logical_error_rates"])
-        indxs = np.argsort(physical_error_rates)
-        self.data["physical_error_rates"] = physical_error_rates[indxs]
-        self.data["logical_error_rates"] = logical_error_rates[indxs]
+        physical_error_rates_final = np.array(self.data["physical_error_rates"])
+        logical_error_rates_final = np.array(self.data["logical_error_rates"])
+        indxs = np.argsort(physical_error_rates_final)
+        self.data["physical_error_rates"] = physical_error_rates_final[indxs]
+        self.data["logical_error_rates"] = logical_error_rates_final[indxs]
 
     def sweep_mp(
         self,
@@ -187,7 +189,7 @@ class RotatedSurfaceBenchmark:
             .get_counts()
         )
         logical_error_rate_value = self.logical_error_rate(
-            results, self.correct_logical_value, err_prob=physical_error_rate
+            results, err_prob=physical_error_rate
         )
         print("Done simulating physical_error_rate: " + str(physical_error_rate))
         if save_data:
