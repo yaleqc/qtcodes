@@ -7,14 +7,12 @@ import math
 from itertools import combinations, product
 from collections import defaultdict
 
-import networkx as nx
+import retworkx as rx
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from typing import Tuple, List, Dict, Optional, TypeVar, Union, cast
-from .base import TopologicalGraphDecoder
-from .visualization import VisualizationMixin
-from .mwpm import MWPMDecodingMixin
+from topological_codes.fitters.base import TopologicalGraphDecoder
 
 
 from qiskit import QuantumCircuit, execute
@@ -36,7 +34,7 @@ TQubitLoc = Tuple[float, float]  # (row,column) ==> (i,j)
 class RepetitionGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
     def __init__(self, params: Dict) -> None:
         self.params = params
-        self.S: Dict[str, nx.Graph] = {}  # syndrome graphs
+        self.S: Dict[str, rx.PyGraph] = {}  # syndrome graphs
 
     def _make_syndrome_graph(self) -> None:
         pass
@@ -54,10 +52,10 @@ class RepetitionGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
 
     def _make_error_graph(
         self, nodes: List[TQubit], syndrome_graph_key: str, err_prob: Optional[int]
-    ) -> nx.Graph:
+    ) -> rx.PyGraph:
         pass
 
     def _run_mwpm(
-        self, matching_graph: nx.Graph, syndrome_graph_key: str,
+        self, matching_graph: rx.PyGraph, syndrome_graph_key: str,
     ) -> List[Tuple[TQubit, TQubit]]:
         pass

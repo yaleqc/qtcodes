@@ -3,7 +3,7 @@ Base Topological Decoder Classes
 """
 from abc import abstractmethod, ABCMeta
 from typing import Tuple, List, Dict, Optional, TypeVar, Generic, Union
-import networkx as nx
+import retworkx as rx
 
 TQubit = TypeVar("TQubit")
 
@@ -16,7 +16,7 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, params: Dict) -> None:
         self.params = params
-        self.S: Dict[str, nx.Graph] = {}  # syndrome graphs
+        self.S: Dict[str, rx.PyGraph] = {}  # syndrome graphs
 
     @abstractmethod
     def _make_syndrome_graph(self) -> None:
@@ -42,9 +42,9 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
         nodes: List[TQubit],
         syndrome_graph_key: str,
         err_prob: Optional[float] = None,
-    ) -> nx.Graph:
+    ) -> rx.PyGraph:
         pass
 
     @abstractmethod
-    def _run_mwpm(self, matching_graph: nx.Graph) -> List[Tuple[TQubit, TQubit]]:
+    def _run_mwpm(self, matching_graph: rx.PyGraph) -> List[Tuple[TQubit, TQubit]]:
         pass
