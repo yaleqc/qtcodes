@@ -2,7 +2,7 @@
 Base Topological Decoder Classes
 """
 from abc import abstractmethod, ABCMeta
-from typing import Tuple, List, Dict, Optional, TypeVar, Generic, Union
+from typing import Tuple, List, Dict, Optional, TypeVar, Generic, Union, Type
 import retworkx as rx
 
 TQubit = TypeVar("TQubit")
@@ -13,10 +13,19 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
     Abstract class for topological code MWPM decoders to implement.
     """
 
+    S: Dict[str, rx.PyGraph] = {}
+    node_map: Dict[str, Dict[TQubit, int]] = {}
+
+    @property
+    @abstractmethod
+    def encoder_type(self) -> Type:
+        """
+        TopologicalQubit
+        """
+
     @abstractmethod
     def __init__(self, params: Dict) -> None:
         self.params = params
-        self.S: Dict[str, rx.PyGraph] = {}  # syndrome graphs
 
     @abstractmethod
     def _make_syndrome_graph(self) -> None:

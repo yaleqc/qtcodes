@@ -1,61 +1,97 @@
 # -*- coding: utf-8 -*-
 """
-Graph decoder for surface codes
+Graph decoder for rep code
 """
-import copy
-import math
-from itertools import combinations, product
-from collections import defaultdict
+from typing import Tuple, List, Dict
 
 import retworkx as rx
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from typing import Tuple, List, Dict, Optional, TypeVar, Union, cast
-from topological_codes.fitters.base import TopologicalGraphDecoder
+from topological_codes.fitters.lattice_decoder import (
+    LatticeGraphDecoder,
+    TQubit,
+)
+from topological_codes.circuits.repetition import RepetitionQubit
 
 
-from qiskit import QuantumCircuit, execute
+class RepetitionGraphDecoder(LatticeGraphDecoder):
+    encoder_type = RepetitionQubit
 
-try:
-    from qiskit import Aer
-
-    HAS_AER = True
-except ImportError:
-    from qiskit import BasicAer
-
-    HAS_AER = False
-
-
-TQubit = Tuple[float, float, float]  # (time,row,column) ==> (t,i,j)
-TQubitLoc = Tuple[float, float]  # (row,column) ==> (i,j)
-
-
-class RepetitionGraphDecoderBase(TopologicalGraphDecoder[TQubit]):
     def __init__(self, params: Dict) -> None:
-        self.params = params
-        self.S: Dict[str, rx.PyGraph] = {}  # syndrome graphs
+        self.S["Z"] = rx.PyGraph(multigraph=False)
+        self.node_map["Z"] = {}
+        super().__init__(params)
 
     def _make_syndrome_graph(self) -> None:
-        pass
+        """
+        Populates self.S["Z"] syndrome rx.PyGraph's with nodes specified by time and position.
+        Args:
+        Returns:
+        """
+        for vnode in self.virtual["Z"]:
+            self.node_map["Z"][vnode] = self.S["Z"].add_node(vnode)
 
-    def correct_readout(
-        self,
-        syndromes: Union[str, Dict[str, List[TQubit]]],
-        logical_qubit_value: Optional[int] = None,
-        logical_readout_type: str = "Z",
-    ) -> int:
-        pass
+        edge_weight = 1
+        for t in range(0, self.params["T"]):
+            # real nodes
+            for j in range(0, self.params["d"] - 1):
+                node = (t, 0, j + 0.5)
+                self.node_map["Z"][node] = self.S["Z"].add_node(node)
 
-    def _string2nodes(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
-        pass
+            # edges (real-real)
+            for j in range(1, self.params["d"] - 1):
+                left = (t, 0, j - 0.5)
+                right = (t, 0, j + 0.5)
+                self.S["Z"].add_edge(
+                    self.node_map["Z"][left], self.node_map["Z"][right], edge_weight
+                )
 
-    def _make_error_graph(
-        self, nodes: List[TQubit], syndrome_graph_key: str, err_prob: Optional[int]
-    ) -> rx.PyGraph:
-        pass
+            # edges (real-virtual)
+            self.S["Z"].add_edge(
+                self.node_map["Z"][self.virtual["Z"][0]],
+                self.node_map["Z"][(t, 0, 0.5)],
+                edge_weight,
+            )  # left
+            self.S["Z"].add_edge(
+                self.node_map["Z"][self.virtual["Z"][1]],
+                self.node_map["Z"][(t, 0, self.params["d"] - 1.5)],
+                edge_weight,
+            )  # right
 
-    def _run_mwpm(
-        self, matching_graph: rx.PyGraph, syndrome_graph_key: str,
-    ) -> List[Tuple[TQubit, TQubit]]:
-        pass
+        # connect physical qubits in same location across subgraphs of adjacent times
+        syndrome_nodes_t0 = [(t, x, y) for t, x, y in self.S["Z"].nodes() if t == 0]
+        for node in syndrome_nodes_t0:
+            space_label = (node[1], node[2])
+            for t in range(0, self.params["T"] - 1):
+                self.S["Z"].add_edge(
+                    self.node_map["Z"][(t,) + space_label],
+                    self.node_map["Z"][(t + 1,) + space_label],
+                    edge_weight,
+                )
+
+    def _specify_virtual(self) -> Dict[str, List[TQubit]]:
+        """
+        Define coordinates of P virtual syndrome nodes (i.e. parity measurements to which we don't have access),
+        Args:
+        Returns:
+            virtual (dictionary): where virtual["Z"] holds a list of tuples specifying virtual P syndrome nodes
+        """
+        virtual: Dict[str, List[TQubit]] = {}
+        virtual["Z"] = []
+        virtual["Z"].append((-1, 0, -0.5))
+        virtual["Z"].append((-1, 0, self.params["d"] - 0.5))
+        return virtual
+
+    def _is_crossing_readout_path(
+        self, match: Tuple[TQubit, TQubit], logical_readout_type: str
+    ) -> bool:
+        """
+        Helper method that detects whether the match is crossing the readout path.
+
+        Args:
+            match (Tuple[TQubit, TQubit]): match in MWPM between two nodes
+            logical_readout_type (str): e.g. "X"
+
+        Returns:
+            (bool): whether or not the match is crosing the readout path
+        """
+        raise NotImplementedError("Need to implement this...")
+        return False
