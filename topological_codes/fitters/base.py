@@ -35,8 +35,8 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
     def correct_readout(
         self,
         syndromes: Union[str, Dict[str, List[TQubit]]],
+        logical_readout_type: str,
         logical_qubit_value: Optional[int] = None,
-        logical_readout_type: str = "Z",
         err_prob: Optional[float] = None,
     ) -> int:
         pass

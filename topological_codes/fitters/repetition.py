@@ -4,7 +4,6 @@ Graph decoder for rep code
 """
 from typing import Tuple, List, Dict
 
-import retworkx as rx
 from topological_codes.fitters.lattice_decoder import (
     LatticeGraphDecoder,
     TQubit,
@@ -14,11 +13,7 @@ from topological_codes.circuits.repetition import RepetitionQubit
 
 class RepetitionGraphDecoder(LatticeGraphDecoder):
     encoder_type = RepetitionQubit
-
-    def __init__(self, params: Dict) -> None:
-        self.S["Z"] = rx.PyGraph(multigraph=False)
-        self.node_map["Z"] = {}
-        super().__init__(params)
+    syndrome_graph_keys = ["Z"]
 
     def _make_syndrome_graph(self) -> None:
         """

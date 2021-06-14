@@ -26,10 +26,21 @@ class LatticeGraphDecoder(TopologicalGraphDecoder[TQubit], metaclass=ABCMeta):
     of a quantum error correction code, and then run suitable decoders.
     """
 
+    @property
+    @abstractmethod
+    def syndrome_graph_keys(self) -> List[str]:
+        """
+        List[str] of syndrome graph keys (e.g. "X", "Z")
+        """
+
     def __init__(self, params: Dict) -> None:
         super().__init__(params)
         if "d" not in self.params or "T" not in self.params:
             raise ValueError("Please include d and T in params.")
+        for syndrome_graph_key in self.syndrome_graph_keys:
+            self.S[syndrome_graph_key] = rx.PyGraph(multigraph=False)
+            self.node_map[syndrome_graph_key] = {}
+
         self.virtual = self._specify_virtual()
         self.encoder = self.encoder_type(params.copy())
         self._make_syndrome_graph()
@@ -338,8 +349,8 @@ class LatticeGraphDecoder(TopologicalGraphDecoder[TQubit], metaclass=ABCMeta):
     def correct_readout(
         self,
         syndromes: Union[str, Dict[str, List[TQubit]]],
+        logical_readout_type: str,
         logical_qubit_value: Optional[int] = None,
-        logical_readout_type: str = "Z",
         err_prob: Optional[float] = None,
     ) -> int:
         """

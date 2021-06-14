@@ -4,7 +4,6 @@ Graph decoder for surface codes
 """
 from typing import Tuple, List, Dict
 
-import retworkx as rx
 from topological_codes.circuits.xxzz import XXZZQubit
 from topological_codes.fitters.lattice_decoder import (
     LatticeGraphDecoder,
@@ -19,14 +18,9 @@ class RotatedGraphDecoder(LatticeGraphDecoder):
     of a quantum error correction code, and then run suitable decoders.
     """
 
+    # TODO encoder is currently only used for string2node, so we can use XXZZQubit, need to generalize
     encoder_type = XXZZQubit
-
-    def __init__(self, params: Dict) -> None:
-        self.S["X"] = rx.PyGraph(multigraph=False)
-        self.S["Z"] = rx.PyGraph(multigraph=False)
-        self.node_map["X"] = {}
-        self.node_map["Z"] = {}
-        super().__init__(params)
+    syndrome_graph_keys = ["X", "Z"]
 
     def _make_syndrome_graph(self) -> None:
         """

@@ -38,7 +38,7 @@ class TestXXZZ(unittest.TestCase):
         for readout, count in readout_strings.items():
             total_count += count
             predicted_logical_value = self.decoder.correct_readout(
-                readout, err_prob=err_prob
+                readout, "Z", err_prob=err_prob
             )
             if predicted_logical_value != correct_logical_value:
                 total_errors += count
