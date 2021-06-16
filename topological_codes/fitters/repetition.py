@@ -28,13 +28,13 @@ class RepetitionGraphDecoder(LatticeGraphDecoder):
         for t in range(0, self.params["T"]):
             # real nodes
             for j in range(0, self.params["d"] - 1):
-                node = (t, 0, j + 0.5)
+                node = (t, j + 0.5, 0)
                 self.node_map["Z"][node] = self.S["Z"].add_node(node)
 
             # edges (real-real)
             for j in range(1, self.params["d"] - 1):
-                left = (t, 0, j - 0.5)
-                right = (t, 0, j + 0.5)
+                left = (t, j - 0.5, 0)
+                right = (t, j + 0.5, 0)
                 self.S["Z"].add_edge(
                     self.node_map["Z"][left], self.node_map["Z"][right], edge_weight
                 )
@@ -42,12 +42,12 @@ class RepetitionGraphDecoder(LatticeGraphDecoder):
             # edges (real-virtual)
             self.S["Z"].add_edge(
                 self.node_map["Z"][self.virtual["Z"][0]],
-                self.node_map["Z"][(t, 0, 0.5)],
+                self.node_map["Z"][(t, 0.5, 0)],
                 edge_weight,
             )  # left
             self.S["Z"].add_edge(
                 self.node_map["Z"][self.virtual["Z"][1]],
-                self.node_map["Z"][(t, 0, self.params["d"] - 1.5)],
+                self.node_map["Z"][(t, self.params["d"] - 1.5, 0)],
                 edge_weight,
             )  # right
 
@@ -71,8 +71,8 @@ class RepetitionGraphDecoder(LatticeGraphDecoder):
         """
         virtual: Dict[str, List[TQubit]] = {}
         virtual["Z"] = []
-        virtual["Z"].append((-1, 0, -0.5))
-        virtual["Z"].append((-1, 0, self.params["d"] - 0.5))
+        virtual["Z"].append((-1, -0.5, 0))
+        virtual["Z"].append((-1, self.params["d"] - 0.5, 0))
         return virtual
 
     def _is_crossing_readout_path(
@@ -88,5 +88,13 @@ class RepetitionGraphDecoder(LatticeGraphDecoder):
         Returns:
             (bool): whether or not the match is crosing the readout path
         """
-        raise NotImplementedError("Need to implement this...")
-        return False
+        source, target = match
+        if logical_readout_type == "Z":
+            return (source[0] == -1 and source[1] == -0.5) or (
+                target[0] == -1 and target[1] == -0.5
+            )  # top
+        else:
+            raise NotImplementedError(
+                "Only Z readout is supported in the Repetition code."
+            )
+
