@@ -2,8 +2,8 @@ import sys
 import os
 
 sys.path.insert(0, ".." + os.sep + ".." + os.sep + ".." + os.sep)
-from benchmarking import RotatedSurfaceBatchAnalysis
+from benchmarking import TopologicalBatchAnalysis
 
 
-batch_analysis = RotatedSurfaceBatchAnalysis(dirname="")
+batch_analysis = TopologicalBatchAnalysis(dirname="")
 batch_analysis.plot()

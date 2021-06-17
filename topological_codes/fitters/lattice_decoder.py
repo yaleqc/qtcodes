@@ -40,7 +40,6 @@ class LatticeGraphDecoder(TopologicalGraphDecoder[TQubit], metaclass=ABCMeta):
         for syndrome_graph_key in self.syndrome_graph_keys:
             self.S[syndrome_graph_key] = rx.PyGraph(multigraph=False)
             self.node_map[syndrome_graph_key] = {}
-
         self.virtual = self._specify_virtual()
         self.encoder = self.encoder_type(params.copy())
         self._make_syndrome_graph()

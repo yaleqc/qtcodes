@@ -9,7 +9,7 @@ from qiskit.providers.aer.noise.errors import pauli_error
 from qiskit.providers.aer.noise import NoiseModel
 
 sys.path.insert(0, ".." + os.sep + ".." + os.sep + ".." + os.sep)
-from benchmarking import RotatedSurfaceBenchmark
+from benchmarking import TopologicalBenchmark
 from topological_codes import RotatedGraphDecoder, XXZZQubit
 
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
         qubit.readout_z()
 
         tools.append(
-            RotatedSurfaceBenchmark(
+            TopologicalBenchmark(
                 decoder=RotatedGraphDecoder({"d": d, "T": T}),
                 circ=qubit.circ,
                 noise_model_func=noise_model_func,

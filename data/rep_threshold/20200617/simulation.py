@@ -1,5 +1,5 @@
 """
-Simulation script to demonstrate XXZZ (XXXX/ZZZZ) Threshold
+Simulation script to demonstrate Rep Code Threshold
 """
 
 import sys
@@ -10,7 +10,7 @@ from qiskit.providers.aer.noise import NoiseModel
 
 sys.path.insert(0, ".." + os.sep + ".." + os.sep + ".." + os.sep)
 from benchmarking import TopologicalBenchmark
-from topological_codes import RotatedGraphDecoder, XXZZQubit
+from topological_codes import RepetitionGraphDecoder, RepetitionQubit
 
 
 # Noise Model Function
@@ -32,7 +32,8 @@ if __name__ == "__main__":
         T = decoder_key[1]
 
         # setup circ
-        qubit = XXZZQubit({"d": d})
+        qubit = RepetitionQubit({"d": d})
+        qubit.logical_plus_z_reset()
         qubit.stabilize()
         qubit.identity_data()
         qubit.stabilize()
@@ -40,7 +41,7 @@ if __name__ == "__main__":
 
         tools.append(
             TopologicalBenchmark(
-                decoder=RotatedGraphDecoder({"d": d, "T": T}),
+                decoder=RepetitionGraphDecoder({"d": d, "T": T}),
                 circ=qubit.circ,
                 noise_model_func=noise_model_func,
                 correct_logical_value=0,
@@ -54,11 +55,16 @@ if __name__ == "__main__":
             )
         )
         physical_error_rates = [
-            0.04,
-            0.07,
-            0.10,
-            0.13,
-            0.16,
+            0.05,
+            0.15,
+            0.25,
+            0.35,
+            0.45,
+            0.55,
+            0.65,
+            0.75,
+            0.85,
+            0.95,
         ]
         tool.sweep(
             physical_error_rates=physical_error_rates, shots=1024 * 16,

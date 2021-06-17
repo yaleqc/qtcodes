@@ -13,9 +13,6 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
     Abstract class for topological code MWPM decoders to implement.
     """
 
-    S: Dict[str, rx.PyGraph] = {}
-    node_map: Dict[str, Dict[TQubit, int]] = {}
-
     @property
     @abstractmethod
     def encoder_type(self) -> Type:
@@ -25,6 +22,8 @@ class TopologicalGraphDecoder(Generic[TQubit], metaclass=ABCMeta):
 
     @abstractmethod
     def __init__(self, params: Dict) -> None:
+        self.S: Dict[str, rx.PyGraph] = {}
+        self.node_map: Dict[str, Dict[TQubit, int]] = {}
         self.params = params
 
     @abstractmethod
