@@ -22,7 +22,7 @@ plt.rcParams.update({"font.size": 14, "pdf.fonttype": 42, "ps.fonttype": 42})
 from multiprocessing import Pool
 
 
-class RotatedSurfaceBenchmark:
+class TopologicalBenchmark:
     def __init__(
         self,
         decoder,
@@ -59,7 +59,7 @@ class RotatedSurfaceBenchmark:
         for readout, count in readout_strings.items():
             total_count += count
             predicted_logical_value = self.decoder.correct_readout(
-                readout, err_prob=err_prob
+                readout, "Z", err_prob=err_prob
             )
             if predicted_logical_value != self.correct_logical_value:
                 total_errors += count
@@ -218,7 +218,7 @@ class RotatedSurfaceBenchmark:
         )
 
 
-class RotatedSurfaceAnalysis:
+class TopologicalAnalysis:
     def __init__(self, filename: Optional[str] = None):
         self.filename = filename
         self.data: Dict[str, List[float]] = {}
@@ -249,13 +249,13 @@ class RotatedSurfaceAnalysis:
             plt.xscale("log")
 
 
-class RotatedSurfaceBatchAnalysis:
+class TopologicalBatchAnalysis:
     def __init__(self, dirname: str):
         self.dirname = dirname
         self.filenames = glob.glob(self.dirname + "*.npz")
         self.analyses = []
         for filename in self.filenames:
-            self.analyses.append(RotatedSurfaceAnalysis(filename))
+            self.analyses.append(TopologicalAnalysis(filename))
             self.analyses[-1].load_data()
 
         # sort analysis by increasing "d"

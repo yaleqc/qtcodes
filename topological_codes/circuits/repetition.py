@@ -35,6 +35,19 @@ class _Parity(_Stabilizer):
 class _RepetitionLattice(_TopologicalLattice):
     """
     This class contains all the lattice geometry specifications regarding the Repetition Code.
+
+    E.g.
+    X
+    |
+    X
+    |
+    X
+    |
+    X
+    |
+    X
+
+    d=5 Rep Code
     """
 
     def __init__(self, params: Dict[str, int], name: str, circ: QuantumCircuit):
@@ -70,7 +83,8 @@ class _RepetitionLattice(_TopologicalLattice):
         # create registers
         qregisters: Dict[str, QuantumRegister] = {}  # quantum
         qregisters["data"] = QuantumRegister(params["num_data"], name=name + "_data")
-        qregisters["mp"] = QuantumRegister(params["num_syn"], name=name + "_mp")
+        qregisters["mz"] = QuantumRegister(params["num_syn"], name=name + "_mp")
+        qregisters["ancilla"] = QuantumRegister(1, name=name + "_ancilla")
 
         cregisters: Dict[str, ClassicalRegister] = {}  # classical
 
@@ -87,13 +101,13 @@ class _RepetitionLattice(_TopologicalLattice):
                 key: syndrome/plaquette type
                 value: List of lists of qubit indices comprising one plaquette.
         """
-        geometry = {"mp": []}
+        geometry = {"mz": []}
 
         for i in range(self.params["num_syn"]):
             syn = i
             left = i
             right = i + 1
-            geometry["mp"].append([syn, left, right])
+            geometry["mz"].append([syn, left, right])
 
         self.geometry = geometry
 
@@ -147,14 +161,14 @@ class _RepetitionLattice(_TopologicalLattice):
 
             stabilizer_str (str):
                 returns a string of the form
-                "P_{N}P_{N-1}...P_{0}"
+                "Z_{N}Z_{N-1}...Z_{0}"
         """
         readout_values = [int(q) for q in final_readout_string]
         readout_values = readout_values[::-1]  # [q_0,q_1,...,q_24]
 
-        p_stabilizer = ""  # "P_{N}P_{N-1}..P_{0}"
+        z_stabilizer = ""  # "Z_{N}Z_{N-1}..Z_{0}"
 
-        for idx_list in self.geometry["mp"]:
+        for idx_list in self.geometry["mz"]:
             stabilizer_val = (
                 sum(
                     [
@@ -164,13 +178,11 @@ class _RepetitionLattice(_TopologicalLattice):
                 )  # [syn, left, right]
                 % 2
             )
-            p_stabilizer = str(stabilizer_val) + p_stabilizer
+            z_stabilizer = str(stabilizer_val) + z_stabilizer
 
-        logical_readout = 0
-        for idx in range(self.params["d"]):
-            logical_readout = (logical_readout + readout_values[idx]) % 2
+        logical_readout = readout_values[0]  # first row qubit
 
-        return logical_readout, p_stabilizer
+        return logical_readout, z_stabilizer
 
     def logical_plus_x_reset(self) -> None:
         """
@@ -209,8 +221,20 @@ class _RepetitionLattice(_TopologicalLattice):
     def readout_z(self) -> None:
         """
         Convenience method to read-out the logical-Z projection.
+        Uses the top-most row (in this case just the first qubit).
         """
-        raise NotImplementedError("Not applicable/relevant to the Rep Code.")
+        self.params["num_readout"] += 1
+        readout = ClassicalRegister(
+            1, name=self.name + "_readout_" + str(self.params["num_readout"])
+        )
+
+        self.circ.add_register(readout)
+
+        self.cregisters["readout"] = readout
+
+        self.circ.reset(self.qregisters["ancilla"])
+        self.circ.measure(self.qregisters["data"][0], self.cregisters["readout"])
+        self.circ.barrier()
 
     def lattice_readout_x(self) -> None:
         """
@@ -250,7 +274,13 @@ class _RepetitionLattice(_TopologicalLattice):
 
         Args:
             readout_string (str):
-                Readout of the form "0000 000 000" (lattice_readout syndrome_1 syndrome_0)
+                Readout of the form "0 000 000 000" (logical_readout syndrome_2 syndrome_1 syndrome_0)
+                or of the form "0000 000 000" (lattice_readout syndrome_1 syndrome_0)
+                A syndrome_i measurement "00..0" is of the form Z_{N}Z_{N-1}...Z_{0}
+
+            readout_type (Optional[str]):
+                "X" or "Z" needed to accurately parse a lattice readout to extract a final round of
+                syndrome measurements and logical readout.
         Returns:
             logical_readout (int):
                 logical readout value
@@ -258,29 +288,30 @@ class _RepetitionLattice(_TopologicalLattice):
                 key: syndrome type
                 value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)
         """
-        readout_type = readout_type if readout_type else "Z"
-        assert readout_type == "Z", "Rep code only supports Z readout."
-
         chunks = readout_string.split(" ")
 
-        (
-            logical_readout,
-            final_stabilizer,
-        ) = self.extract_final_stabilizer_and_logical_readout_z(chunks[0])
-
-        chunks = [final_stabilizer,] + chunks[1:]
+        if len(chunks[0]) > 1:  # this is true when all data qubits are readout
+            assert readout_type == "Z", "Rep code only supports Z readout."
+            (
+                logical_readout,
+                final_stabilizer,
+            ) = self.extract_final_stabilizer_and_logical_readout_z(chunks[0])
+            chunks = [final_stabilizer,] + chunks[1:]
+        else:
+            logical_readout = int(chunks[0])
+            chunks = chunks[1:]
 
         int_syndromes = [int(x, base=2) for x in chunks[::-1]]
-        p_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
+        z_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
 
-        P = []
-        for T, syndrome in enumerate(p_syndromes):
+        Z = []
+        for T, syndrome in enumerate(z_syndromes):
             for loc in range(self.params["num_syn"]):
                 if syndrome & 1 << loc:
-                    P.append((float(T), 0.5 + loc // 2, 0.5 + loc % 2 * 2 - loc // 2))
+                    Z.append((float(T), 0.5 + loc, 0.0))
         return (
             logical_readout,
-            {"P": P},
+            {"Z": Z},
         )
 
 
@@ -335,7 +366,7 @@ class RepetitionQubit(TopologicalQubit):
 
         # measure syndromes
         self.circ.measure(
-            self.lattice.qregisters["mp"], syndrome_readouts,
+            self.lattice.qregisters["mz"], syndrome_readouts,
         )
-        self.circ.reset(self.lattice.qregisters["mp"])
+        self.circ.reset(self.lattice.qregisters["mz"])
         self.circ.barrier()
