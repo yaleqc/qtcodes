@@ -1,3 +1,7 @@
+"""
+Visualize simulations
+"""
+
 import sys
 import os
 

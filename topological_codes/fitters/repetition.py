@@ -12,6 +12,11 @@ from topological_codes.circuits.repetition import RepetitionQubit
 
 
 class RepetitionGraphDecoder(LatticeGraphDecoder):
+    """
+    Class to construct the graph corresponding to the possible syndromes
+    of a quantum error correction Repetition code, and then run suitable decoders.
+    """
+
     encoder_type = RepetitionQubit
     syndrome_graph_keys = ["Z"]
 
@@ -64,10 +69,13 @@ class RepetitionGraphDecoder(LatticeGraphDecoder):
 
     def _specify_virtual(self) -> Dict[str, List[TQubit]]:
         """
-        Define coordinates of P virtual syndrome nodes (i.e. parity measurements to which we don't have access),
+        Define coordinates of P virtual syndrome nodes
+        (i.e. parity measurements to which we don't have access),
+
         Args:
         Returns:
-            virtual (dictionary): where virtual["Z"] holds a list of tuples specifying virtual P syndrome nodes
+            virtual (dictionary): where virtual["Z"] holds a list of tuples
+            specifying virtual P syndrome nodes
         """
         virtual: Dict[str, List[TQubit]] = {}
         virtual["Z"] = []
@@ -97,4 +105,3 @@ class RepetitionGraphDecoder(LatticeGraphDecoder):
             raise NotImplementedError(
                 "Only Z readout is supported in the Repetition code."
             )
-

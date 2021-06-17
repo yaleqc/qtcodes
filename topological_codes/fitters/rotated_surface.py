@@ -15,16 +15,19 @@ from topological_codes.fitters.lattice_decoder import (
 class RotatedGraphDecoder(LatticeGraphDecoder):
     """
     Class to construct the graph corresponding to the possible syndromes
-    of a quantum error correction code, and then run suitable decoders.
+    of a quantum error correction surface code, and then run suitable decoders.
     """
 
-    # TODO encoder is currently only used for string2node, so we can use XXZZQubit, need to generalize
+    # TODO encoder is currently only used for string2node,
+    # so we can use XXZZQubit, need to generalize
     encoder_type = XXZZQubit
     syndrome_graph_keys = ["X", "Z"]
 
     def _make_syndrome_graph(self) -> None:
         """
-        Populates self.S["X"] and self.S["Z"] syndrome rx.PyGraph's with nodes specified by time and position.
+        Populates self.S["X"] and self.S["Z"] syndrome rx.PyGraph's
+        with nodes specified by time and position.
+
         Args:
         Returns:
         """
@@ -62,15 +65,16 @@ class RotatedGraphDecoder(LatticeGraphDecoder):
         syndrome_graph_key: str,
         edge_weight: int = 1,
     ) -> None:
-        """Recursive function to populate syndrome subgraph at time t with syndrome_graph_key X/Z. The current_node
-        is connected to neighboring nodes without revisiting a node.
+        """Recursive function to populate syndrome subgraph at time t with syndrome_graph_key X/Z.
+        The current_node is connected to neighboring nodes without revisiting a node.
 
         Args:
             current_node ((t, x, y)): Current syndrome node to be connected with neighboring nodes.
             t (int): Current time, needed if current_node is a virtual node of the form (-1,i,j)
             visited_nodes ([(t, x, y),]): List of syndrome nodes which have already been traver.
             syndrome_graph_key (char): Which X/Z syndrome subgraph these nodes are from.
-            edge_weight (float, optional): Weight of edge between two adjacent syndrome nodes. Defaults to 1.
+            edge_weight (float, optional): Weight of edge between two adjacent syndrome nodes.
+                                           Defaults to 1.
 
         Returns:
             None: function is to traverse the syndrome nodes and connect neighbors
@@ -124,7 +128,9 @@ class RotatedGraphDecoder(LatticeGraphDecoder):
                 -1,
             ) + target  # virtual target_node has time -1 with x and y coordinates from target
             if target_node not in self.S[syndrome_graph_key].nodes():
-                # add virtual target_node to syndrome subgraph with z coordinate (T-1)/2 for nice plotting, if it doesn't already exist
+                # add virtual target_node to syndrome subgraph with
+                # z coordinate (T-1)/2 for nice plotting,
+                # if it doesn't already exist
                 self.node_map[syndrome_graph_key][target_node] = self.S[
                     syndrome_graph_key
                 ].add_node(target_node)
@@ -147,7 +153,9 @@ class RotatedGraphDecoder(LatticeGraphDecoder):
             )
 
     def _valid_syndrome(self, node: TQubitLoc, syndrome_graph_key: str) -> bool:
-        """Checks whether a node is a syndrome node under our syndrome_graph_key, which is either X or Z.
+        """
+        Checks whether a node is a syndrome node under our syndrome_graph_key,
+        which is either X or Z.
 
         Args:
             node ((t, x, y)): Node in graph.
@@ -177,8 +185,8 @@ class RotatedGraphDecoder(LatticeGraphDecoder):
         virtual syndrome nodes are top/bottom and X virtual nodes are left/right.
         Args:
         Returns:
-            virtual (dictionary): where virtual["X"] holds a list of tuples specifying virtual X syndrome nodes
-            and equivalently for virtual["Z"]
+            virtual (dictionary): where virtual["X"] holds a list of tuples
+            specifying virtual X syndrome nodes and equivalently for virtual["Z"]
         """
         virtual: Dict[str, List[TQubit]] = {}
         virtual["X"] = []
