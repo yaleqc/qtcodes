@@ -36,7 +36,7 @@ qubit.stabilize()
 qubit.readout_z()
 qubit.draw(output='mpl', fold=150)
 ```
-![Repetition Code Qubit](./tutorials/img/rep_qubit.png)
+![Repetition Code Qubit](./tutorials/img/rep_qubit.png?raw=true)
 
 `topological_codes.circuits.circ` also allows users to create  `TopologicalRegister`s (treg: a collection of topological qubits) and `TopologicalCircuit`s (tcirc: a circuit built using a treg), the analog of `QuantumRegister` and `QuantumCircuit`.
 
@@ -50,7 +50,7 @@ circ.x(1)
 circ.draw(output='mpl', fold=500)
 ```
 
-![Repetition Code TCirc](./tutorials/img/tcirc_rep.png)
+![Repetition Code TCirc](./tutorials/img/tcirc_rep.png?raw=true)
 
 Learn more about circuits through encoder tutorials such as this [one](./tutorials/xxzz/1-circuits.ipynb) for the XXXX/ZZZZ rotated surface code.
 
