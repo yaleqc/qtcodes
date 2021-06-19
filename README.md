@@ -11,7 +11,8 @@ Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardwar
 ## Codebase
 
 <p align="center">
-<img width="300" alt="surface code teaser" src="tutorials/img/error_set.jpg">
+<img width="300" alt="surface code teaser" src="tutorials/img/error_set.jpg"><br>
+<div flush="left"><b>Fig 1.</b> Rotated XXXX/ZZZZ (XXZZ) Surface Code. ZZZZ/ZZ syndromes in red, XXXX/XX syndromes in purple, physical errors in green, and syndrome hits in yellow.</div>
 </p>
 
 Topological QEC codes disperse, and thus protect, one quantum bit of logical information across many physical qubits. The classical repetition code distributes 1 bit of logical information across multiple imperfect physical bits (e.g. logical 0 is 000...0 and logical 1 is 111...1). In the classical repetition logical 0 bit, for example, a few physical bits may flip to 1, but the majority will very likely stay in 0, thus preserving the logical 0 bit. Similarly, the surface code protects one logical qubit in a grid of imperfect physical qubits against Pauli errors.
@@ -56,11 +57,58 @@ Learn more about circuits through encoder tutorials such as this [one](./tutoria
 
 ### Fitters
 
-TODO
+Topological codes aim to build better (read: less noisy) logical qubits out of many imperfect physical qubits. This improvement is enabled by decoding schemes that can detect and thus correct for errors on a code's constituent physical qubits.
+
+The Qiskit Topological Codes package leverages Minimum-Weight Perfect Matching Graph Decoding to efficiently correct logical qubit readout.
+
+
+For example, we can decode the syndrome hits in Fig 1 and fine the most probable error chains (data qubit flips) corresponding to these syndrome hits.
+```
+#d: surface code side length, T: number of rounds
+decoder = RotatedGraphDecoder({"d":5,"T":1})
+all_syndromes = {"X": [(0,1.5,.5),(0,.5,1.5)], "Z": [(0,0.5,0.5),(0,1.5,1.5),(0,1.5,3.5), (0,3.5,3.5)]}
+matches = {}
+
+for syndrome_key, syndromes in all_syndromes.items():
+    print(f"{syndrome_key} Syndrome Graph")
+    error_graph = decoder._make_error_graph(syndromes,syndrome_key)
+    print("Error Graph")
+    decoder.draw(error_graph)
+    matches[syndrome_key] = decoder._run_mwpm(error_graph)
+    matched_graph = decoder._run_mwpm_graph(error_graph)
+    print("Matched Graph")
+    decoder.draw(matched_graph)
+    print(f"Matches: {matches[syndrome_key]}")
+    print("\n===\n")
+```
+
+<p align="middle">
+  <img src="./tutorials/img/decode_xxzz_1.png?raw=true" width="49%" />
+  <img src="./tutorials/img/decode_xxzz_2.png?raw=true" width="49%" />
+</p>
+
+In this way, Qiskit Topological Codes uses graph decoding to find and correct for the most probable set of errors (error chains).
+
+The careful reader will notice that connecting syndrome hits in the most probable set of "error chains" does not uniquely specify the underlying physical qubits that underwent physical errors (i.e. there are multiple shortest paths between two syndrome hits). It turns out, by the nuances of how topological codes store  logical information (i.e. codespace), in most cases the exact path across physical qubits doesn't matter when correcting for an error chain. Read more about this in this [tutorial](./tutorials/xxzz/2-fitters.ipynb) on Decoding for XXZZ Qubits!
 
 ### Benchmarking
 
-TODO
+Finally, the efficiency and efficacy of the Qiskit Topological Codes package is demonstrated through benchmark simulations achieving threshold for the Repetition, XXZZ, and XZZX topological codes. Here, threshold is defined as the maximum physical error rate (i.e. imperfection level of physical qubits) below which larger surface codes perform better than smaller surface codes.
+
+<p align="middle">
+  <img src="./tutorials/img/simulations/rep_code.png?raw=true" width="30%" />
+  <img src="./tutorials/img/simulations/xxzz.png?raw=true" width="30%" />
+  <img src="./tutorials/img/simulations/xzzx.png?raw=true" width="30%" /><br>
+  <div flush="left">
+  <b>Fig. 2</b> By simulating circuits with errors inserted between two rounds of stabilizing measurements, we are able to extract a logical error rate for each code for a given physical error rate (quality of physical qubit) and surface code size. In particular, threshold is shown for the repetition code (left), XXZZ code (center), and XZZX code (right).</div>
+</p>
+
+Explore the benchmarking [tools](./benchmarking/tools.py) and [simulations](./data/) to see how the graphs in Fig. 2 were created.
+
+## Future Directions
+
+*Checkout [issues](https://github.com/yaleqc/qiskit_topological_codes/issues) to see what we are working on these days!*
+
 ## Acknowledgements
 
 **Core Devs:** [Shantanu Jha](https://github.com/Phionx), [Jessie Chen](https://github.com/JazzyCH), [Aaron Householder](https://github.com/aaronhouseholder), [Allen Mi](https://github.com/Allenator)
