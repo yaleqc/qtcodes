@@ -4,7 +4,7 @@
 
 Quantum computation is an inherently noisy process. Scalable quantum computers will require fault-tolerance to implement useful computation. There are many proposed approaches to this, but one promising candidate is the family of *topological quantum error correcting codes*.
 
-Currently, the [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, the *repetition code*. Qiskit Topological Codes builds out the `topological_codes` module into a diverse family of QEC encoders and decoders, supporting the repetition code, XXXX/ZZZZ rotated surface code, and the XZZX rotated surface code.
+Currently, the [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, the *repetition code*. Qiskit Topological Codes builds out the `topological_codes` module into a diverse family of QEC encoders and decoders, supporting the repetition code, XXXX/ZZZZ (XXZZ) rotated surface code, and the XZZX rotated surface code.
 
 Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html), we've written a full set of [jupyter notebook tutorials](./tutorials) to demonstrate the [circuit encoders](./topological_codes/circuits), [graph decoders](./topological_codes/fitters), and [benchmarking tools](./benchmarking) that compose Qiskit Topological Codes. These tutorials both demonstrate the elegance of QEC codes as well as the utility of this package -- please check them out!
 
@@ -82,9 +82,9 @@ for syndrome_key, syndromes in all_syndromes.items():
     print("\n===\n")
 ```
 
-<p align="middle">
-  <img src="./tutorials/img/decode_xxzz_1.png?raw=true" width="49%" />
-  <img src="./tutorials/img/decode_xxzz_2.png?raw=true" width="49%" />
+<p align="middle" style="background:#fff">
+  <img src="./tutorials/img/decode_xxzz_1.png?raw=true" width="49%" align="top"/>
+  <img src="./tutorials/img/decode_xxzz_2.png?raw=true" width="49%" align="top"/>
 </p>
 
 In this way, Qiskit Topological Codes uses graph decoding to find and correct for the most probable set of errors (error chains).
@@ -96,9 +96,9 @@ The careful reader will notice that connecting syndrome hits in the most probabl
 Finally, the efficiency and efficacy of the Qiskit Topological Codes package is demonstrated through benchmark simulations achieving threshold for the Repetition, XXZZ, and XZZX topological codes. Here, threshold is defined as the maximum physical error rate (i.e. imperfection level of physical qubits) below which larger surface codes perform better than smaller surface codes.
 
 <p align="middle">
-  <img src="./tutorials/img/simulations/rep_code.png?raw=true" width="30%" />
-  <img src="./tutorials/img/simulations/xxzz.png?raw=true" width="30%" />
-  <img src="./tutorials/img/simulations/xzzx.png?raw=true" width="30%" /><br>
+  <img src="./tutorials/img/simulations/rep_code.png?raw=true" width="32%" />
+  <img src="./tutorials/img/simulations/xxzz.png?raw=true" width="32%" />
+  <img src="./tutorials/img/simulations/xzzx.png?raw=true" width="32%" /><br>
   <div flush="left">
   <b>Fig. 2</b> By simulating circuits with errors inserted between two rounds of stabilizing measurements, we are able to extract a logical error rate for each code for a given physical error rate (quality of physical qubit) and surface code size. In particular, threshold is shown for the repetition code (left), XXZZ code (center), and XZZX code (right).</div>
 </p>
