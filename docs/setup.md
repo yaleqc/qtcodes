@@ -23,12 +23,12 @@ You don't have to use miniconda, but we highly recommend it. Follow these [instr
 ## 3. Set up conda environment
 
 Once you are able to successfully run `conda -h`, you can `cd`  (change directory) into the directory into which you just cloned the qiskit topological code project.
-Then, run `conda env create --file dependencies/requirements.yml` to install all necessary dependencies and create an environment called `qiskit-topological-code-env` using which you can test and develop the qiskit topological codes package!
+Then, run `conda env create --file dependencies/requirements.yml` to install all necessary dependencies and create an environment called `qiskit-topological-codes-env` using which you can test and develop the qiskit topological codes package!
 
 *Note: The alternative is for you to install dependencies (python packages) manually until you are able to smoothly run the tutorials in this repo.*
 
 ## 4. Run the tutorials
 
-Next, just activate your environment using `conda activate qiskit-topological-code-env`, `cd` into the project repo directory, and run `jupyter lab`.
+Next, just activate your environment using `conda activate qiskit-topological-codes-env`, `cd` into the project repo directory, and run `jupyter lab`.
 
 Then, you should be able to open up the tutorial notebooks and run them without issues.

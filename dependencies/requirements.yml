@@ -1,4 +1,4 @@
-name: qiskit-surface-code-env
+name: qiskit-topological-codes-env
 channels:
   - defaults
   - conda-forge
