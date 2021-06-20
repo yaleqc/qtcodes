@@ -10,7 +10,7 @@ from qiskit.providers.aer.noise import NoiseModel
 
 sys.path.insert(0, ".." + os.sep + ".." + os.sep + ".." + os.sep)
 from benchmarking import TopologicalBenchmark
-from topological_codes import RotatedGraphDecoder, XZZXQubit
+from topological_codes import RotatedDecoder, XZZXQubit
 
 
 # Noise Model Function
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
         tools.append(
             TopologicalBenchmark(
-                decoder=RotatedGraphDecoder({"d": d, "T": T}),
+                decoder=RotatedDecoder({"d": d, "T": T}),
                 circ=qubit.circ,
                 noise_model_func=noise_model_func,
                 correct_logical_value=0,

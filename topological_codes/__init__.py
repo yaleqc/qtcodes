@@ -6,6 +6,6 @@ from .circuits.repetition import RepetitionQubit
 from .circuits.xzzx import XZZXQubit
 from .circuits.circ import TopologicalRegister, TopologicalCircuit
 
-from .fitters.rotated_surface import RotatedGraphDecoder
-from .fitters.repetition import RepetitionGraphDecoder
+from .fitters.rotated_surface import RotatedDecoder
+from .fitters.repetition import RepetitionDecoder
 

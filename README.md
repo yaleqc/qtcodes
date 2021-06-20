@@ -65,7 +65,7 @@ The Qiskit Topological Codes package leverages Minimum-Weight Perfect Matching G
 For example, we can decode the syndrome hits in Fig 1 and fine the most probable error chains (data qubit flips) corresponding to these syndrome hits.
 ```
 #d: surface code side length, T: number of rounds
-decoder = RotatedGraphDecoder({"d":5,"T":1})
+decoder = RotatedDecoder({"d":5,"T":1})
 all_syndromes = {"X": [(0,1.5,.5),(0,.5,1.5)], "Z": [(0,0.5,0.5),(0,1.5,1.5),(0,1.5,3.5), (0,3.5,3.5)]}
 matches = {}
 
