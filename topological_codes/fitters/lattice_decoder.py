@@ -294,7 +294,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
                 whether or not the graph contains float edge weights
 
         Returns:
-            [(node, node),]: List of matchings found from MWPM
+            [(TQubit, TQubit),]: List of matchings found from MWPM
         """
         # TODO: Temporary fix for matching with float edge weights
         weight_fn = int if not floats else lambda n: int(n * 10000)
