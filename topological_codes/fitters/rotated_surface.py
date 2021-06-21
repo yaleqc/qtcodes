@@ -6,13 +6,13 @@ from typing import Tuple, List, Dict
 
 from topological_codes.circuits.xxzz import XXZZQubit
 from topological_codes.fitters.lattice_decoder import (
-    LatticeGraphDecoder,
+    LatticeDecoder,
     TQubit,
     TQubitLoc,
 )
 
 
-class RotatedGraphDecoder(LatticeGraphDecoder):
+class RotatedDecoder(LatticeDecoder):
     """
     Class to construct the graph corresponding to the possible syndromes
     of a quantum error correction surface code, and then run suitable decoders.

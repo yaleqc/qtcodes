@@ -6,7 +6,7 @@ import unittest
 from qiskit import execute, Aer
 
 sys.path.insert(0, "../")
-from topological_codes import RepetitionQubit, RepetitionGraphDecoder
+from topological_codes import RepetitionQubit, RepetitionDecoder
 
 
 class TestRep(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestRep(unittest.TestCase):
     def setUp(self):
         self.params = {"d": 5}
         self.params["T"] = 1
-        self.decoder = RepetitionGraphDecoder(self.params)
+        self.decoder = RepetitionDecoder(self.params)
 
     def get_logical_error_rate(
         self, readout_strings, correct_logical_value, err_prob=None

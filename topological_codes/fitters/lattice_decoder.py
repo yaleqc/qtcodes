@@ -13,14 +13,14 @@ import retworkx as rx
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from topological_codes.fitters.base import TopologicalGraphDecoder
+from topological_codes.fitters.base import TopologicalDecoder
 from topological_codes.fitters.graph_utils import GraphUtils
 
 TQubit = Tuple[float, float, float]  # (time,row,column) ==> (t,i,j)
 TQubitLoc = Tuple[float, float]  # (row,column) ==> (i,j)
 
 
-class LatticeGraphDecoder(TopologicalGraphDecoder[TQubit], metaclass=ABCMeta):
+class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
     """
     Class to construct the graph corresponding to the possible syndromes
     of a quantum error correction code, and then run suitable decoders.
@@ -294,7 +294,7 @@ class LatticeGraphDecoder(TopologicalGraphDecoder[TQubit], metaclass=ABCMeta):
                 whether or not the graph contains float edge weights
 
         Returns:
-            [(node, node),]: List of matchings found from MWPM
+            [(TQubit, TQubit),]: List of matchings found from MWPM
         """
         # TODO: Temporary fix for matching with float edge weights
         weight_fn = int if not floats else lambda n: int(n * 10000)
@@ -370,7 +370,9 @@ class LatticeGraphDecoder(TopologicalGraphDecoder[TQubit], metaclass=ABCMeta):
             This method can be used to benchmark logical error rates, as well as perform fault tolerant readout.
         """
         if type(syndromes) == str:
-            logical_qubit_value, syndromes = self._string2nodes(str(syndromes))
+            logical_qubit_value, syndromes = self._string2nodes(
+                str(syndromes), logical_readout_type
+            )
         syndromes = cast(Dict[str, List[TQubit]], syndromes)
         logical_qubit_value = cast(int, logical_qubit_value)
 
