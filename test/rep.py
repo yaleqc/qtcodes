@@ -59,7 +59,7 @@ class TestRep(unittest.TestCase):
             for error in ["x"]:
                 # Set up circuit
                 qubit = RepetitionQubit(self.params)
-                qubit.logical_plus_z_reset()
+                qubit.reset_z()
                 qubit.stabilize()
                 qubit.circ.__getattribute__(error)(
                     qubit.lattice.qregisters["data"][i]

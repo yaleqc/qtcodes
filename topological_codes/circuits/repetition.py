@@ -4,6 +4,7 @@ Repetition Code Encoder Classes
 from typing import Dict, List, Tuple, Optional, Type
 from qiskit import QuantumRegister, QuantumCircuit, ClassicalRegister
 from qiskit.circuit import Qubit
+
 from topological_codes.circuits.base import (
     _Stabilizer,
     LatticeError,
@@ -184,20 +185,20 @@ class _RepetitionLattice(_TopologicalLattice):
 
         return logical_readout, z_stabilizer
 
-    def logical_plus_x_reset(self) -> None:
+    def reset_x(self) -> None:
         """
         Initialize/reset to a logical |x+> state.
         """
         raise NotImplementedError("Not applicable/relevant to the Rep Code.")
 
-    def logical_plus_z_reset(self) -> None:
+    def reset_z(self) -> None:
         """
         Initialize/reset to a logical |z+> state.
         """
         self.circ.reset(self.qregisters["data"])
         self.circ.barrier()
 
-    def logical_x(self) -> None:
+    def x(self) -> None:
         """
         Logical X operator on the topological qubit.
         Defined as the left-most column on the X Syndrome Graph.
@@ -205,35 +206,66 @@ class _RepetitionLattice(_TopologicalLattice):
         self.circ.x(self.qregisters["data"])
         self.circ.barrier()
 
-    def logical_z(self) -> None:
+    def z(self) -> None:
         """
         Logical Z operator on the topological qubit.
         Defined as the top-most row on the Z Syndrome Graph.
         """
         raise NotImplementedError("Not applicable/relevant to the Rep Code.")
 
-    def readout_x(self) -> None:
+    def x_c_if(self, classical: ClassicalRegister, val: int) -> None:
+        """
+        Classically conditioned logical X operator on the topological qubit.
+        """
+        self.circ.x(self.qregisters["data"]).c_if(classical, val)
+        self.circ.barrier()
+
+    def z_c_if(self, classical: ClassicalRegister, val: int) -> None:
+        """
+        Classically conditioned logical Z operator on the topological qubit.
+        """
+        raise NotImplementedError("Not applicable/relevant to the Rep Code.")
+
+    def cx(self, control: Optional[Qubit] = None, target: Optional[Qubit] = None):
+        """
+        Logical CX Gate
+
+        Args:
+            control (Optional[Qubit]): If provided, then this gate will implement
+                a logical x gate on this tqubit conditioned on source
+
+            target (Optional[Qubit]): If provided, then this gate will implement
+                a logical x gate on target conditioned on this tqubit
+        """
+        if control:
+            self.circ.cx(control, self.qregisters["data"])
+            self.circ.barrier()
+        elif target:
+            self.circ.cx(self.qregisters["data"][0], target)
+
+    def readout_x(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
         """
         Convenience method to read-out the logical-X projection.
         """
         raise NotImplementedError("Not applicable/relevant to the Rep Code.")
 
-    def readout_z(self) -> None:
+    def readout_z(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
         """
         Convenience method to read-out the logical-Z projection.
         Uses the top-most row (in this case just the first qubit).
         """
-        self.params["num_readout"] += 1
-        readout = ClassicalRegister(
-            1, name=self.name + "_readout_" + str(self.params["num_readout"])
-        )
+        if not readout_creg:
+            self.params["num_readout"] += 1
+            creg_name = self.name + "_readout_" + str(self.params["num_readout"])
+            readout = ClassicalRegister(1, name=creg_name)
 
-        self.circ.add_register(readout)
+            self.circ.add_register(readout)
 
-        self.cregisters["readout"] = readout
+            self.cregisters[creg_name] = readout
+            readout_creg = self.cregisters[creg_name]
 
         self.circ.reset(self.qregisters["ancilla"])
-        self.circ.measure(self.qregisters["data"][0], self.cregisters["readout"])
+        self.circ.measure(self.qregisters["data"][0], readout_creg)
         self.circ.barrier()
 
     def lattice_readout_x(self) -> None:
@@ -249,19 +281,16 @@ class _RepetitionLattice(_TopologicalLattice):
         as well as a logical Z readout.
         """
         self.params["num_lattice_readout"] += 1
-
-        readout = ClassicalRegister(
-            self.params["num_data"],
-            name=self.name
-            + "_lattice_readout_"
-            + str(self.params["num_lattice_readout"]),
+        creg_name = (
+            self.name + "_lattice_readout_" + str(self.params["num_lattice_readout"])
         )
+        readout = ClassicalRegister(self.params["num_data"], name=creg_name,)
 
         self.circ.add_register(readout)
 
-        self.cregisters["lattice_readout"] = readout
+        self.cregisters[creg_name] = readout
 
-        self.circ.measure(self.qregisters["data"], self.cregisters["lattice_readout"])
+        self.circ.measure(self.qregisters["data"], self.cregisters[creg_name])
         self.circ.barrier()
 
     def parse_readout(

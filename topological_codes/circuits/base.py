@@ -101,37 +101,62 @@ class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
             self.circ.barrier()
 
     @abstractmethod
-    def logical_plus_x_reset(self) -> None:
+    def reset_x(self) -> None:
         """
         Initialize/reset to a logical |x+> state.
         """
 
     @abstractmethod
-    def logical_plus_z_reset(self) -> None:
+    def reset_z(self) -> None:
         """
         Initialize/reset to a logical |z+> state.
         """
 
     @abstractmethod
-    def logical_x(self) -> None:
+    def x(self) -> None:
         """
         Logical X operator on the topological qubit.
         """
 
     @abstractmethod
-    def logical_z(self) -> None:
+    def z(self) -> None:
         """
         Logical Z operator on the topological qubit.
         """
 
     @abstractmethod
-    def readout_x(self) -> None:
+    def x_c_if(self, classical: ClassicalRegister, val: int) -> None:
+        """
+        Classically conditioned logical X operator on the topological qubit.
+        """
+
+    @abstractmethod
+    def z_c_if(self, classical: ClassicalRegister, val: int) -> None:
+        """
+        Classically conditioned logical Z operator on the topological qubit.
+        """
+
+    @abstractmethod
+    def cx(self, control: Optional[Qubit] = None, target: Optional[Qubit] = None):
+        """
+        Logical CX Gate
+
+        Args:
+            control (Optional[Qubit]): If provided, then this gate will implement
+                a logical x gate on this tqubit conditioned on source
+
+            target (Optional[Qubit]): If provided, then this gate will implement
+                a logical x gate on target conditioned on this tqubit
+        """
+
+    @abstractmethod
+    def readout_x(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
         """
         Convenience method to read-out the logical-X projection.
         """
 
     @abstractmethod
-    def readout_z(self) -> None:
+    def readout_z(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
         """
         Convenience method to read-out the logical-Z projection.
         """
@@ -205,7 +230,7 @@ class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
         Run a single round of stabilization (entangle and measure).
         """
 
-    def identity(self) -> None:
+    def id(self) -> None:
         """
         Inserts an identity on the data and syndrome qubits.
         This allows us to create an isolated noise model by inserting errors only on identity gates.
@@ -214,7 +239,7 @@ class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
             self.circ.id(register)
         self.circ.barrier()
 
-    def identity_data(self) -> None:
+    def id_data(self) -> None:
         """
         Inserts an identity on the data qubits only.
         This allows us to create an isolated noise model by inserting errors only on identity gates.
@@ -222,43 +247,71 @@ class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
         self.circ.id(self.lattice.qregisters["data"])
         self.circ.barrier()
 
-    def logical_plus_x_reset(self) -> None:
+    def reset_x(self) -> None:
         """
         Initialize/reset to a logical |x+> state.
         """
-        self.lattice.logical_plus_x_reset()
+        self.lattice.reset_x()
 
-    def logical_plus_z_reset(self) -> None:
+    def reset_z(self) -> None:
         """
         Initialize/reset to a logical |z+> state.
         """
-        self.lattice.logical_plus_z_reset()
+        self.lattice.reset_z()
 
-    def logical_x(self) -> None:
+    def x(self) -> None:
         """
         Logical X operator on the topological qubit.
-        Defined as the left-most column on the X Syndrome Graph.
         """
-        self.lattice.logical_x()
+        self.lattice.x()
 
-    def logical_z(self) -> None:
+    def z(self) -> None:
         """
         Logical Z operator on the topological qubit.
-        Defined as the top-most row on the Z Syndrome Graph.
         """
-        self.lattice.logical_z()
+        self.lattice.z()
 
-    def readout_x(self) -> None:
+    def x_c_if(self, classical: ClassicalRegister, val: int) -> None:
+        """
+        Classical conditioned logical X operator on the topological qubit.
+        """
+        self.lattice.x_c_if(classical, val)
+
+    def z_c_if(self, classical: ClassicalRegister, val: int) -> None:
+        """
+        Classical conditioned logical Z operator on the topological qubit.
+        """
+        self.lattice.z_c_if(classical, val)
+
+    def cx(self, control: Optional[Qubit] = None, target: Optional[Qubit] = None):
+        """
+        Logical CX Gate
+
+        Args:
+            control (Optional[Qubit]): If provided, then this gate will implement
+                a logical x gate on this tqubit conditioned on source
+
+            target (Optional[Qubit]): If provided, then this gate will implement
+                a logical x gate on target conditioned on this tqubit
+
+        Additional Information:
+            Exactly one of control or target must be provided.
+        """
+        if not (bool(control) ^ bool(target)):
+            raise ValueError("Please specify exactly one of source or target")
+        self.lattice.cx(control, target)
+
+    def readout_x(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
         """
         Convenience method to read-out the logical-X projection.
         """
-        self.lattice.readout_x()
+        self.lattice.readout_x(readout_creg=readout_creg)
 
-    def readout_z(self) -> None:
+    def readout_z(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
         """
         Convenience method to read-out the logical-Z projection.
         """
-        self.lattice.readout_z()
+        self.lattice.readout_z(readout_creg=readout_creg)
 
     def lattice_readout_x(self) -> None:
         """
