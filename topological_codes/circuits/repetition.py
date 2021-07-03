@@ -188,8 +188,13 @@ class _RepetitionLattice(_TopologicalLattice):
     def reset_x(self) -> None:
         """
         Initialize/reset to a logical |x+> state.
+        Create a GHZ state: |+_L> := |0_L> + |1_L> = |00..0> + |11..1>
         """
-        raise NotImplementedError("Not applicable/relevant to the Rep Code.")
+        self.circ.reset(self.qregisters["data"])
+        self.circ.h(self.qregisters["data"][0])
+        for i in range(len(self.qregisters["data"]) - 1):
+            self.circ.cx(self.qregisters["data"][i], self.qregisters["data"][i + 1])
+        self.circ.barrier()
 
     def reset_z(self) -> None:
         """
@@ -211,7 +216,7 @@ class _RepetitionLattice(_TopologicalLattice):
         Logical Z operator on the topological qubit.
         Defined as the top-most row on the Z Syndrome Graph.
         """
-        raise NotImplementedError("Not applicable/relevant to the Rep Code.")
+        self.circ.z(self.qregisters["data"][0])
 
     def x_c_if(self, classical: ClassicalRegister, val: int) -> None:
         """
@@ -224,7 +229,7 @@ class _RepetitionLattice(_TopologicalLattice):
         """
         Classically conditioned logical Z operator on the topological qubit.
         """
-        raise NotImplementedError("Not applicable/relevant to the Rep Code.")
+        self.circ.z(self.qregisters["data"][0]).c_if(classical, val)
 
     def cx(self, control: Optional[Qubit] = None, target: Optional[Qubit] = None):
         """
@@ -243,11 +248,36 @@ class _RepetitionLattice(_TopologicalLattice):
         elif target:
             self.circ.cx(self.qregisters["data"][0], target)
 
+    def _readout_x_into_ancilla(self) -> None:
+        """
+        Convenience method to read-out the
+        logical-X projection into an ancilla qubit.
+        Uses the left-most column.
+        """
+
+        self.circ.reset(self.qregisters["ancilla"])
+
+        # X Readout
+        self.circ.h(self.qregisters["ancilla"])
+        self.circ.cx(self.qregisters["ancilla"], self.qregisters["data"])
+        self.circ.h(self.qregisters["ancilla"])
+
     def readout_x(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
         """
         Convenience method to read-out the logical-X projection.
         """
-        raise NotImplementedError("Not applicable/relevant to the Rep Code.")
+        if not readout_creg:
+            self.params["num_readout"] += 1
+            creg_name = self.name + "_readout_" + str(self.params["num_readout"])
+            readout = ClassicalRegister(1, name=creg_name)
+
+            self.circ.add_register(readout)
+
+            self.cregisters[creg_name] = readout
+            readout_creg = self.cregisters[creg_name]
+        self._readout_x_into_ancilla()
+        self.circ.measure(self.qregisters["ancilla"], readout_creg)
+        self.circ.barrier()
 
     def readout_z(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
         """
@@ -272,7 +302,18 @@ class _RepetitionLattice(_TopologicalLattice):
         """
         Not applicable/relevant to the Rep Code.
         """
-        raise NotImplementedError("Not applicable/relevant to the Rep Code.")
+        self.params["num_lattice_readout"] += 1
+        creg_name = (
+            self.name + "_lattice_readout_" + str(self.params["num_lattice_readout"])
+        )
+        readout = ClassicalRegister(self.params["num_data"], name=creg_name,)
+        self.circ.add_register(readout)
+        self.cregisters[creg_name] = readout
+
+        # measure along X
+        self.circ.h(self.qregisters["data"])
+        self.circ.measure(self.qregisters["data"], self.cregisters[creg_name])
+        self.circ.barrier()
 
     def lattice_readout_z(self) -> None:
         """
@@ -320,7 +361,9 @@ class _RepetitionLattice(_TopologicalLattice):
         chunks = readout_string.split(" ")
 
         if len(chunks[0]) > 1:  # this is true when all data qubits are readout
-            assert readout_type == "Z", "Rep code only supports Z readout."
+            assert (
+                readout_type == "Z"
+            ), "Rep code currently only supports Z lattice readout."
             (
                 logical_readout,
                 final_stabilizer,
