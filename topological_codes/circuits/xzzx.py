@@ -1,8 +1,10 @@
 """
 XZZX Surface Code Encoder Classes
 """
-from typing import Tuple
+from typing import Tuple, Optional
 from qiskit import ClassicalRegister
+from qiskit.circuit import Qubit
+
 from topological_codes.circuits.base import _Stabilizer
 from topological_codes.circuits.rotated_surface import _RotatedLattice, RotatedQubit
 
@@ -50,21 +52,21 @@ class _XZZXLattice(_RotatedLattice):
 
     stabilizer_shortnames = {"mx": _XZZX, "mz": _XZZX}
 
-    def logical_plus_x_reset(self):
+    def reset_x(self):
         """
         Initialize/reset to a logical |x+> state.
         """
         self.circ.reset(self.qregisters["data"])
         self.circ.h(self.qregisters["data"][1::2])  # H|0> = |+>
 
-    def logical_plus_z_reset(self):
+    def reset_z(self):
         """
         Initialize/reset to a logical |z+> state.
         """
         self.circ.reset(self.qregisters["data"])
         self.circ.h(self.qregisters["data"][0::2])  # H|0> = |+>
 
-    def logical_x(self) -> None:
+    def x(self) -> None:
         """
         Logical X operator on the qubit.
         Defined as the left-most column.
@@ -78,7 +80,7 @@ class _XZZXLattice(_RotatedLattice):
                 self.circ.z(self.qregisters["data"][i])
         self.circ.barrier()
 
-    def logical_z(self) -> None:
+    def z(self) -> None:
         """
         Logical Z operator on the qubit.
         Defined as the top-most row.
@@ -92,19 +94,63 @@ class _XZZXLattice(_RotatedLattice):
                 self.circ.z(self.qregisters["data"][i])
         self.circ.barrier()
 
-    def readout_x(self) -> None:
+    def x_c_if(self, classical: ClassicalRegister, val: int) -> None:
         """
-        Convenience method to read-out the logical-X projection.
+        Classically conditioned logical X operator on the topological qubit.
         Defined as the left-most column.
         """
-        self.params["num_readout"] += 1
-        readout = ClassicalRegister(
-            1, name=self.name + "_readout_" + str(self.params["num_readout"])
-        )
 
-        self.circ.add_register(readout)
+        # Taking left-most column
+        for i in range(0, self.params["num_data"], self.params["d"]):
+            if i % 2 == 1:
+                self.circ.x(self.qregisters["data"][i]).c_if(classical, val)
+            else:
+                self.circ.z(self.qregisters["data"][i]).c_if(classical, val)
+        self.circ.barrier()
 
-        self.cregisters["readout"] = readout
+    def z_c_if(self, classical: ClassicalRegister, val: int) -> None:
+        """
+        Classically conditioned logical Z operator on the topological qubit.
+        Defined as the top-most row.
+        """
+
+        # Taking top-most row
+        for i in range(self.params["d"]):
+            if i % 2 == 0:
+                self.circ.x(self.qregisters["data"][i]).c_if(classical, val)
+            else:
+                self.circ.z(self.qregisters["data"][i]).c_if(classical, val)
+        self.circ.barrier()
+
+    def cx(self, control: Optional[Qubit] = None, target: Optional[Qubit] = None):
+        """
+        Logical CX Gate
+
+        Args:
+            control (Optional[Qubit]): If provided, then this gate will implement
+                a logical x gate on this tqubit conditioned on source
+
+            target (Optional[Qubit]): If provided, then this gate will implement
+                a logical x gate on target conditioned on this tqubit
+        """
+        if control:
+            # Taking left-most column
+            for i in range(0, self.params["num_data"], self.params["d"]):
+                if i % 2 == 1:
+                    self.circ.cx(control, self.qregisters["data"][i])
+                else:
+                    self.circ.cz(control, self.qregisters["data"][i])
+            self.circ.barrier()
+        elif target:
+            self._readout_z_into_ancilla()
+            self.circ.cx(self.qregisters["ancilla"], target)
+
+    def _readout_x_into_ancilla(self) -> None:
+        """
+        Convenience method to read-out the
+        logical-X projection into an ancilla qubit.
+        Uses the left-most column.
+        """
 
         self.circ.reset(self.qregisters["ancilla"])
 
@@ -124,23 +170,31 @@ class _XZZXLattice(_RotatedLattice):
         self.circ.cx(
             self.qregisters["data"][z_readout_indxs], self.qregisters["ancilla"]
         )
-        self.circ.measure(self.qregisters["ancilla"], self.cregisters["readout"])
+
+    def readout_x(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
+        """
+        Convenience method to read-out the logical-X projection.
+        Defined as the left-most column.
+        """
+        if not readout_creg:
+            self.params["num_readout"] += 1
+            creg_name = self.name + "_readout_" + str(self.params["num_readout"])
+            readout = ClassicalRegister(1, name=creg_name)
+
+            self.circ.add_register(readout)
+
+            self.cregisters[creg_name] = readout
+            readout_creg = self.cregisters[creg_name]
+        self._readout_x_into_ancilla()
+        self.circ.measure(self.qregisters["ancilla"], readout_creg)
         self.circ.barrier()
 
-    def readout_z(self) -> None:
+    def _readout_z_into_ancilla(self) -> None:
         """
-        Convenience method to read-out the logical-Z projection.
-        Defined as the top-most row.
+        Convenience method to read-out the
+        logical-Z projection into an ancilla qubit.
+        Uses the top-most row.
         """
-
-        self.params["num_readout"] += 1
-        readout = ClassicalRegister(
-            1, name=self.name + "_readout_" + str(self.params["num_readout"])
-        )
-
-        self.circ.add_register(readout)
-
-        self.cregisters["readout"] = readout
 
         self.circ.reset(self.qregisters["ancilla"])
 
@@ -160,7 +214,23 @@ class _XZZXLattice(_RotatedLattice):
         self.circ.cx(
             self.qregisters["data"][z_readout_indxs], self.qregisters["ancilla"]
         )
-        self.circ.measure(self.qregisters["ancilla"], self.cregisters["readout"])
+
+    def readout_z(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
+        """
+        Convenience method to read-out the logical-Z projection.
+        Defined as the top-most row.
+        """
+        if not readout_creg:
+            self.params["num_readout"] += 1
+            creg_name = self.name + "_readout_" + str(self.params["num_readout"])
+            readout = ClassicalRegister(1, name=creg_name)
+
+            self.circ.add_register(readout)
+
+            self.cregisters[creg_name] = readout
+            readout_creg = self.cregisters[creg_name]
+        self._readout_z_into_ancilla()
+        self.circ.measure(self.qregisters["ancilla"], readout_creg)
         self.circ.barrier()
 
     def lattice_readout_x(self) -> None:
@@ -171,21 +241,20 @@ class _XZZXLattice(_RotatedLattice):
         """
 
         self.params["num_lattice_readout"] += 1
-        readout = ClassicalRegister(
-            self.params["num_data"],
-            name=self.name
-            + "_lattice_readout_"
-            + str(self.params["num_lattice_readout"]),
+
+        creg_name = (
+            self.name + "_lattice_readout_" + str(self.params["num_lattice_readout"])
         )
+        readout = ClassicalRegister(self.params["num_data"], name=creg_name)
 
         self.circ.add_register(readout)
-        self.cregisters["lattice_readout"] = readout
+        self.cregisters[creg_name] = readout
 
         # H|+> = |0>, H|-> = |1>
         # add H to measure along X for odd data qubits
         self.circ.h(self.qregisters["data"][1::2])
 
-        self.circ.measure(self.qregisters["data"], self.cregisters["lattice_readout"])
+        self.circ.measure(self.qregisters["data"], self.cregisters[creg_name])
         self.circ.barrier()
 
     def lattice_readout_z(self) -> None:
@@ -196,21 +265,19 @@ class _XZZXLattice(_RotatedLattice):
         """
 
         self.params["num_lattice_readout"] += 1
-        readout = ClassicalRegister(
-            self.params["num_data"],
-            name=self.name
-            + "_lattice_readout_"
-            + str(self.params["num_lattice_readout"]),
+        creg_name = (
+            self.name + "_lattice_readout_" + str(self.params["num_lattice_readout"])
         )
+        readout = ClassicalRegister(self.params["num_data"], name=creg_name)
 
         self.circ.add_register(readout)
-        self.cregisters["lattice_readout"] = readout
+        self.cregisters[creg_name] = readout
 
         # H|+> = |0>, H|-> = |1>
         # add H to measure along X for even data qubits
         self.circ.h(self.qregisters["data"][0::2])
 
-        self.circ.measure(self.qregisters["data"], self.cregisters["lattice_readout"])
+        self.circ.measure(self.qregisters["data"], self.cregisters[creg_name])
         self.circ.barrier()
 
 

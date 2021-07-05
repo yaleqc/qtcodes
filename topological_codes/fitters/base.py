@@ -61,7 +61,7 @@ class TopologicalDecoder(Generic[TQubit], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def _string2nodes(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
+    def parse_readout(self, readout_string: str) -> Tuple[int, Dict[str, List[TQubit]]]:
         """
         Converte between readout_string to logical_readout and syndrome nodes.
 

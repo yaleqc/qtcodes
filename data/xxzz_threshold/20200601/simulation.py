@@ -34,7 +34,7 @@ if __name__ == "__main__":
         # setup circ
         qubit = XXZZQubit({"d": d})
         qubit.stabilize()
-        qubit.identity_data()
+        qubit.id_data()
         qubit.stabilize()
         qubit.readout_z()
 

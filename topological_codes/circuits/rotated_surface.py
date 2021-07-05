@@ -5,6 +5,7 @@ from abc import abstractmethod, ABCMeta
 from typing import Dict, List, Tuple, Optional, Type
 from qiskit import QuantumRegister, QuantumCircuit, ClassicalRegister
 from qiskit.circuit import Qubit
+
 from topological_codes.circuits.base import (
     LatticeError,
     _TopologicalLattice,
@@ -315,40 +316,40 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             )
 
     @abstractmethod
-    def logical_plus_x_reset(self) -> None:
+    def reset_x(self) -> None:
         """
         Initialize/reset to a logical |x+> state.
         """
 
     @abstractmethod
-    def logical_plus_z_reset(self) -> None:
+    def reset_z(self) -> None:
         """
         Initialize/reset to a logical |z+> state.
         """
 
     @abstractmethod
-    def logical_x(self) -> None:
+    def x(self) -> None:
         """
         Logical X operator on the qubit.
         Uses the left-most column.
         """
 
     @abstractmethod
-    def logical_z(self) -> None:
+    def z(self) -> None:
         """
         Logical Z operator on the qubit.
         Uses the top-most row.
         """
 
     @abstractmethod
-    def readout_x(self) -> None:
+    def readout_x(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
         """
         Convenience method to read-out the logical-X projection.
         Uses the left-most column.
         """
 
     @abstractmethod
-    def readout_z(self) -> None:
+    def readout_z(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
         """
         Convenience method to read-out the logical-Z projection.
         Uses the top-most row.

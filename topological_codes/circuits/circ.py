@@ -2,7 +2,8 @@
 Topological Circuit and Register
 """
 from typing import Union, Dict, cast, Optional, Type, Any, Tuple, List
-from qiskit import QuantumCircuit
+from qiskit import QuantumCircuit, QuantumRegister
+from qiskit.circuit.classicalregister import ClassicalRegister
 from topological_codes.circuits.base import TopologicalQubit
 from topological_codes.circuits.xxzz import XXZZQubit
 from topological_codes.circuits.xzzx import XZZXQubit
@@ -41,13 +42,13 @@ class TopologicalRegister:
                 Prepended to all registers.
 
         """
-        params = params if params else {"d": 3}
+        self.params = params if params else {"d": 3}
         self.name = name
+
+        self.n = 0
 
         # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
         self.circ = QuantumCircuit() if circ is None else circ
-
-        self.tqubits = []
 
         blueprint: Dict[str, Type[Any]] = {
             "XXZZ": XXZZQubit,
@@ -61,18 +62,35 @@ class TopologicalRegister:
             )
         self.tqubit_type = blueprint[ctype]
 
-        for i in range(num_tqubits):
-            self.tqubits.append(
-                self.tqubit_type(
-                    params=params, name=self.name + "_" + str(i), circ=self.circ
-                )
-            )
+        self.tqubits: Dict[str, Dict[int, self.tqubit_type]] = {}
+        for _ in range(num_tqubits):
+            self.add_tqubit("data")
 
-    def __getitem__(self, key: int):
+    def add_tqubit(self, sub_register: str) -> None:
+        if sub_register not in self.tqubits:
+            self.tqubits[sub_register] = {}
+        self.tqubits[sub_register][self.n] = self.tqubit_type(
+            params=self.params, name=self.name + "_" + str(self.n), circ=self.circ
+        )
+        self.n += 1
+
+    def add_tqubits(self, sub_register: str, num_tqubits: int) -> None:
+        for _ in range(num_tqubits):
+            self.add_tqubit(sub_register)
+
+    def __getitem__(self, key: Union[str, int]):
         """
         Allows us to return the nth element of TopologicalRegister as a list.
         """
-        return self.tqubits[key]
+        if isinstance(key, str):
+            key = str(key)
+            return self.tqubits[key]
+        elif isinstance(key, int):
+            key = int(key)
+            for _, sub_reg in self.tqubits.items():
+                if key in sub_reg:
+                    return sub_reg[key]
+        raise ValueError("Key not found!")
 
 
 class TopologicalCircuit:
@@ -83,7 +101,23 @@ class TopologicalCircuit:
 
     def __init__(self, treg: TopologicalRegister):
         self.treg = treg
+        self.qreg: Dict[str, QuantumRegister] = {}
+        self.creg: Dict[str, ClassicalRegister] = {}
         self.circ = treg.circ
+
+    def add_creg(self, size=None, name=None, bits=None, override: bool = False) -> None:
+        if name in self.creg and not override:
+            return
+        creg = ClassicalRegister(size=size, name=name, bits=bits)
+        self.creg[name] = creg
+        self.circ.add_register(creg)
+
+    def add_qreg(self, size=None, name=None, bits=None, override: bool = False) -> None:
+        if name in self.qreg and not override:
+            return
+        qreg = QuantumRegister(size=size, name=name, bits=bits)
+        self.qreg[name] = qreg
+        self.circ.add_register(qreg)
 
     def _get_index(self, tqubit: Union[TopologicalQubit, int]) -> TopologicalQubit:
         """
@@ -124,7 +158,7 @@ class TopologicalCircuit:
                 Either already a TopologicalQubit or an int index in treg
         """
         tqubit = self._get_index(tqubit)
-        tqubit.identity()
+        tqubit.id()
 
     def id_data(self, tqubit: Union[TopologicalQubit, int]) -> None:
         """
@@ -136,7 +170,7 @@ class TopologicalCircuit:
                 Either already a TopologicalQubit or an int index in treg
         """
         tqubit = self._get_index(tqubit)
-        tqubit.identity_data()
+        tqubit.id_data()
 
     def reset_x(self, tqubit: Union[TopologicalQubit, int]) -> None:
         """
@@ -147,7 +181,7 @@ class TopologicalCircuit:
                 Either already a TopologicalQubit or an int index in treg
         """
         tqubit = self._get_index(tqubit)
-        tqubit.logical_plus_x_reset()
+        tqubit.reset_x()
 
     def reset_z(self, tqubit: Union[TopologicalQubit, int]):
         """
@@ -158,7 +192,7 @@ class TopologicalCircuit:
                 Either already a TopologicalQubit or an int index in treg
         """
         tqubit = self._get_index(tqubit)
-        tqubit.logical_plus_z_reset()
+        tqubit.reset_z()
 
     def x(self, tqubit: Union[TopologicalQubit, int]):
         """
@@ -169,7 +203,7 @@ class TopologicalCircuit:
                 Either already a TopologicalQubit or an int index in treg
         """
         tqubit = self._get_index(tqubit)
-        tqubit.logical_x()
+        tqubit.x()
 
     def z(self, tqubit: Union[TopologicalQubit, int]):
         """
@@ -180,9 +214,61 @@ class TopologicalCircuit:
                 Either already a TopologicalQubit or an int index in treg
         """
         tqubit = self._get_index(tqubit)
-        tqubit.logical_z()
+        tqubit.z()
 
-    def measure_x(self, tqubit: Union[TopologicalQubit, int]):
+    def cx(
+        self,
+        control: Union[TopologicalQubit, int],
+        target: Union[TopologicalQubit, int],
+    ):
+
+        # get qubits
+        control = self._get_index(control)
+        target = self._get_index(target)
+        if "ancilla" not in self.treg.tqubits:
+            self.treg.add_tqubit("ancilla")
+        ancilla = cast(TopologicalQubit, list(self.treg["ancilla"].values())[-1])
+
+        # prepare bits
+        self.add_creg(1, "m1")
+        self.add_creg(1, "m2")
+        self.add_creg(1, "m3")
+
+        # prepare ancilla
+        ancilla.reset_x()
+
+        # Z (control) x Z (ancilla)
+        self.add_qreg(1, "cnot_readout")
+
+        readout = self.qreg["cnot_readout"][0]
+
+        # Z x Z
+        self.circ.reset(readout)
+        control.cx(target=readout)
+        ancilla.cx(target=readout)
+        self.circ.measure(readout, self.creg["m1"][0])
+
+        # X x X
+        self.circ.reset(readout)
+        self.circ.h(readout)
+        target.cx(control=readout)
+        ancilla.cx(control=readout)
+        self.circ.h(readout)
+        self.circ.measure(readout, self.creg["m2"][0])
+
+        # Z
+        ancilla.readout_z(readout_creg=self.creg["m3"])
+
+        # classical conditioned
+        control.z_c_if(self.creg["m2"], 1)
+        target.x_c_if(self.creg["m1"], 1)
+        target.x_c_if(self.creg["m3"], 1)
+
+    def measure_x(
+        self,
+        tqubit: Union[TopologicalQubit, int],
+        readout_creg: Optional[ClassicalRegister] = None,
+    ):
         """
         Convenience method to read-out the logical-X projection.
 
@@ -191,9 +277,13 @@ class TopologicalCircuit:
                 Either already a TopologicalQubit or an int index in treg
         """
         tqubit = self._get_index(tqubit)
-        tqubit.readout_x()
+        tqubit.readout_x(readout_creg=readout_creg)
 
-    def measure_z(self, tqubit: Union[TopologicalQubit, int]):
+    def measure_z(
+        self,
+        tqubit: Union[TopologicalQubit, int],
+        readout_creg: Optional[ClassicalRegister] = None,
+    ):
         """
         Convenience method to read-out the logical-Z projection.
 
@@ -202,7 +292,7 @@ class TopologicalCircuit:
                 Either already a TopologicalQubit or an int index in treg
         """
         tqubit = self._get_index(tqubit)
-        tqubit.readout_z()
+        tqubit.readout_z(readout_creg=readout_creg)
 
     def measure_lattice_x(self, tqubit: Union[TopologicalQubit, int]):
         """

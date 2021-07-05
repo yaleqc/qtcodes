@@ -370,7 +370,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
             This method can be used to benchmark logical error rates, as well as perform fault tolerant readout.
         """
         if type(syndromes) == str:
-            logical_qubit_value, syndromes = self._string2nodes(
+            logical_qubit_value, syndromes = self.parse_readout(
                 str(syndromes), logical_readout_type
             )
         syndromes = cast(Dict[str, List[TQubit]], syndromes)
@@ -385,7 +385,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
                 logical_qubit_value = (logical_qubit_value + 1) % 2
         return logical_qubit_value
 
-    def _string2nodes(
+    def parse_readout(
         self, readout_string: str, readout_type: Optional[str] = None
     ) -> Tuple[int, Dict[str, List[TQubit]]]:
         """

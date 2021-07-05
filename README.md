@@ -30,9 +30,9 @@ For example, we can create and apply a logical X onto a `RepetitionQubit` as fol
 
 ```
 qubit = RepetitionQubit({"d":3},"t")
-qubit.logical_plus_z_reset()
+qubit.reset_z()
 qubit.stabilize()
-qubit.logical_x()
+qubit.x()
 qubit.stabilize()
 qubit.readout_z()
 qubit.draw(output='mpl', fold=150)

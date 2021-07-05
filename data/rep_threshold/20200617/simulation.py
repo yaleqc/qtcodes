@@ -33,9 +33,9 @@ if __name__ == "__main__":
 
         # setup circ
         qubit = RepetitionQubit({"d": d})
-        qubit.logical_plus_z_reset()
+        qubit.reset_z()
         qubit.stabilize()
-        qubit.identity_data()
+        qubit.id_data()
         qubit.stabilize()
         qubit.readout_z()
 

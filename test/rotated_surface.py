@@ -95,7 +95,7 @@ class TestXXZZ(unittest.TestCase):
             for error in ["x", "z"]:
                 # Set up circuit
                 qubit = XXZZQubit(self.params)
-                qubit.logical_plus_z_reset()
+                qubit.reset_z()
                 qubit.stabilize()
                 qubit.circ.__getattribute__(error)(
                     qubit.lattice.qregisters["data"][i]
@@ -127,7 +127,7 @@ class TestXXZZ(unittest.TestCase):
 
                 readout_strings = list(results.keys())
                 for readout_string in readout_strings:
-                    _, processed_results = self.decoder._string2nodes(readout_string)
+                    _, processed_results = self.decoder.parse_readout(readout_string)
                     nodes = sum(list(processed_results.values()), [])
                     for x in nodes:
                         self.assertIn(x, expected_neighbors)
