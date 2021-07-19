@@ -1,4 +1,5 @@
-# Qiskit Topological Codes
+# qtcodes
+*Qiskit Topological Codes*
 
 ## Installation
 
