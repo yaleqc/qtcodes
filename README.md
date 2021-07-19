@@ -20,7 +20,7 @@ python3
 
 Quantum computation is an inherently noisy process. Scalable quantum computers will require fault-tolerance to implement useful computation. There are many proposed approaches to this, but one promising candidate is the family of *topological quantum error correcting codes*.
 
-Currently, the [`qiskit.ignis.verification.qtcodes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, the *repetition code*. Qiskit Topological Codes builds out the `qtcodes` module into a diverse family of QEC encoders and decoders, supporting the repetition code, XXXX/ZZZZ (XXZZ) rotated surface code, and the XZZX rotated surface code.
+Currently, the [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, the *repetition code*. Qiskit Topological Codes builds out the `qtcodes` module into a diverse family of QEC encoders and decoders, supporting the repetition code, XXXX/ZZZZ (XXZZ) rotated surface code, and the XZZX rotated surface code.
 
 Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html), we've written a full set of [jupyter notebook tutorials](./tutorials) to demonstrate the [circuit encoders](./qtcodes/circuits), [graph decoders](./qtcodes/fitters), and [benchmarking tools](./qtcodes/tools/benchmarking.py) that compose Qiskit Topological Codes. These tutorials both demonstrate the elegance of QEC codes as well as the utility of this package -- please check them out!
 
