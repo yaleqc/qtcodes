@@ -1,5 +1,5 @@
 """
-Error correction benchmarking module
+Topological Circuit Encoders
 """
 from .xxzz import XXZZQubit
 from .repetition import RepetitionQubit

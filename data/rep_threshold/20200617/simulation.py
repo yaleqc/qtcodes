@@ -9,8 +9,8 @@ from qiskit.providers.aer.noise.errors import pauli_error
 from qiskit.providers.aer.noise import NoiseModel
 
 sys.path.insert(0, ".." + os.sep + ".." + os.sep + ".." + os.sep)
-from benchmarking import TopologicalBenchmark
-from topological_codes import RepetitionDecoder, RepetitionQubit
+from qtcodes import TopologicalBenchmark
+from qtcodes import RepetitionDecoder, RepetitionQubit
 
 
 # Noise Model Function

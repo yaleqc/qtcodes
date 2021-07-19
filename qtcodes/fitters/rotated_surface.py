@@ -4,8 +4,8 @@ Graph decoder for surface codes
 """
 from typing import Tuple, List, Dict
 
-from topological_codes.circuits.xxzz import XXZZQubit
-from topological_codes.fitters.lattice_decoder import (
+from qtcodes.circuits.xxzz import XXZZQubit
+from qtcodes.fitters.lattice_decoder import (
     LatticeDecoder,
     TQubit,
     TQubitLoc,

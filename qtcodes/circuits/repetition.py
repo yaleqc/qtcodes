@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple, Optional, Type
 from qiskit import QuantumRegister, QuantumCircuit, ClassicalRegister
 from qiskit.circuit import Qubit
 
-from topological_codes.circuits.base import (
+from qtcodes.circuits.base import (
     _Stabilizer,
     LatticeError,
     _TopologicalLattice,

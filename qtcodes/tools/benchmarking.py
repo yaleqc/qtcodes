@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-benchmarking class for surface codes
+benchmarking class for qtcodes
 """
 import sys
 import os

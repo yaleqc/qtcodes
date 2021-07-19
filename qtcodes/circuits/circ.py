@@ -4,10 +4,10 @@ Topological Circuit and Register
 from typing import Union, Dict, cast, Optional, Type, Any, Tuple, List
 from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.circuit.classicalregister import ClassicalRegister
-from topological_codes.circuits.base import TopologicalQubit
-from topological_codes.circuits.xxzz import XXZZQubit
-from topological_codes.circuits.xzzx import XZZXQubit
-from topological_codes.circuits.repetition import RepetitionQubit
+from qtcodes.circuits.base import TopologicalQubit
+from qtcodes.circuits.xxzz import XXZZQubit
+from qtcodes.circuits.xzzx import XZZXQubit
+from qtcodes.circuits.repetition import RepetitionQubit
 
 
 class TopologicalRegister:

@@ -4,11 +4,11 @@ Graph decoder for rep code
 """
 from typing import Tuple, List, Dict
 
-from topological_codes.fitters.lattice_decoder import (
+from qtcodes.fitters.lattice_decoder import (
     LatticeDecoder,
     TQubit,
 )
-from topological_codes.circuits.repetition import RepetitionQubit
+from qtcodes.circuits.repetition import RepetitionQubit
 
 
 class RepetitionDecoder(LatticeDecoder):

@@ -1,12 +1,28 @@
 # Qiskit Topological Codes
 
+## Installation
+
+To get started with `qtcodes` (Qiskit Topological Codes), pip install using:
+
+```
+git clone https://github.com/yaleqc/qtcodes.git
+cd qtcodes
+pip install --upgrade .
+```
+
+To check if the installation was successful, run:
+```
+python3
+>>> import qtcodes as qtc
+```
+
 ## Motivation
 
 Quantum computation is an inherently noisy process. Scalable quantum computers will require fault-tolerance to implement useful computation. There are many proposed approaches to this, but one promising candidate is the family of *topological quantum error correcting codes*.
 
-Currently, the [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, the *repetition code*. Qiskit Topological Codes builds out the `topological_codes` module into a diverse family of QEC encoders and decoders, supporting the repetition code, XXXX/ZZZZ (XXZZ) rotated surface code, and the XZZX rotated surface code.
+Currently, the [`qiskit.ignis.verification.qtcodes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, the *repetition code*. Qiskit Topological Codes builds out the `qtcodes` module into a diverse family of QEC encoders and decoders, supporting the repetition code, XXXX/ZZZZ (XXZZ) rotated surface code, and the XZZX rotated surface code.
 
-Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html), we've written a full set of [jupyter notebook tutorials](./tutorials) to demonstrate the [circuit encoders](./topological_codes/circuits), [graph decoders](./topological_codes/fitters), and [benchmarking tools](./benchmarking) that compose Qiskit Topological Codes. These tutorials both demonstrate the elegance of QEC codes as well as the utility of this package -- please check them out!
+Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html), we've written a full set of [jupyter notebook tutorials](./tutorials) to demonstrate the [circuit encoders](./qtcodes/circuits), [graph decoders](./qtcodes/fitters), and [benchmarking tools](./qtcodes/tools/benchmarking.py) that compose Qiskit Topological Codes. These tutorials both demonstrate the elegance of QEC codes as well as the utility of this package -- please check them out!
 
 ## Codebase
 
@@ -17,18 +33,19 @@ Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardwar
 
 Topological QEC codes disperse, and thus protect, one quantum bit of logical information across many physical qubits. The classical repetition code distributes 1 bit of logical information across multiple imperfect physical bits (e.g. logical 0 is 000...0 and logical 1 is 111...1). In the classical repetition logical 0 bit, for example, a few physical bits may flip to 1, but the majority will very likely stay in 0, thus preserving the logical 0 bit. Similarly, the surface code protects one logical qubit in a grid of imperfect physical qubits against Pauli errors.
 
-The `topological_codes` module can be broken down into `circuits` (encoders) and `fitters` (decoders). Additionally, unittests can be found in `tests` and benchmarking tools in `benchmarking`.
+The `qtcodes` module can be broken down into `circuits` (encoders) and `fitters` (decoders). Additionally, unittests can be found in `tests` and benchmarking tools in `qtcodes/tools`.
 
 
 > The rotated surface code is based on the earlier theoretical idea of a [toric code](https://decodoku.blogspot.com/2016/03/6-toric-code.html), with periodic boundary conditions instead of open boundary conditions. This has been shown to be largely identical, but embedding a surface code on an actual device is much easier.
 
 ### Circuits
 
-The `topological_codes.circuits` sub-module contains classes such as `XXZZQubit`, `XZZXQubit`, and `RepetitionQubit`, which each allow users to construct and manipulate circuits encoding one logical qubit using a particular QEC code.
+The `qtcodes.circuits` sub-module contains classes such as `XXZZQubit`, `XZZXQubit`, and `RepetitionQubit`, which each allow users to construct and manipulate circuits encoding one logical qubit using a particular QEC code.
 
 For example, we can create and apply a logical X onto a `RepetitionQubit` as follows
 
 ```
+from qtcodes import RepetitionQubit
 qubit = RepetitionQubit({"d":3},"t")
 qubit.reset_z()
 qubit.stabilize()
@@ -39,10 +56,11 @@ qubit.draw(output='mpl', fold=150)
 ```
 ![Repetition Code Qubit](./tutorials/img/rep_qubit.png?raw=true)
 
-`topological_codes.circuits.circ` also allows users to create  `TopologicalRegister`s (treg: a collection of topological qubits) and `TopologicalCircuit`s (tcirc: a circuit built using a treg), the analog of `QuantumRegister` and `QuantumCircuit`.
+`qtcodes.circuits.circ` also allows users to create  `TopologicalRegister`s (treg: a collection of topological qubits) and `TopologicalCircuit`s (tcirc: a circuit built using a treg), the analog of `QuantumRegister` and `QuantumCircuit`.
 
 We can, for example, create a tcirc and treg out of two `RepetitionQubit`s.
 ```
+from qtcodes import TopologicalRegister, TopologicalCircuit
 treg = TopologicalRegister(2, ctype="Repetition", params={"d": 3})
 circ = TopologicalCircuit(treg)
 circ.x(treg[0])
@@ -103,11 +121,11 @@ Finally, the efficiency and efficacy of the Qiskit Topological Codes package is 
   <b>Fig. 2</b> By simulating circuits with errors inserted between two rounds of stabilizing measurements, we are able to extract a logical error rate for each code for a given physical error rate (quality of physical qubit) and surface code size. In particular, threshold is shown for the repetition code (left), XXZZ code (center), and XZZX code (right).</div>
 </p>
 
-Explore the benchmarking [tools](./benchmarking/tools.py) and [simulations](./data/) to see how the graphs in Fig. 2 were created.
+Explore the benchmarking [tools](./qtcodes/tools/benchmarking.py) and [simulations](./data/) to see how the graphs in Fig. 2 were created.
 
 ## Future Directions
 
-*Checkout [issues](https://github.com/yaleqc/qiskit_topological_codes/issues) to see what we are working on these days!*
+*Checkout [issues](https://github.com/yaleqc/qtcodes/issues) to see what we are working on these days!*
 
 ## Acknowledgements
 
