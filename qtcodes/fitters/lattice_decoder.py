@@ -13,8 +13,8 @@ import retworkx as rx
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from topological_codes.fitters.base import TopologicalDecoder
-from topological_codes.fitters.graph_utils import GraphUtils
+from qtcodes.fitters.base import TopologicalDecoder
+from qtcodes.fitters.graph_utils import GraphUtils
 
 TQubit = Tuple[float, float, float]  # (time,row,column) ==> (t,i,j)
 TQubitLoc = Tuple[float, float]  # (row,column) ==> (i,j)

@@ -6,7 +6,7 @@ import unittest
 from qiskit import execute, Aer
 
 sys.path.insert(0, "../")
-from topological_codes import RepetitionQubit, RepetitionDecoder
+from qtcodes import RepetitionQubit, RepetitionDecoder
 
 
 class TestRep(unittest.TestCase):

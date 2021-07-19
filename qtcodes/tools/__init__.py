@@ -1,7 +1,7 @@
 """
 Benchmarking Module for Topological Codes
 """
-from benchmarking.tools import (
+from .benchmarking import (
     TopologicalBenchmark,
     TopologicalAnalysis,
     TopologicalBatchAnalysis,

@@ -5,8 +5,8 @@ from typing import Tuple, Optional
 from qiskit import ClassicalRegister
 from qiskit.circuit import Qubit
 
-from topological_codes.circuits.base import _Stabilizer
-from topological_codes.circuits.rotated_surface import _RotatedLattice, RotatedQubit
+from qtcodes.circuits.base import _Stabilizer
+from qtcodes.circuits.rotated_surface import _RotatedLattice, RotatedQubit
 
 TQubit = Tuple[float, float, float]
 

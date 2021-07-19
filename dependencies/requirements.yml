@@ -5,14 +5,13 @@ channels:
 dependencies:
   - python=3
   - pip
-  - ipykernel
   - numpy
-  - scipy
+  - pydot
   - matplotlib
-  - tqdm
-  - notebook
-  - jupyter
+  - tqdm #required for benchmarking
+  - notebook #not required
+  - jupyter #not required
   - pip:
     - qiskit
-    - pylatexenc
     - retworkx
+    - pylatexenc

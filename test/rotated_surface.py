@@ -6,7 +6,7 @@ import unittest
 from qiskit import execute, Aer
 
 sys.path.insert(0, "../")
-from topological_codes import XXZZQubit, RotatedDecoder
+from qtcodes import XXZZQubit, RotatedDecoder
 
 
 class TestXXZZ(unittest.TestCase):
