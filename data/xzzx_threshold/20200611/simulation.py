@@ -1,5 +1,5 @@
 """
-Simulation script to demonstrate XXZZ (XXXX/ZZZZ) Threshold
+Simulation script to demonstrate XZZX Threshold
 """
 
 import sys
@@ -10,13 +10,13 @@ from qiskit.providers.aer.noise import NoiseModel
 
 sys.path.insert(0, ".." + os.sep + ".." + os.sep + ".." + os.sep)
 from qtcodes import TopologicalBenchmark
-from qtcodes import RotatedDecoder, XXZZQubit
+from qtcodes import RotatedDecoder, XZZXQubit
 
 
 # Noise Model Function
 def noise_model_func(p_err):
 
-    error_gate1 = pauli_error([("X", p_err), ("I", 1 - p_err)])
+    error_gate1 = pauli_error([("X", p_err), ("Z", p_err), ("I", 1 - 2 * p_err)])
 
     noise_model = NoiseModel()
     noise_model.add_all_qubit_quantum_error(error_gate1, "id")
@@ -32,7 +32,8 @@ if __name__ == "__main__":
         T = decoder_key[1]
 
         # setup circ
-        qubit = XXZZQubit({"d": d})
+        qubit = XZZXQubit({"d": d})
+        qubit.reset_z()
         qubit.stabilize()
         qubit.id_data()
         qubit.stabilize()

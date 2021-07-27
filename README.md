@@ -1,126 +1,148 @@
-# Qiskit Surface Code Encoder/Decoder
-***Please check out our [presentation](https://docs.google.com/presentation/d/1HC5tQkvOcfl5lPDWy-l8ZvsWW3AGf6jUCmMu_sz-cDY/edit?usp=sharing) of this package to the Qiskit Advocate community at the November 2020 Qiskit Advocate Demo Session.***
+# qtcodes
+*Qiskit Topological Codes*
 
+## Installation
 
----
+To get started with `qtcodes` (Qiskit Topological Codes), pip install using:
 
-# Setup
+```
+git clone https://github.com/yaleqc/qtcodes.git
+cd qtcodes
+pip install --upgrade .
+```
 
-## 0. Getting setup with git version control and running bash scripts.
+To check if the installation was successful, run:
+```
+python3
+>>> import qtcodes as qtc
+```
 
-It may be worthwhile for Windows users to install a [github for windows](https://desktop.github.com/), which should come with Git Shell. 
-
-If you are a Mac user, you *might* need XCode's [Command Line Package](https://developer.apple.com/library/archive/technotes/tn2339/_index.html) which allows for command line development in OSX. 
-
-*Note: you do not need the XCode app to get these developer tools.* 
-
-In order to install the package, run `xcode-select --install` in your terminal. If you get an error, you can troubleshoot and learn more about the package [here](https://developer.apple.com/opensource/).
-
-## 1. Cloning the Repo
-
-Run `git clone https://github.com/yaleqc/qiskit_surface_codes.git` to clone this repo. 
-
-## 2. Install Miniconda (optional, but highly recommended)
-
-As with many projects, it may be useful to set up a package manager **and** environment manager. [Miniconda](https://docs.conda.io/en/latest/miniconda.html#:~:text=Miniconda%20is%20a%20free%20minimal,zlib%20and%20a%20few%20others.) is a free, minimal installer for [conda](https://docs.conda.io/en/latest/) which servers as **both** a package and environment manager! 
-
-You don't have to use miniconda, but we highly recommend it. Follow these [instructions](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html#regular-installation) for your operating system. Then, you should be able to run `conda -h` in your bash shell successfully. If this doesn't work, make sure to add miniconda to your [path](https://developers.google.com/earth-engine/guides/python_install-conda#windows_4).
-
-## 3. Set up conda environment
-
-Once you are able to successfully run `conda -h`, you can `cd`  (change directory) into the directory into which you just cloned the qiskit surface code project. 
-Then, run `conda env create --file dependencies/requirements.yml` to install all necessary dependencies and create an environment called `qiskit-surface-code-env` using which you can test and develop the qiskit surface codes package!
-
-*Note: The alternative is for you to install dependencies (python packages) manually until you are able to smoothly run the tutorials in this repo.*
-
-## 4. Run the tutorials
-
-Next, just activate your environment using `conda activate qiskit-surface-code-env`, `cd` into the project repo directory, and run `jupyter notebook`. 
-
-Then, you should be able to open up the tutorial notebooks and run them without issues.
-
-
----
-
-# About / History
-## IBM Qiskit - Summer Jam Hackathon 2020
+## Motivation
 
 Quantum computation is an inherently noisy process. Scalable quantum computers will require fault-tolerance to implement useful computation. There are many proposed approaches to this, but one promising candidate is the family of *topological quantum error correcting codes*.
 
-Currently, the [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, the *repetition code*.
+Currently, the [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, the *repetition code*. Qiskit Topological Codes builds out the `qtcodes` module into a diverse family of QEC encoders and decoders, supporting the repetition code, XXXX/ZZZZ (XXZZ) rotated surface code, and the XZZX rotated surface code.
 
-For the hackathon, our team [Erwin's Tigers](#team) implemented a **surface code encoder and decoder** for Qiskit Ignis. We hope that this implementation will be useful to other Qiskitters and will inspire others to continue building out the `topological_codes` module into a diverse family.
+Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html), we've written a full set of [jupyter notebook tutorials](./tutorials) to demonstrate the [circuit encoders](./qtcodes/circuits), [graph decoders](./qtcodes/fitters), and [benchmarking tools](./qtcodes/tools/benchmarking.py) that compose Qiskit Topological Codes. These tutorials both demonstrate the elegance of QEC codes as well as the utility of this package -- please check them out!
 
-## Usage
-Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html), we've written a full set of [jupyter notebook tutorials](https://github.com/Phionx/qiskit_surface_codes/tree/master/tutorials), which are the best way to get up to speed. They detail both the API and the gritty implementation details -- please check them out!
-
-## Background
+## Codebase
 
 <p align="center">
-<img width="300" alt="surface code teaser" src="tutorials/img/error_set.jpg">
+<img width="300" alt="surface code teaser" src="tutorials/img/error_set.jpg"><br>
+<div flush="left"><b>Fig 1.</b> Rotated XXXX/ZZZZ (XXZZ) Surface Code. ZZZZ/ZZ syndromes in red, XXXX/XX syndromes in purple, physical errors in green, and syndrome hits in yellow.</div>
 </p>
 
-Surface codes are a type of CSS code, consisting of pairwise commuting X and Z stabilizers made of Pauli gates. It defines a logical state on a 2 by 2 lattice made of quantum bits with the stabilizers X<sub>1</sub> X<sub>2</sub> Z<sub>1</sub> Z<sub>2</sub>.
+Topological QEC codes disperse, and thus protect, one quantum bit of logical information across many physical qubits. The classical repetition code distributes 1 bit of logical information across multiple imperfect physical bits (e.g. logical 0 is 000...0 and logical 1 is 111...1). In the classical repetition logical 0 bit, for example, a few physical bits may flip to 1, but the majority will very likely stay in 0, thus preserving the logical 0 bit. Similarly, the surface code protects one logical qubit in a grid of imperfect physical qubits against Pauli errors.
 
-The code is based on the earlier theoretical idea of a *toric code*, with periodic boundary conditions instead of open boundary conditions. This has been shown to be largely identical, but embedding a surface code on an actual device is much easier.
+The `qtcodes` module can be broken down into `circuits` (encoders) and `fitters` (decoders). Additionally, unittests can be found in `tests` and benchmarking tools in `qtcodes/tools`.
 
-## Implementation
 
-In general, we try to follow the existing structure of [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes). The code is implemented separately here but is able to easily be merged into Ignis.
+> The rotated surface code is based on the earlier theoretical idea of a [toric code](https://decodoku.blogspot.com/2016/03/6-toric-code.html), with periodic boundary conditions instead of open boundary conditions. This has been shown to be largely identical, but embedding a surface code on an actual device is much easier.
 
-There are two main interfaces — corresponding to the encoder and decoder, respectively:
+### Circuits
 
-### `SurfaceCode` in [`topological_codes.circuits`](topological_codes/circuits/xxzz.py)
+The `qtcodes.circuits` sub-module contains classes such as `XXZZQubit`, `XZZXQubit`, and `RepetitionQubit`, which each allow users to construct and manipulate circuits encoding one logical qubit using a particular QEC code.
 
-`SurfaceCode(d, T)` generates a `QuantumCircuit` for creating a logical state and measuring stabilizers. The class is parameterized with the code distance `d` (which should be odd) and the number of syndrome measurement rounds `T` (usually `T = d`). This class also handles parsing of the physical device readout into a form suitable for decoding. Please see the [encoder tutorial](tutorials/1_surface_code_encoding.ipynb) for a full walkthrough.
-<p align="center">
-<img width="615" alt="circuit" src="https://user-images.githubusercontent.com/293681/86277098-23ed3400-bba4-11ea-8305-c6d19eb73899.png">
+For example, we can create and apply a logical X onto a `RepetitionQubit` as follows
+
+```
+from qtcodes import RepetitionQubit
+qubit = RepetitionQubit({"d":3},"t")
+qubit.reset_z()
+qubit.stabilize()
+qubit.x()
+qubit.stabilize()
+qubit.readout_z()
+qubit.draw(output='mpl', fold=150)
+```
+![Repetition Code Qubit](./tutorials/img/rep_qubit.png?raw=true)
+
+`qtcodes.circuits.circ` also allows users to create  `TopologicalRegister`s (treg: a collection of topological qubits) and `TopologicalCircuit`s (tcirc: a circuit built using a treg), the analog of `QuantumRegister` and `QuantumCircuit`.
+
+We can, for example, create a tcirc and treg out of two `RepetitionQubit`s.
+```
+from qtcodes import TopologicalRegister, TopologicalCircuit
+treg = TopologicalRegister(2, ctype="Repetition", params={"d": 3})
+circ = TopologicalCircuit(treg)
+circ.x(treg[0])
+circ.stabilize(treg[1])
+circ.x(1)
+circ.draw(output='mpl', fold=500)
+```
+
+![Repetition Code TCirc](./tutorials/img/tcirc_rep.png?raw=true)
+
+Learn more about circuits through encoder tutorials such as this [one](./tutorials/xxzz/1-circuits.ipynb) for the XXXX/ZZZZ rotated surface code.
+
+### Fitters
+
+Topological codes aim to build better (read: less noisy) logical qubits out of many imperfect physical qubits. This improvement is enabled by decoding schemes that can detect and thus correct for errors on a code's constituent physical qubits.
+
+The Qiskit Topological Codes package leverages Minimum-Weight Perfect Matching Graph Decoding to efficiently correct logical qubit readout.
+
+
+For example, we can decode the syndrome hits in Fig 1 and fine the most probable error chains (data qubit flips) corresponding to these syndrome hits.
+```
+#d: surface code side length, T: number of rounds
+decoder = RotatedDecoder({"d":5,"T":1})
+all_syndromes = {"X": [(0,1.5,.5),(0,.5,1.5)], "Z": [(0,0.5,0.5),(0,1.5,1.5),(0,1.5,3.5), (0,3.5,3.5)]}
+matches = {}
+
+for syndrome_key, syndromes in all_syndromes.items():
+    print(f"{syndrome_key} Syndrome Graph")
+    error_graph = decoder._make_error_graph(syndromes,syndrome_key)
+    print("Error Graph")
+    decoder.draw(error_graph)
+    matches[syndrome_key] = decoder._run_mwpm(error_graph)
+    matched_graph = decoder._run_mwpm_graph(error_graph)
+    print("Matched Graph")
+    decoder.draw(matched_graph)
+    print(f"Matches: {matches[syndrome_key]}")
+    print("\n===\n")
+```
+
+<p align="middle" style="background:#fff">
+  <img src="./tutorials/img/decode_xxzz_1.png?raw=true" width="49%" align="top"/>
+  <img src="./tutorials/img/decode_xxzz_2.png?raw=true" width="49%" align="top"/>
 </p>
 
-### `GraphDecoder` in [`topological_codes.fitters`](topological_codes/fitters.py/xxzz.py)
+In this way, Qiskit Topological Codes uses graph decoding to find and correct for the most probable set of errors (error chains).
 
-`GraphDecoder(d, T)` implements minimum-weight perfect matching (MWPM) on the syndrome measurements of the physical circuit. This class is similar to the existing `GraphDecoder` for repetition codes, but introduces a new framework to handle the 2D lattice.
+The careful reader will notice that connecting syndrome hits in the most probable set of "error chains" does not uniquely specify the underlying physical qubits that underwent physical errors (i.e. there are multiple shortest paths between two syndrome hits). It turns out, by the nuances of how topological codes store  logical information (i.e. codespace), in most cases the exact path across physical qubits doesn't matter when correcting for an error chain. Read more about this in this [tutorial](./tutorials/xxzz/2-fitters.ipynb) on Decoding for XXZZ Qubits!
 
-Parsed readout from the device is used to generate graphs of *error chains* in time and space, which decode syndrome measurements into the most likely sequence of qubit flips over time. Please see the [decoder tutorial](tutorials/2_surface_code_decoding.ipynb) for a full walkthrough.
+### Benchmarking
 
-<p align="center">
-<img width="615" alt="matching graph" src="https://user-images.githubusercontent.com/293681/86277350-8ba37f00-bba4-11ea-9560-02d5ea3167cd.png">
+Finally, the efficiency and efficacy of the Qiskit Topological Codes package is demonstrated through benchmark simulations achieving threshold for the Repetition, XXZZ, and XZZX topological codes. Here, threshold is defined as the maximum physical error rate (i.e. imperfection level of physical qubits) below which larger surface codes perform better than smaller surface codes.
+
+<p align="middle">
+  <img src="./tutorials/img/simulations/rep_code.png?raw=true" width="32%" />
+  <img src="./tutorials/img/simulations/xxzz.png?raw=true" width="32%" />
+  <img src="./tutorials/img/simulations/xzzx.png?raw=true" width="32%" /><br>
+  <div flush="left">
+  <b>Fig. 2</b> By simulating circuits with errors inserted between two rounds of stabilizing measurements, we are able to extract a logical error rate for each code for a given physical error rate (quality of physical qubit) and surface code size. In particular, threshold is shown for the repetition code (left), XXZZ code (center), and XZZX code (right).</div>
 </p>
+
+Explore the benchmarking [tools](./qtcodes/tools/benchmarking.py) and [simulations](./data/) to see how the graphs in Fig. 2 were created.
 
 ## Future Directions
-The scope of the project is quite large, so we focused on completing a "minimum viable product" during the hackathon. However, there are many areas which we'd like to explore going forward. A few immediate ones:
 
-* Expand `SurfaceCode(d, T).circuits` a full set of logical states (1, +, -) -- and ultimately logical gate operations for computation.
-* Full benchmark of the physical-error to logical-error probabilities to determine the error correction threshold.
-* More simulation runs: different X/Z error probabilities, more limited `coupling_map`, etc.
-* Our MWPM matching already has the below improvements to the basic algorithm, but are there more?
-  * For a given pair of syndromes, there may be many possible error chains through space and time. We compute this "path degeneracy" and use it to re-weight the error probabilities.
-  * We cross-match X and Z errors to produce an overall Y error. However, this doesn't exactly match a depolarizing channel, so ideally the weights would be re-adjusted with conditional probabilities.
-* Other approaches to error-chain matching (e.g. [neural networks](https://iopscience.iop.org/article/10.1088/2058-9565/aa955a/meta) or [tensor networks](https://journals.aps.org/pra/abstract/10.1103/PhysRevA.90.032326))?
-* Our `GraphDecoder` implements two different approaches to syndrome graph generation. One is a "analytic" approach (much faster), and the other uses simulation to insert errors into the circuit. These produce slightly different syndrome graphs, but we get the same decoding results in our tests.
-
-## Team
-
-### V2
-* [Shantanu Jha](https://github.com/Phionx)
-* [Henry Liu](https://github.com/liuhenry)
-* [Jessie Chen](https://github.com/JazzyCH)
-* [Allen Mi](https://github.com/Allenator)
-* [Aaron Householder](https://github.com/aaronhouseholder)
-
-### V1
-* [Andy Ding](https://github.com/ZhenghaoDing)
-* [Shantanu Jha](https://github.com/Phionx)
-* [Henry Liu](https://github.com/liuhenry)
-* [Shraddha Singh](https://github.com/shraggy)
-* [Will Sun](https://github.com/muirheadmaster)
+*Checkout [issues](https://github.com/yaleqc/qtcodes/issues) to see what we are working on these days!*
 
 ## Acknowledgements
-We would like to thank [James Wootton](https://github.com/quantumjim) for valuable suggestions and feedback. Our code closely follows his `RepetitionCode` structure in [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes), and his tutorials closely guided our initial explorations.
 
-We'd also like to thank [Doug McClure](https://github.com/dtmcclure) for advising us on helpful details of the IBM hardware.
+**Core Devs:** [Shantanu Jha](https://github.com/Phionx), [Jessie Chen](https://github.com/JazzyCH), [Aaron Householder](https://github.com/aaronhouseholder), [Allen Mi](https://github.com/Allenator)
+
+Thanks to our mentor [James Wootton](https://github.com/quantumjim) (IBM) for invaluable feedback and support since the inception of this project at the IBM Qiskit - Summer Jam Hackathon 2020.
+
+Thanks also to [Matthew Treinish](https://github.com/mtreinish) from the [retworkx](https://github.com/Qiskit/retworkx) team for helping onboard and support this project.
+
+**Alums:** [Henry Liu](https://github.com/liuhenry), [Shraddha Singh](https://github.com/shraggy), [Will Sun](https://github.com/muirheadmaster), [Andy Ding](https://github.com/ZhenghaoDing)
+
 
 ## References
+
+*Here's some reading material that we found particularly useful:*
+- Presentation [slides](https://docs.google.com/presentation/d/1HC5tQkvOcfl5lPDWy-l8ZvsWW3AGf6jUCmMu_sz-cDY/edit?usp=sharing) and [video](https://www.youtube.com/watch?v=jb1qD0pZbF4&list=PLOFEBzvs-VvqQMAVaXoFlSqjqgbX5k-fL&index=18&ab_channel=QiskitQiskit) about this package to the Qiskit Advocate community at the November 2020 Qiskit Advocate Demo Session.
 - [Surface Codes: Towards Practical Large-Scale Quantum Computation](https://arxiv.org/abs/1208.0928)
 - [Stabilizer Codes and Quantum Error Correction](https://arxiv.org/pdf/quant-ph/9705052.pdf)
 - [Multi-path Summation for Decoding 2D Topological Codes](https://quantum-journal.org/wp-content/uploads/2018/10/q-2018-10-19-102.pdf)
