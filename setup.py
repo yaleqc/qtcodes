@@ -3,7 +3,7 @@ Setup for qtcodes
 """
 import os
 
-from setuptools import setup
+from setuptools import setup, find_namespace_packages
 
 REQUIREMENTS = [
     "numpy",
@@ -13,6 +13,7 @@ REQUIREMENTS = [
     "tqdm",
     "pydot",
     "pylatexenc",
+    "IPython",
 ]
 
 # Read long description from README.
@@ -37,7 +38,7 @@ setup(
     author="Shantanu Jha",
     author_email="shantanu.rajesh.jha@gmail.com",
     license="Apache 2.0",
-    packages=["qtcodes"],
+    packages=find_namespace_packages(exclude=["test*"]),
     install_requires=REQUIREMENTS,
     classifiers=[
         "Environment :: Console",
@@ -62,4 +63,5 @@ setup(
         "Tutorials": "https://github.com/yaleqc/qtcodes/tutorials",
         "Tests": "https://github.com/yaleqc/qtcodes/test",
     },
+    include_package_data=True,
 )
