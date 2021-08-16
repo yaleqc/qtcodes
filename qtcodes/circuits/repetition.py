@@ -51,7 +51,7 @@ class _RepetitionLattice(_TopologicalLattice):
     d=5 Rep Code
     """
 
-    def __init__(self, params: Dict[str, int], name: str, circ: QuantumCircuit):
+    def __init__(self, params: Dict[str, float], name: str, circ: QuantumCircuit):
         """
         Initializes this Topological Lattice class.
 
@@ -59,7 +59,6 @@ class _RepetitionLattice(_TopologicalLattice):
             params (Dict[str,int]):
                 Contains params such as d, where d is the number of
                 physical "data" qubits lining a row or column of the lattice.
-                Only odd d is possible!
             name (str):
                 Useful when combining multiple TopologicalQubits together.
                 Prepended to all registers.
@@ -67,31 +66,45 @@ class _RepetitionLattice(_TopologicalLattice):
                 QuantumCircuit on top of which the topological qubit is built.
                 This is often shared amongst multiple TQubits.
         """
+        self.geometry: Dict[str, List[List[int]]] = {}
+        super().__init__(params, name, circ)
 
+    def _params_validate_and_generate(self) -> None:
+        """
+        Validate and generate params.
+
+        E.g.
+        self.params["num_syn"] = params["d"] - 1
+        """
         # validation
         required_params = ["d"]
         for required_param in required_params:
-            if required_param not in params:
+            if required_param not in self.params:
                 raise LatticeError(f"Please include a {required_param} param.")
 
         # calculated params
-        params["T"] = -1  # -1 until a stabilizer round is added!
-        params["num_readout"] = -1  # -1 until a logical readout is performed!
-        params["num_lattice_readout"] = -1  # -1 until a lattice readout is performed!
-        params["num_data"] = params["d"]
-        params["num_syn"] = params["d"] - 1
+        self.params["T"] = -1  # -1 until a stabilizer round is added!
+        self.params["num_readout"] = -1  # -1 until a logical readout is performed!
+        self.params[
+            "num_lattice_readout"
+        ] = -1  # -1 until a lattice readout is performed!
+        self.params["num_data"] = self.params["d"]
+        self.params["num_syn"] = self.params["d"] - 1
 
-        # create registers
-        qregisters: Dict[str, QuantumRegister] = {}  # quantum
+    def _gen_registers(self) -> None:
+        """
+        Implement this method to create quantum and classical registers.
+
+        E.g.
         qregisters["data"] = QuantumRegister(params["num_data"], name=name + "_data")
-        qregisters["mz"] = QuantumRegister(params["num_syn"], name=name + "_mp")
-        qregisters["ancilla"] = QuantumRegister(1, name=name + "_ancilla")
-
-        cregisters: Dict[str, ClassicalRegister] = {}  # classical
-
-        self.geometry: Dict[str, List[List[int]]] = {}
-
-        super().__init__(circ, qregisters, cregisters, params, name)
+        """
+        self.qregisters["data"] = QuantumRegister(
+            self.params["num_data"], name=self.name + "_data"
+        )
+        self.qregisters["mz"] = QuantumRegister(
+            self.params["num_syn"], name=self.name + "_mp"
+        )
+        self.qregisters["ancilla"] = QuantumRegister(1, name=self.name + "_ancilla")
 
     def _set_geometry(self):
         """
@@ -104,7 +117,7 @@ class _RepetitionLattice(_TopologicalLattice):
         """
         geometry = {"mz": []}
 
-        for i in range(self.params["num_syn"]):
+        for i in range(int(self.params["num_syn"])):
             syn = i
             left = i
             right = i + 1
@@ -112,7 +125,7 @@ class _RepetitionLattice(_TopologicalLattice):
 
         self.geometry = geometry
 
-    def gen_qubit_indices_and_stabilizers(
+    def _gen_qubit_indices_and_stabilizers(
         self,
     ) -> Tuple[List[List[Qubit]], List[Type[_Parity]]]:
         """
@@ -344,7 +357,7 @@ class _RepetitionLattice(_TopologicalLattice):
 
         Args:
             readout_string (str):
-                Readout of the form "0 000 000 000" (logical_readout syndrome_2 syndrome_1 syndrome_0)
+                Readout like "0 000 000 000" (logical_readout syndrome_2 syndrome_1 syndrome_0)
                 or of the form "0000 000 000" (lattice_readout syndrome_1 syndrome_0)
                 A syndrome_i measurement "00..0" is of the form Z_{N}Z_{N-1}...Z_{0}
 
@@ -378,7 +391,7 @@ class _RepetitionLattice(_TopologicalLattice):
 
         Z = []
         for T, syndrome in enumerate(z_syndromes):
-            for loc in range(self.params["num_syn"]):
+            for loc in range(int(self.params["num_syn"])):
                 if syndrome & 1 << loc:
                     Z.append((float(T), 0.5 + loc, 0.0))
         return (
@@ -393,32 +406,7 @@ class RepetitionQubit(TopologicalQubit):
     circuit, so we chose to subclass and extend TopologicalQubit which extends QuantumCircuit.
     """
 
-    def __init__(
-        self,
-        params: Dict[str, int],
-        name: str = "tqubit",
-        circ: Optional[QuantumCircuit] = None,
-    ) -> None:
-        """
-        Initializes this Topological Qubit class.
-
-        Args:
-            params (Dict[str,int]):
-                Contains params such as d, where d is the number of
-                physical "data" qubits within the rep code.
-            name (str):
-                Useful when combining multiple TopologicalQubits together.
-                Prepended to all registers.
-            circ (Optional[QuantumCircuit]):
-                QuantumCircuit on top of which the topological qubit is built.
-                This is often shared amongst multiple TQubits.
-                If none is provided, then a new QuantumCircuit is initialized and stored.
-
-        """
-        # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
-        circ = QuantumCircuit() if circ is None else circ
-        lattice = _RepetitionLattice(params, name, circ)
-        super().__init__(lattice, name, circ)
+    lattice_type = _RepetitionLattice
 
     def stabilize(self) -> None:
         """

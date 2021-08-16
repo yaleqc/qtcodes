@@ -1,13 +1,11 @@
 """
 Topological Circuit and Register
 """
-from typing import Union, Dict, cast, Optional, Type, Any, Tuple, List
+from typing import Union, Dict, cast, Optional, Any, Tuple, List, Type
 from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.circuit.classicalregister import ClassicalRegister
 from qtcodes.circuits.base import TopologicalQubit
-from qtcodes.circuits.xxzz import XXZZQubit
-from qtcodes.circuits.xzzx import XZZXQubit
-from qtcodes.circuits.repetition import RepetitionQubit
+from qtcodes.circuits.constants import *
 
 
 class TopologicalRegister:
@@ -19,7 +17,7 @@ class TopologicalRegister:
         self,
         num_tqubits: int,
         circ: QuantumCircuit = None,
-        ctype: str = "XXZZ",
+        ctype: str = XXZZ,
         params: Optional[Dict[str, int]] = None,
         name: str = "treg",
     ):
@@ -50,19 +48,13 @@ class TopologicalRegister:
         # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
         self.circ = QuantumCircuit() if circ is None else circ
 
-        blueprint: Dict[str, Type[Any]] = {
-            "XXZZ": XXZZQubit,
-            "Repetition": RepetitionQubit,
-            "XZZX": XZZXQubit,
-        }
         if ctype not in blueprint:
             raise ValueError(
                 "Please choose a Topological Qubit type from: "
                 + str(list(blueprint.keys()))
             )
         self.tqubit_type = blueprint[ctype]
-
-        self.tqubits: Dict[str, Dict[int, self.tqubit_type]] = {}
+        self.tqubits: Dict[str, Dict[int, Type[Any]]] = {}
         for _ in range(num_tqubits):
             self.add_tqubit("data")
 
