@@ -248,7 +248,10 @@ class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
         """
 
     def __init__(
-        self, params: Dict[str, int], name: str, circ: Optional[QuantumCircuit] = None
+        self,
+        params: Dict[str, int],
+        name: str = "tq",
+        circ: Optional[QuantumCircuit] = None,
     ) -> None:
         """
         Initializes this Topological Qubit class.
