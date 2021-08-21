@@ -7,7 +7,6 @@ from qiskit.circuit import Qubit
 
 from qtcodes.circuits.base import (
     _Stabilizer,
-    LatticeError,
     _TopologicalLattice,
     TopologicalQubit,
 )
@@ -76,11 +75,9 @@ class _RepetitionLattice(_TopologicalLattice):
         E.g.
         self.params["num_syn"] = params["d"] - 1
         """
-        # validation
-        required_params = ["d"]
-        for required_param in required_params:
-            if required_param not in self.params:
-                raise LatticeError(f"Please include a {required_param} param.")
+        # default params
+        if "d" not in self.params:
+            self.params["d"] = 3
 
         # calculated params
         self.params["T"] = -1  # -1 until a stabilizer round is added!

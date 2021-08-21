@@ -249,7 +249,7 @@ class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
 
     def __init__(
         self,
-        params: Dict[str, int],
+        params: Optional[Dict[str, int]] = None,
         name: str = "tq",
         circ: Optional[QuantumCircuit] = None,
     ) -> None:
@@ -271,7 +271,7 @@ class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
         """
         # == None is necessary, as `not QuantumCircuit()` is True
         circ = QuantumCircuit() if circ is None else circ
-
+        params = params if params else {}
         self.lattice = self.lattice_type(params, name, circ)
         self.name = name
         self.circ = circ

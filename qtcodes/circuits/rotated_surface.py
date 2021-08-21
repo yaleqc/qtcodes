@@ -56,11 +56,11 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         E.g.
         self.params["num_syn"] = params["d"] - 1
         """
+        # default params
+        if "d" not in self.params:
+            self.params["d"] = 3
+
         # validation
-        required_params = ["d"]
-        for required_param in required_params:
-            if required_param not in self.params:
-                raise LatticeError(f"Please include a {required_param} param.")
         if self.params["d"] % 2 != 1:
             raise LatticeError("Surface code distance must be odd!")
 
