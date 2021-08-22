@@ -46,7 +46,7 @@ Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardwar
 ## Codebase
 
 <p align="center">
-<img width="300" alt="surface code teaser" src="tutorials/img/error_set.jpg"><br>
+<img width="300" alt="surface code teaser" src="https://user-images.githubusercontent.com/10100490/130364540-58ec18b5-6e97-4625-a0ff-e8990f47782f.jpg"><br>
 <div flush="left"><b>Fig 1.</b> Rotated XXXX/ZZZZ (XXZZ) Surface Code. ZZZZ/ZZ syndromes in red, XXXX/XX syndromes in purple, physical errors in green, and syndrome hits in yellow.</div>
 </p>
 
@@ -73,7 +73,7 @@ qubit.stabilize()
 qubit.readout_z()
 qubit.draw(output='mpl', fold=150)
 ```
-![Repetition Code Qubit](./tutorials/img/rep_qubit.png?raw=true)
+![Repetition Code Qubit](https://user-images.githubusercontent.com/10100490/130364536-756c5e53-ef73-4564-8b44-6b978325fe9c.png)
 
 `qtcodes.circuits.circ` also allows users to create  `TopologicalRegister`s (treg: a collection of topological qubits) and `TopologicalCircuit`s (tcirc: a circuit built using a treg), the analog of `QuantumRegister` and `QuantumCircuit`.
 
@@ -88,7 +88,7 @@ circ.x(1)
 circ.draw(output='mpl', fold=500)
 ```
 
-![Repetition Code TCirc](./tutorials/img/tcirc_rep.png?raw=true)
+![Repetition Code TCirc](https://user-images.githubusercontent.com/10100490/130364537-473de90a-6ed2-48a7-924f-00dd1fbce3e4.png)
 
 Learn more about circuits through encoder tutorials such as this [one](./tutorials/xxzz/1-circuits.ipynb) for the XXXX/ZZZZ rotated surface code.
 
@@ -120,8 +120,8 @@ for syndrome_key, syndromes in all_syndromes.items():
 ```
 
 <p align="middle" style="background:#fff">
-  <img src="./tutorials/img/decode_xxzz_1.png?raw=true" width="49%" align="top"/>
-  <img src="./tutorials/img/decode_xxzz_2.png?raw=true" width="49%" align="top"/>
+  <img src="https://user-images.githubusercontent.com/10100490/130364532-93f60a0f-1636-4967-b324-6745e23a003a.png" width="49%" align="top"/>
+  <img src="https://user-images.githubusercontent.com/10100490/130364534-4316ef5a-38f4-4d67-83b9-dde62e2bf8c2.png" width="49%" align="top"/>
 </p>
 
 In this way, Qiskit Topological Codes uses graph decoding to find and correct for the most probable set of errors (error chains).
@@ -133,9 +133,9 @@ The careful reader will notice that connecting syndrome hits in the most probabl
 Finally, the efficiency and efficacy of the Qiskit Topological Codes package is demonstrated through benchmark simulations achieving threshold for the Repetition, XXZZ, and XZZX topological codes. Here, threshold is defined as the maximum physical error rate (i.e. imperfection level of physical qubits) below which larger surface codes perform better than smaller surface codes.
 
 <p align="middle">
-  <img src="./tutorials/img/simulations/rep_code.png?raw=true" width="32%" />
-  <img src="./tutorials/img/simulations/xxzz.png?raw=true" width="32%" />
-  <img src="./tutorials/img/simulations/xzzx.png?raw=true" width="32%" /><br>
+  <img src="https://user-images.githubusercontent.com/10100490/130364554-7e1536f2-a6be-4487-b0dc-651af1a861b9.png" width="32%" />
+  <img src="https://user-images.githubusercontent.com/10100490/130364555-3f84d008-851b-42db-a8fc-e9af5864586d.png" width="32%" />
+  <img src="https://user-images.githubusercontent.com/10100490/130364556-32375c1c-2be0-4707-a44d-cfa080265800.png" width="32%" /><br>
   <div flush="left">
   <b>Fig. 2</b> By simulating circuits with errors inserted between two rounds of stabilizing measurements, we are able to extract a logical error rate for each code for a given physical error rate (quality of physical qubit) and surface code size. In particular, threshold is shown for the repetition code (left), XXZZ code (center), and XZZX code (right).</div>
 </p>
