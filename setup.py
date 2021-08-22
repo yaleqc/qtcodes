@@ -46,7 +46,7 @@ setup(
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Operating System :: Microsoft :: Windows",
-        "Operating System :: MacOS",
+        "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.6",
@@ -54,7 +54,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Topic :: Scientific/Engineering",
     ],
-    keywords="qiskit topological codes qec quantum error correction",
+    keywords="qiskit topological surface codes qec quantum error correction",
     python_requires=">=3.6",
     project_urls={
         "Bug Tracker": "https://github.com/yaleqc/qtcodes/issues",
