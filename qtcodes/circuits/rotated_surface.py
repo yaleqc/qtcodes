@@ -30,7 +30,7 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         values: _Stabilizer subclass
         """
 
-    def __init__(self, params: Dict[str, int], name: str, circ: QuantumCircuit) -> None:
+    def __init__(self, params: Dict[str, float], name: str, circ: QuantumCircuit):
         """
         Initializes this Topological Lattice class.
 
@@ -46,34 +46,50 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
                 QuantumCircuit on top of which the topological qubit is built.
                 This is often shared amongst multiple TQubits.
         """
+        self.geometry: Dict[str, List[List[Optional[int]]]] = {}
+        super().__init__(params, name, circ)
+
+    def _params_validate_and_generate(self) -> None:
+        """
+        Validate and generate params.
+
+        E.g.
+        self.params["num_syn"] = params["d"] - 1
+        """
+        # default params
+        if "d" not in self.params:
+            self.params["d"] = 3
 
         # validation
-        required_params = ["d"]
-        for required_param in required_params:
-            if required_param not in params:
-                raise LatticeError(f"Please include a {required_param} param.")
-        if params["d"] % 2 != 1:
+        if self.params["d"] % 2 != 1:
             raise LatticeError("Surface code distance must be odd!")
 
         # calculated params
-        params["T"] = -1  # -1 until a stabilizer round is added!
-        params["num_readout"] = -1  # -1 until a logical readout is performed!
-        params["num_lattice_readout"] = -1  # -1 until a lattice readout is performed!
-        params["num_data"] = params["d"] ** 2
-        params["num_syn"] = (params["d"] ** 2 - 1) // 2
+        self.params["T"] = -1  # -1 until a stabilizer round is added!
+        self.params["num_readout"] = -1  # -1 until a logical readout is performed!
+        self.params[
+            "num_lattice_readout"
+        ] = -1  # -1 until a lattice readout is performed!
+        self.params["num_data"] = self.params["d"] ** 2
+        self.params["num_syn"] = (self.params["d"] ** 2 - 1) // 2
 
-        # create registers
-        qregisters: Dict[str, QuantumRegister] = {}  # quantum
+    def _gen_registers(self) -> None:
+        """
+        Implement this method to create quantum and classical registers.
+
+        E.g.
         qregisters["data"] = QuantumRegister(params["num_data"], name=name + "_data")
-        qregisters["mz"] = QuantumRegister(params["num_syn"], name=name + "_mz")
-        qregisters["mx"] = QuantumRegister(params["num_syn"], name=name + "_mx")
-        qregisters["ancilla"] = QuantumRegister(1, name=name + "_ancilla")
-
-        cregisters: Dict[str, ClassicalRegister] = {}  # classical
-
-        self.geometry: Dict[str, List[List[Optional[int]]]] = {}
-
-        super().__init__(circ, qregisters, cregisters, params, name)
+        """
+        self.qregisters["data"] = QuantumRegister(
+            self.params["num_data"], name=self.name + "_data"
+        )
+        self.qregisters["mz"] = QuantumRegister(
+            self.params["num_syn"], name=self.name + "_mz"
+        )
+        self.qregisters["mx"] = QuantumRegister(
+            self.params["num_syn"], name=self.name + "_mx"
+        )
+        self.qregisters["ancilla"] = QuantumRegister(1, name=self.name + "_ancilla")
 
     def _set_geometry(self) -> None:
         """
@@ -85,7 +101,7 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
                 value: List of lists of qubit indices comprising one plaquette.
         """
         geometry: Dict[str, List[List[Optional[int]]]] = {"mx": [], "mz": []}
-        d = self.params["d"]
+        d = int(self.params["d"])
         per_row_x = (d - 1) // 2
         per_row_z = (d + 1) // 2
         # mx geometry
@@ -96,7 +112,7 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         bot_l: Optional[int] = None
         bot_r: Optional[int] = None
 
-        for syn in range(self.params["num_syn"]):
+        for syn in range(int(self.params["num_syn"])):
             row = syn // per_row_x
             offset = syn % per_row_x
             start = (row - 1) * d
@@ -118,7 +134,7 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
 
             geometry["mx"].append([syn, top_l, top_r, bot_l, bot_r])
 
-        for syn in range(self.params["num_syn"]):
+        for syn in range(int(self.params["num_syn"])):
             row = syn // per_row_z
             offset = syn % per_row_z
             start = row * d
@@ -138,7 +154,7 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             geometry["mz"].append([syn, top_l, top_r, bot_l, bot_r])
         self.geometry = geometry
 
-    def gen_qubit_indices_and_stabilizers(
+    def _gen_qubit_indices_and_stabilizers(
         self,
     ) -> Tuple[List[List[Qubit]], List[Type[_Stabilizer]]]:
         """
@@ -229,13 +245,13 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             x_stabilizer = str(stabilizer_val) + x_stabilizer
 
         stabilizer_str = (
-            x_stabilizer + previous_syndrome_string[self.params["num_syn"] :]
+            x_stabilizer + previous_syndrome_string[int(self.params["num_syn"]) :]
         )
         # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where
         # Z_{N}Z_{N-1}...Z_{0} is copied from previous syndrome measurement string
 
         logical_readout = 0
-        for idx in range(0, self.params["num_data"], self.params["d"]):
+        for idx in range(0, int(self.params["num_data"]), int(self.params["d"])):
             logical_readout = (logical_readout + readout_values[idx]) % 2
 
         return logical_readout, stabilizer_str
@@ -286,13 +302,13 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             z_stabilizer = str(stabilizer_val) + z_stabilizer
 
         stabilizer_str = (
-            previous_syndrome_string[: self.params["num_syn"]] + z_stabilizer
+            previous_syndrome_string[: int(self.params["num_syn"])] + z_stabilizer
         )
         # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where
         # X_{N}X_{N-1}...X_{0} is copied from previous syndrome measurement string
 
         logical_readout = 0
-        for idx in range(self.params["d"]):
+        for idx in range(int(self.params["d"])):
             logical_readout = (logical_readout + readout_values[idx]) % 2
 
         return logical_readout, stabilizer_str
@@ -395,8 +411,8 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
                 value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)
         """
         chunks = readout_string.split(" ")
-        d = self.params["d"]
-        num_syn = self.params["num_syn"]
+        d = int(self.params["d"])
+        num_syn = int(self.params["num_syn"])
 
         if len(chunks[0]) > 1:  # this is true when all data qubits are readout
             assert readout_type is not None
@@ -447,42 +463,6 @@ class RotatedQubit(TopologicalQubit[TQubit], metaclass=ABCMeta):
     """
     A single logical surface code qubit.
     """
-
-    @property
-    @abstractmethod
-    def lattice_type(self):
-        """
-        Subclass of _TopologicalLattice
-        """
-
-    def __init__(
-        self,
-        params: Dict[str, int],
-        name: str = "tqubit",
-        circ: Optional[QuantumCircuit] = None,
-    ) -> None:
-        """
-        Initializes this Topological Qubit class.
-
-        Args:
-            params (Dict[str,int]):
-                Contains params such as d, where d is the number of
-                physical "data" qubits lining a row or column of the lattice.
-                Only odd d is possible!
-            name (str):
-                Useful when combining multiple TopologicalQubits together.
-                Prepended to all registers.
-            circ (Optional[QuantumCircuit]):
-                QuantumCircuit on top of which the topological qubit is built.
-                This is often shared amongst multiple TQubits.
-                If none is provided, then a new QuantumCircuit is initialized and stored.
-
-        """
-
-        # == None is necessary, as `not QuantumCircuit()` is True
-        circ = QuantumCircuit() if circ is None else circ
-        lattice: _RotatedLattice = self.lattice_type(params, name, circ)
-        super().__init__(lattice, name, circ)
 
     def stabilize(self) -> None:
         """
