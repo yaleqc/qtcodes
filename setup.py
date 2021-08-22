@@ -7,7 +7,7 @@ from setuptools import setup, find_namespace_packages
 
 REQUIREMENTS = [
     "numpy",
-    "matplotlib",
+    "matplotlib>=3.3.0",
     "retworkx",
     "qiskit",
     "tqdm",
