@@ -1,2 +1,4 @@
 include qtcodes/VERSION.txt
 include README.md
+include tutorials/img/*
+include tutorials/img/simulations/*
