@@ -1,9 +1,25 @@
 # qtcodes
 *Qiskit Topological Codes*
 
+[![License](https://img.shields.io/github/license/yaleqc/qtcodes.svg?style=popout-square)](https://opensource.org/licenses/Apache-2.0)
+[![](https://img.shields.io/github/release/yaleqc/qtcodes.svg?style=popout-square)](https://github.com/yaleqc/qtcodes/releases)
+[![](https://img.shields.io/pypi/dm/qtcodes.svg?style=popout-square)](https://pypi.org/project/qtcodes/)
+
 ## Installation
 
-To get started with `qtcodes` (Qiskit Topological Codes), pip install using:
+`qtcodes` is published on PyPI. So, to install, simply run:
+
+```
+pip install qtcodes
+```
+
+This will install a precompiled version of `qtcodes` into your python environment.
+
+
+
+## Building from source
+
+To build `qtcodes` from source, pip install using:
 
 ```
 git clone https://github.com/yaleqc/qtcodes.git
@@ -16,6 +32,8 @@ To check if the installation was successful, run:
 python3
 >>> import qtcodes as qtc
 ```
+
+---
 
 ## Motivation
 
