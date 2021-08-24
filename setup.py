@@ -38,7 +38,7 @@ setup(
     author="Shantanu Jha",
     author_email="shantanu.rajesh.jha@gmail.com",
     license="Apache 2.0",
-    packages=find_namespace_packages(exclude=["test*"]),
+    packages=find_namespace_packages(exclude=["test*", "tutorials*", "data*"]),
     install_requires=REQUIREMENTS,
     classifiers=[
         "Environment :: Console",

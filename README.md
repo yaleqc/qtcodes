@@ -41,7 +41,7 @@ Quantum computation is an inherently noisy process. Scalable quantum computers w
 
 Currently, the [`qiskit.ignis.verification.topological_codes`](https://qiskit.org/documentation/apidoc/verification.html#topological-codes) module provides a general framework for QEC and implements one specific example, the *repetition code*. Qiskit Topological Codes builds out the `qtcodes` module into a diverse family of QEC encoders and decoders, supporting the repetition code, XXXX/ZZZZ (XXZZ) rotated surface code, and the XZZX rotated surface code.
 
-Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html), we've written a full set of [jupyter notebook tutorials](./tutorials) to demonstrate the [circuit encoders](./qtcodes/circuits), [graph decoders](./qtcodes/fitters), and [benchmarking tools](./qtcodes/tools/benchmarking.py) that compose Qiskit Topological Codes. These tutorials both demonstrate the elegance of QEC codes as well as the utility of this package -- please check them out!
+Inspired by the [Qiskit Textbook](https://qiskit.org/textbook/ch-quantum-hardware/error-correction-repetition-code.html), we've written a full set of [jupyter notebook tutorials](https://github.com/yaleqc/qtcodes/tree/master/tutorials) to demonstrate the [circuit encoders](https://github.com/yaleqc/qtcodes/tree/master/qtcodes/circuits), [graph decoders](https://github.com/yaleqc/qtcodes/tree/master/qtcodes/fitters), and [benchmarking tools](https://github.com/yaleqc/qtcodes/tree/master/qtcodes/tools/benchmarking.py) that compose Qiskit Topological Codes. These tutorials both demonstrate the elegance of QEC codes as well as the utility of this package -- please check them out!
 
 ## Codebase
 
@@ -90,7 +90,7 @@ circ.draw(output='mpl', fold=500)
 
 ![Repetition Code TCirc](https://user-images.githubusercontent.com/10100490/130364537-473de90a-6ed2-48a7-924f-00dd1fbce3e4.png)
 
-Learn more about circuits through encoder tutorials such as this [one](./tutorials/xxzz/1-circuits.ipynb) for the XXXX/ZZZZ rotated surface code.
+Learn more about circuits through encoder tutorials such as this [one](https://github.com/yaleqc/qtcodes/tree/master/tutorials/xxzz/1-circuits.ipynb) for the XXXX/ZZZZ rotated surface code.
 
 ### Fitters
 
@@ -126,7 +126,7 @@ for syndrome_key, syndromes in all_syndromes.items():
 
 In this way, Qiskit Topological Codes uses graph decoding to find and correct for the most probable set of errors (error chains).
 
-The careful reader will notice that connecting syndrome hits in the most probable set of "error chains" does not uniquely specify the underlying physical qubits that underwent physical errors (i.e. there are multiple shortest paths between two syndrome hits). It turns out, by the nuances of how topological codes store  logical information (i.e. codespace), in most cases the exact path across physical qubits doesn't matter when correcting for an error chain. Read more about this in this [tutorial](./tutorials/xxzz/2-fitters.ipynb) on Decoding for XXZZ Qubits!
+The careful reader will notice that connecting syndrome hits in the most probable set of "error chains" does not uniquely specify the underlying physical qubits that underwent physical errors (i.e. there are multiple shortest paths between two syndrome hits). It turns out, by the nuances of how topological codes store  logical information (i.e. codespace), in most cases the exact path across physical qubits doesn't matter when correcting for an error chain. Read more about this in this [tutorial](https://github.com/yaleqc/qtcodes/tree/master/tutorials/xxzz/2-fitters.ipynb) on Decoding for XXZZ Qubits!
 
 ### Benchmarking
 
@@ -140,7 +140,7 @@ Finally, the efficiency and efficacy of the Qiskit Topological Codes package is 
   <b>Fig. 2</b> By simulating circuits with errors inserted between two rounds of stabilizing measurements, we are able to extract a logical error rate for each code for a given physical error rate (quality of physical qubit) and surface code size. In particular, threshold is shown for the repetition code (left), XXZZ code (center), and XZZX code (right).</div>
 </p>
 
-Explore the benchmarking [tools](./qtcodes/tools/benchmarking.py) and [simulations](./data/) to see how the graphs in Fig. 2 were created.
+Explore the benchmarking [tools](https://github.com/yaleqc/qtcodes/tree/master/qtcodes/tools/benchmarking.py) and [simulations](https://github.com/yaleqc/qtcodes/tree/master/data/) to see how the graphs in Fig. 2 were created.
 
 ## Future Directions
 
