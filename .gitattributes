@@ -1,11 +1,9 @@
 * text=auto
 
 *.py text
-*.ipynb text
+*.ipynb text linguise-vendored
 *.txt text
 *.md text
 
 *.png binary
 *.jpg binary
-
-*.ipynb linguist-vendored
