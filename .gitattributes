@@ -1,7 +1,7 @@
 * text=auto
 
 *.py text
-*.ipynb text linguise-vendored
+*.ipynb text linguist-vendored
 *.txt text
 *.md text
 
