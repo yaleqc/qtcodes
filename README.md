@@ -21,15 +21,15 @@ This will install a precompiled version of `qtcodes` into your python environmen
 
 To build `qtcodes` from source, pip install using:
 
-```
+```bash
 git clone https://github.com/yaleqc/qtcodes.git
 cd qtcodes
 pip install --upgrade .
 ```
 
 To check if the installation was successful, run:
-```
-python3
+
+```python
 >>> import qtcodes as qtc
 ```
 
@@ -63,7 +63,7 @@ The `qtcodes.circuits` sub-module contains classes such as `XXZZQubit`, `XZZXQub
 
 For example, we can create and apply a logical X onto a `RepetitionQubit` as follows
 
-```
+```python
 from qtcodes import RepetitionQubit
 qubit = RepetitionQubit({"d":3},"t")
 qubit.reset_z()
@@ -78,7 +78,8 @@ qubit.draw(output='mpl', fold=150)
 `qtcodes.circuits.circ` also allows users to create  `TopologicalRegister`s (treg: a collection of topological qubits) and `TopologicalCircuit`s (tcirc: a circuit built using a treg), the analog of `QuantumRegister` and `QuantumCircuit`.
 
 We can, for example, create a tcirc and treg out of two `RepetitionQubit`s.
-```
+
+```python
 from qtcodes import TopologicalRegister, TopologicalCircuit
 treg = TopologicalRegister(2, ctype="Repetition", params={"d": 3})
 circ = TopologicalCircuit(treg)
@@ -100,7 +101,8 @@ The Qiskit Topological Codes package leverages Minimum-Weight Perfect Matching G
 
 
 For example, we can decode the syndrome hits in Fig 1 and fine the most probable error chains (data qubit flips) corresponding to these syndrome hits.
-```
+
+```python
 #d: surface code side length, T: number of rounds
 decoder = RotatedDecoder({"d":5,"T":1})
 all_syndromes = {"X": [(0,1.5,.5),(0,.5,1.5)], "Z": [(0,0.5,0.5),(0,1.5,1.5),(0,1.5,3.5), (0,3.5,3.5)]}
