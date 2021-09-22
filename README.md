@@ -162,7 +162,7 @@ Thanks also to [Matthew Treinish](https://github.com/mtreinish) from the [retwor
 ## References
 
 *Here's some reading material that we found particularly useful:*
-- Presentation [slides](https://docs.google.com/presentation/d/1HC5tQkvOcfl5lPDWy-l8ZvsWW3AGf6jUCmMu_sz-cDY/edit?usp=sharing) and [video](https://www.youtube.com/watch?v=jb1qD0pZbF4&list=PLOFEBzvs-VvqQMAVaXoFlSqjqgbX5k-fL&index=18&ab_channel=QiskitQiskit) about this package to the Qiskit Advocate community at the November 2020 Qiskit Advocate Demo Session.
+- Presentation [slides](https://docs.google.com/presentation/d/17JGXswqiTvsd_d_-Hkp3OGoYrOkaw2UQ2W538c1ibvU/edit?usp=sharing) and [video](https://www.youtube.com/watch?v=jb1qD0pZbF4&ab_channel=Qiskit) about this package to the Qiskit Advocate community at the November 2020 Qiskit Advocate Demo Session.
 - [Surface Codes: Towards Practical Large-Scale Quantum Computation](https://arxiv.org/abs/1208.0928)
 - [Stabilizer Codes and Quantum Error Correction](https://arxiv.org/pdf/quant-ph/9705052.pdf)
 - [Multi-path Summation for Decoding 2D Topological Codes](https://quantum-journal.org/wp-content/uploads/2018/10/q-2018-10-19-102.pdf)
