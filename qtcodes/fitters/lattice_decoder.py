@@ -14,7 +14,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from qtcodes.fitters.base import TopologicalDecoder
-from qtcodes.fitters.graph_utils import GraphUtils
 
 TQubit = Tuple[float, float, float]  # (time,row,column) ==> (t,i,j)
 TQubitLoc = Tuple[float, float]  # (row,column) ==> (i,j)
@@ -213,7 +212,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
         b_indx: int,
         syndrome_graph_key: str,
         num_shortest_paths: Dict[int, List[int]],
-    ) -> Tuple[int, Dict[int, List[int]]]:
+    ) -> Tuple[int, Dict[int, Dict[int, int]]]:
         """Helper to calculate the number of shortest error paths that link two syndrome nodes
         through both space and time.
 
@@ -236,9 +235,9 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
         elif b_indx in num_shortest_paths.keys():
             return num_shortest_paths[b_indx][a_indx], num_shortest_paths
         else:
-            num_shortest_paths[a_indx] = GraphUtils.num_shortest_paths(
+            num_shortest_paths[a_indx] = dict(rx.num_shortest_paths_unweighted(
                 self.S[syndrome_graph_key], a_indx
-            )
+            ))
             return num_shortest_paths[a_indx][b_indx], num_shortest_paths
 
     def _run_mwpm_graph(
