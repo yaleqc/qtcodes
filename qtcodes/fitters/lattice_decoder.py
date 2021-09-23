@@ -108,7 +108,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
             self.S[syndrome_graph_key]
         )
 
-        num_shortest_paths: Dict[int, List[int]] = {}
+        num_shortest_paths: Dict[int, Dict[int, int]] = {}
         for source, target in combinations(nodes, 2):
             if (
                 source in self.virtual[syndrome_graph_key]
@@ -145,9 +145,9 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
         a: TQubit,
         b: TQubit,
         syndrome_graph_key: str,
-        num_shortest_paths: Dict[int, List[int]],
+        num_shortest_paths: Dict[int, Dict[int, int]],
         shortest_distance_mat: np.ndarray,
-    ) -> Tuple[int, Dict[int, List[int]]]:
+    ) -> Tuple[int, Dict[int, Dict[int, int]]]:
         """
         Calculate the number of shortest error paths (degeneracy)
         that link two syndrome nodes through both space and time.
@@ -163,7 +163,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
             a (tuple): Starting or ending syndrome node (degeneracy is symmetric)
             b (tuple): Ending or starting syndrome node (degeneracy is symmetric)
             syndrome_graph_key (str): specifies the syndrome graph (e.g. "X")
-            num_shortest_paths (Dict[int, List[int]]):
+            num_shortest_paths (Dict[int, Dict[int, int]]):
                 key: source node
                 val:
                     val[i] corresponds to number of shortest paths
@@ -175,7 +175,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
 
         Returns:
             num (int): Number of degenerate shortest paths matching this syndrome pair
-            num_shortest_paths (Dict[int, List[int]]]): updated num_shortest_paths
+            num_shortest_paths (Dict[int, Dict[int, int]]]): updated num_shortest_paths
         """
         a_indx = self.node_map[syndrome_graph_key][a]
         b_indx = self.node_map[syndrome_graph_key][b]
@@ -211,7 +211,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
         a_indx: int,
         b_indx: int,
         syndrome_graph_key: str,
-        num_shortest_paths: Dict[int, List[int]],
+        num_shortest_paths: Dict[int, Dict[int, int]],
     ) -> Tuple[int, Dict[int, Dict[int, int]]]:
         """Helper to calculate the number of shortest error paths that link two syndrome nodes
         through both space and time.
@@ -220,7 +220,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
             a_indx (int): Indx of one node
             b_indx (int): Indx of another node
             syndrome_graph_key (str): specifies the syndrome graph (e.g. "X")
-            num_shortest_paths (Dict[int, List[int]]):
+            num_shortest_paths (Dict[int, Dict[int, int]]):
                 key: source node
                 val:
                     val[i] corresponds to number of shortest paths
@@ -228,16 +228,16 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
                     This saves some computations if already calculated.
         Returns:
             num (int): Number of degenerate shortest paths matching this syndrome pair
-            num_shortest_paths (Dict[int, List[int]]]): updated num_shortest_paths
+            num_shortest_paths (Dict[int, Dict[int, int]]]): updated num_shortest_paths
         """
         if a_indx in num_shortest_paths.keys():
             return num_shortest_paths[a_indx][b_indx], num_shortest_paths
         elif b_indx in num_shortest_paths.keys():
             return num_shortest_paths[b_indx][a_indx], num_shortest_paths
         else:
-            num_shortest_paths[a_indx] = dict(rx.num_shortest_paths_unweighted(
-                self.S[syndrome_graph_key], a_indx
-            ))
+            num_shortest_paths[a_indx] = dict(
+                rx.num_shortest_paths_unweighted(self.S[syndrome_graph_key], a_indx)
+            )
             return num_shortest_paths[a_indx][b_indx], num_shortest_paths
 
     def _run_mwpm_graph(
