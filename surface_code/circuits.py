@@ -42,7 +42,7 @@ class SurfaceCode:
             syndrome measurement round)
             This circuit is for "rotated lattices" i.e. it requires
             d**2 data qubits and d**2-1 syndrome qubits only. Hence,
-            d=odd allows equal number of Z and X stabilizer mesaurments.
+            d=odd allows equal number of Z and X stabilizer measurements.
         """
         self.d = d
         self.T = 0
@@ -54,7 +54,7 @@ class SurfaceCode:
         self.c_output = ClassicalRegister(d ** 2, "c_output")
 
         """This code creates circuits only for log='0' but it can be easily
-        modified to accomodate circuuit for log='1' """
+        modified to accommodate circuit for log='1' """
 
         for log in ["0", "1"]:
             self.circuit[log] = QuantumCircuit(self.ancilla, self.data, name=log)
@@ -107,14 +107,14 @@ class SurfaceCode:
     # def x """to be included to execute self._preparation for log='1' """
 
     # def _preparation(self):
-    """ prapares log '1' from log '0' circuit by applying x logical to the lattice"""
+    """ prepares log '1' from log '0' circuit by applying x logical to the lattice"""
 
     def connection(self):
         """
         Determines the order of syndrome measurements between data qubits and syndrome qubits.
         We follow the ZN rule here to avoid hook error as described by [https://doi.org/10.1063/1.1499754]
-        where Z stabilisers are arranged in 'Z' pattern and X stabilizers in 'N' pattern.
-        Refer to the diagram in readme to get the refrence.
+        where Z stabilizers are arranged in 'Z' pattern and X stabilizers in 'N' pattern.
+        Refer to the diagram in readme to get the reference.
         """
         syn_index, data_index = self.lattice()
 
@@ -131,7 +131,7 @@ class SurfaceCode:
 
             new = []
             new.append((r, c))
-            if r == -0.5:  # top semicircile
+            if r == -0.5:  # top semicircle
                 new.append(-1)
                 new.append(get_index((r + 0.5, c - 0.5)))
                 new.append(-1)
@@ -238,7 +238,7 @@ class SurfaceCode:
                 object).
         Returns:
             syn: d+1 dimensional array where 0th array stores qubit readouts
-            while the subsequesnt rows store the results from measurement rounds
+            while the subsequent rows store the results from measurement rounds
             as required for extraction of nodes with errors to be sent to the decoder
         Additional information:
             The circuits must be executed outside of this class, so that
