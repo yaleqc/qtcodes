@@ -189,7 +189,7 @@ class _XXZZLattice(_RotatedLattice):
         Uses the top-most row.
         """
         self.circ.reset(self.qregisters["ancilla"])
-        for i in range(int(self.params["d"])):
+        for i in range(int(self.params["d"][0])):
             self.circ.cx(self.qregisters["data"][i], self.qregisters["ancilla"])
 
     def readout_z(self, readout_creg: Optional[ClassicalRegister] = None) -> None:

@@ -166,13 +166,14 @@ class RotatedDecoder(LatticeDecoder):
         """
         i = node[0]
         j = node[1]
+        d = self.params["d"][0]
         if syndrome_graph_key == "Z":
-            if i > 0 and i < self.params["d"] - 1 and j < self.params["d"] and j > -1:
+            if i > 0 and i < d - 1 and j < d and j > -1:
                 return True
             else:
                 return False
         elif syndrome_graph_key == "X":
-            if j > 0 and j < self.params["d"] - 1 and i < self.params["d"] and i > -1:
+            if j > 0 and j < d - 1 and i < d and i > -1:
                 return True
             else:
                 return False
@@ -191,14 +192,15 @@ class RotatedDecoder(LatticeDecoder):
         virtual: Dict[str, List[TQubit]] = {}
         virtual["X"] = []
         virtual["Z"] = []
-        for j in range(0, self.params["d"], 2):
+        d = self.params["d"][0]
+        for j in range(0, d, 2):
             # Z virtual nodes
             virtual["Z"].append((-1, -0.5, j - 0.5))  # top
-            virtual["Z"].append((-1, self.params["d"] - 0.5, j + 0.5))  # bottom
+            virtual["Z"].append((-1, d - 0.5, j + 0.5))  # bottom
 
             # X virtual nodes
             virtual["X"].append((-1, j + 0.5, -0.5))  # left
-            virtual["X"].append((-1, j - 0.5, self.params["d"] - 0.5))  # right
+            virtual["X"].append((-1, j - 0.5, d - 0.5))  # right
         return virtual
 
     def _is_crossing_readout_path(

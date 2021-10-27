@@ -2,6 +2,7 @@
 Rotated Surface Code Encoder Classes
 """
 from abc import abstractmethod, ABCMeta
+from numbers import Number
 from typing import Dict, List, Tuple, Optional, Type
 from qiskit import QuantumRegister, QuantumCircuit, ClassicalRegister
 from qiskit.circuit import Qubit
@@ -19,7 +20,7 @@ TQubit = Tuple[float, float, float]
 class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
     """
     This class contains all the lattice geometry specifications
-    regarding the XXZZ (CSS) Rotated Surface Code.
+    to support a Rotated Surface Code, such as XXZZ (CSS).
     """
 
     @property
@@ -38,6 +39,8 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             params (Dict[str,int]):
                 Contains params such as d, where d is the number of
                 physical "data" qubits lining a row or column of the lattice.
+                If d is a tuple, then a rectangular lattice will be created
+                according to the dimensions in the tuple.
                 Only odd d is possible!
             name (str):
                 Useful when combining multiple TopologicalQubits together.
@@ -58,11 +61,16 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         """
         # default params
         if "d" not in self.params:
-            self.params["d"] = 3
+            self.params["d"] = (3, 3)
+
+        # make square lattice if only one dimension was passed in
+        if isinstance(self.params["d"], Number):
+            d = self.params["d"]
+            self.params["d"] = (d, d)
 
         # validation
-        if self.params["d"] % 2 != 1:
-            raise LatticeError("Surface code distance must be odd!")
+        if self.params["d"][0] % 2 != 1 or self.params["d"][1] % 2 != 1:
+            raise LatticeError("Surface code distance must be odd in all dimensions!")
 
         # calculated params
         self.params["T"] = -1  # -1 until a stabilizer round is added!
@@ -70,8 +78,12 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         self.params[
             "num_lattice_readout"
         ] = -1  # -1 until a lattice readout is performed!
-        self.params["num_data"] = self.params["d"] ** 2
-        self.params["num_syn"] = (self.params["d"] ** 2 - 1) // 2
+        self.params["num_data"] = self.params["d"][0] * self.params["d"][1]
+        # Number of X, Z syndromes
+        self.params["num_syn"] = (
+            ((self.params["d"][0] + 1) // 2) * (self.params["d"][1] - 1),
+            ((self.params["d"][1] + 1) // 2) * (self.params["d"][0] - 1),
+        )
 
     def _gen_registers(self) -> None:
         """
@@ -84,10 +96,10 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             self.params["num_data"], name=self.name + "_data"
         )
         self.qregisters["mz"] = QuantumRegister(
-            self.params["num_syn"], name=self.name + "_mz"
+            self.params["num_syn"][1], name=self.name + "_mz"
         )
         self.qregisters["mx"] = QuantumRegister(
-            self.params["num_syn"], name=self.name + "_mx"
+            self.params["num_syn"][0], name=self.name + "_mx"
         )
         self.qregisters["ancilla"] = QuantumRegister(1, name=self.name + "_ancilla")
 
@@ -101,7 +113,9 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
                 value: List of lists of qubit indices comprising one plaquette.
         """
         geometry: Dict[str, List[List[Optional[int]]]] = {"mx": [], "mz": []}
-        d = int(self.params["d"])
+        d = int(self.params["d"][0])
+        # dx = int(self.params["d"][0])
+        # dz = int(self.params["d"][1])
         per_row_x = (d - 1) // 2
         per_row_z = (d + 1) // 2
         # mx geometry
@@ -112,7 +126,7 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         bot_l: Optional[int] = None
         bot_r: Optional[int] = None
 
-        for syn in range(int(self.params["num_syn"])):
+        for syn in range(int(self.params["num_syn"][0])):
             row = syn // per_row_x
             offset = syn % per_row_x
             start = (row - 1) * d
@@ -134,7 +148,7 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
 
             geometry["mx"].append([syn, top_l, top_r, bot_l, bot_r])
 
-        for syn in range(int(self.params["num_syn"])):
+        for syn in range(int(self.params["num_syn"][1])):
             row = syn // per_row_z
             offset = syn % per_row_z
             start = row * d
@@ -411,8 +425,10 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
                 value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)
         """
         chunks = readout_string.split(" ")
-        d = int(self.params["d"])
-        num_syn = int(self.params["num_syn"])
+        d = int(self.params["d"][0])
+        num_syn = int(
+            self.params["num_syn"][0]
+        )  # TODO: What about params["num_syn"][1]?
 
         if len(chunks[0]) > 1:  # this is true when all data qubits are readout
             assert readout_type is not None
@@ -470,7 +486,7 @@ class RotatedQubit(TopologicalQubit[TQubit], metaclass=ABCMeta):
         """
         self.lattice.params["T"] += 1
         syndrome_readouts = ClassicalRegister(
-            self.lattice.params["num_syn"] * 2,
+            self.lattice.params["num_syn"][0] + self.lattice.params["num_syn"][1],
             name=self.name + "_c{}".format(self.lattice.params["T"]),
         )
         self.lattice.cregisters[
@@ -483,12 +499,13 @@ class RotatedQubit(TopologicalQubit[TQubit], metaclass=ABCMeta):
         # measure syndromes
         self.circ.measure(
             self.lattice.qregisters["mz"],
-            syndrome_readouts[0 : self.lattice.params["num_syn"]],
+            syndrome_readouts[0 : self.lattice.params["num_syn"][1]],
         )
         self.circ.measure(
             self.lattice.qregisters["mx"],
             syndrome_readouts[
-                self.lattice.params["num_syn"] : self.lattice.params["num_syn"] * 2
+                self.lattice.params["num_syn"][0] : self.lattice.params["num_syn"][0]
+                + self.lattice.params["num_syn"][1]
             ],
         )
         self.circ.reset(self.lattice.qregisters["mz"])

@@ -15,7 +15,7 @@ class TestXXZZ(unittest.TestCase):
     """
 
     def setUp(self):
-        self.params = {"d": 5}
+        self.params = {"d": (5, 5)}
         self.params["T"] = 1
         self.decoder = RotatedDecoder(self.params)
 
@@ -60,7 +60,7 @@ class TestXXZZ(unittest.TestCase):
                 that would be set off by the specified error
                 on the specified data qubit.
         """
-        d = self.params["d"]
+        d = self.params["d"][0]
         row = indx // d
         col = indx % d
         if error_type == "x":
@@ -91,7 +91,7 @@ class TestXXZZ(unittest.TestCase):
             syndrome node parser is working correctly.
         """
         # set up circuit
-        for i in range(self.params["d"] ** 2):
+        for i in range(self.params["d"][0] * self.params["d"][1]):
             for error in ["x", "z"]:
                 # Set up circuit
                 qubit = XXZZQubit(self.params)
