@@ -79,7 +79,7 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             "num_lattice_readout"
         ] = -1  # -1 until a lattice readout is performed!
         self.params["num_data"] = self.params["d"][0] * self.params["d"][1]
-        # Number of X, Z syndromes
+        # Number of X (index 0), Z (index 1) syndromes
         self.params["num_syn"] = (
             ((self.params["d"][0] + 1) // 2) * (self.params["d"][1] - 1),
             ((self.params["d"][1] + 1) // 2) * (self.params["d"][0] - 1),
@@ -113,11 +113,11 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
                 value: List of lists of qubit indices comprising one plaquette.
         """
         geometry: Dict[str, List[List[Optional[int]]]] = {"mx": [], "mz": []}
-        d = int(self.params["d"][0])
+        d = tuple(map(int, self.params["d"]))
         # dx = int(self.params["d"][0])
         # dz = int(self.params["d"][1])
-        per_row_x = (d - 1) // 2
-        per_row_z = (d + 1) // 2
+        per_row_x = (d[1] - 1) // 2
+        per_row_z = (d[1] + 1) // 2
         # mx geometry
 
         # good typing
@@ -129,35 +129,35 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         for syn in range(int(self.params["num_syn"][0])):
             row = syn // per_row_x
             offset = syn % per_row_x
-            start = (row - 1) * d
+            start = (row - 1) * d[1]
             row_parity = row % 2
 
             if row == 0:  # First row
                 top_l, top_r = None, None
                 bot_l = syn * 2
                 bot_r = syn * 2 + 1
-            elif row == d:  # Last row
+            elif row == d[0]:  # Last row
                 bot_l, bot_r = None, None
-                top_l = syn * 2 + 1
-                top_r = syn * 2 + 2
+                top_l = start + (offset * 2) + 1
+                top_r = start + (offset * 2) + 2
             else:
                 top_l = start + (offset * 2) + row_parity
                 top_r = start + (offset * 2) + row_parity + 1
-                bot_l = start + d + (offset * 2) + row_parity
-                bot_r = start + d + (offset * 2) + row_parity + 1
+                bot_l = start + d[1] + (offset * 2) + row_parity
+                bot_r = start + d[1] + (offset * 2) + row_parity + 1
 
             geometry["mx"].append([syn, top_l, top_r, bot_l, bot_r])
 
         for syn in range(int(self.params["num_syn"][1])):
             row = syn // per_row_z
             offset = syn % per_row_z
-            start = row * d
+            start = row * d[1]
             row_parity = row % 2
 
             top_l = start + (offset * 2) - row_parity
             top_r = start + (offset * 2) - row_parity + 1
-            bot_l = start + d + (offset * 2) - row_parity
-            bot_r = start + d + (offset * 2) - row_parity + 1
+            bot_l = start + d[1] + (offset * 2) - row_parity
+            bot_r = start + d[1] + (offset * 2) - row_parity + 1
 
             # Overwrite edge column syndromes
             if row_parity == 0 and offset == per_row_z - 1:  # Last column
@@ -259,13 +259,13 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             x_stabilizer = str(stabilizer_val) + x_stabilizer
 
         stabilizer_str = (
-            x_stabilizer + previous_syndrome_string[int(self.params["num_syn"]) :]
+            x_stabilizer + previous_syndrome_string[int(self.params["num_syn"][0]) :]
         )
         # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where
         # Z_{N}Z_{N-1}...Z_{0} is copied from previous syndrome measurement string
 
         logical_readout = 0
-        for idx in range(0, int(self.params["num_data"]), int(self.params["d"])):
+        for idx in range(0, int(self.params["num_data"]), int(self.params["d"][0])):
             logical_readout = (logical_readout + readout_values[idx]) % 2
 
         return logical_readout, stabilizer_str
@@ -316,13 +316,13 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             z_stabilizer = str(stabilizer_val) + z_stabilizer
 
         stabilizer_str = (
-            previous_syndrome_string[: int(self.params["num_syn"])] + z_stabilizer
+            previous_syndrome_string[: int(self.params["num_syn"][1])] + z_stabilizer
         )
         # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where
         # X_{N}X_{N-1}...X_{0} is copied from previous syndrome measurement string
 
         logical_readout = 0
-        for idx in range(int(self.params["d"])):
+        for idx in range(int(self.params["d"][1])):
             logical_readout = (logical_readout + readout_values[idx]) % 2
 
         return logical_readout, stabilizer_str
@@ -425,10 +425,8 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
                 value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)
         """
         chunks = readout_string.split(" ")
-        d = int(self.params["d"][0])
-        num_syn = int(
-            self.params["num_syn"][0]
-        )  # TODO: What about params["num_syn"][1]?
+        d = tuple(map(int, self.params["d"]))
+        num_syn = tuple(map(int, self.params["num_syn"]))
 
         if len(chunks[0]) > 1:  # this is true when all data qubits are readout
             assert readout_type is not None
@@ -446,24 +444,24 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         int_syndromes = [int(x, base=2) for x in chunks[::-1]]
         xor_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
 
-        mask_z = "1" * num_syn
-        mask_x = mask_z + "0" * num_syn
-        x_syndromes = [(x & int(mask_x, base=2)) >> num_syn for x in xor_syndromes]
+        mask_z = "1" * num_syn[1]
+        mask_x = mask_z + "0" * num_syn[0]
+        x_syndromes = [(x & int(mask_x, base=2)) >> num_syn[0] for x in xor_syndromes]
         z_syndromes = [x & int(mask_z, base=2) for x in xor_syndromes]
 
         X = []
-        per_row_x = d // 2
+        per_row_x = d[1] // 2
         for T, syndrome in enumerate(x_syndromes):
-            for loc in range(num_syn):
+            for loc in range(num_syn[0]):
                 if syndrome & 1 << loc:
                     row = -0.5 + loc // per_row_x
                     col = (0.5 + (loc // per_row_x) % 2) + (loc % per_row_x) * 2
                     X.append((float(T), row, col))
 
         Z = []
-        per_row_z = d // 2 + 1
+        per_row_z = d[1] // 2 + 1
         for T, syndrome in enumerate(z_syndromes):
-            for loc in range(num_syn):
+            for loc in range(num_syn[1]):
                 if syndrome & 1 << loc:
                     row = 0.5 + loc // per_row_z
                     col = (0.5 - (loc // per_row_z) % 2) + (loc % per_row_z) * 2
@@ -504,8 +502,8 @@ class RotatedQubit(TopologicalQubit[TQubit], metaclass=ABCMeta):
         self.circ.measure(
             self.lattice.qregisters["mx"],
             syndrome_readouts[
-                self.lattice.params["num_syn"][0] : self.lattice.params["num_syn"][0]
-                + self.lattice.params["num_syn"][1]
+                self.lattice.params["num_syn"][1] : self.lattice.params["num_syn"][1]
+                + self.lattice.params["num_syn"][0]
             ],
         )
         self.circ.reset(self.lattice.qregisters["mz"])
