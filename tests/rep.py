@@ -1,5 +1,7 @@
 """
 Unittests for the rotated surface codes
+
+python -m unittest tests/rep.py
 """
 import sys
 import unittest

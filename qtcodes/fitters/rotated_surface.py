@@ -10,6 +10,7 @@ from qtcodes.fitters.lattice_decoder import (
     TQubit,
     TQubitLoc,
 )
+from qtcodes.circuits.base import LatticeError
 
 
 class RotatedDecoder(LatticeDecoder):
@@ -22,6 +23,23 @@ class RotatedDecoder(LatticeDecoder):
     # so we can use XXZZQubit, need to generalize
     encoder_type = XXZZQubit
     syndrome_graph_keys = ["X", "Z"]
+
+    def _params_validation(self):
+        super()._params_validation()
+
+        # validation
+        if isinstance(self.params["d"], float) or isinstance(self.params["d"], int):
+            self.params["d"] = (int(self.params["d"]), int(self.params["d"]))
+
+        if len(self.params["d"]) != 2:
+            raise LatticeError(
+                "Please provide a code height and width in parameter d: e.g. (3,7)."
+            )
+
+        if self.params["d"][0] % 2 != 1:
+            raise LatticeError("Surface code height must be odd!")
+        if self.params["d"][1] % 2 != 1:
+            raise LatticeError("Surface code width must be odd!")
 
     def _make_syndrome_graph(self) -> None:
         """

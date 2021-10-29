@@ -14,7 +14,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from qtcodes.fitters.base import TopologicalDecoder
-from qtcodes.circuits.base import LatticeError
 
 TQubit = Tuple[float, float, float]  # (time,row,column) ==> (t,i,j)
 TQubitLoc = Tuple[float, float]  # (row,column) ==> (i,j)
@@ -35,29 +34,24 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
 
     def __init__(self, params: Dict) -> None:
         super().__init__(params)
-        if "d" not in self.params or "T" not in self.params:
-            raise ValueError("Please include d and T in params.")
-
-        # validation
-        if isinstance(self.params["d"], float) or isinstance(self.params["d"], int):
-            self.params["d"] = (int(self.params["d"]), int(self.params["d"]))
-
-        if len(self.params["d"]) != 2:
-            raise LatticeError(
-                "Please provide a code height and width in parameter d: e.g. (3,7)."
-            )
-
-        if self.params["d"][0] % 2 != 1:
-            raise LatticeError("Surface code height must be odd!")
-        if self.params["d"][1] % 2 != 1:
-            raise LatticeError("Surface code width must be odd!")
+        self._params_validation()
 
         for syndrome_graph_key in self.syndrome_graph_keys:
             self.S[syndrome_graph_key] = rx.PyGraph(multigraph=False)
             self.node_map[syndrome_graph_key] = {}
         self.virtual = self._specify_virtual()
-        # self.encoder = self.encoder_type(params.copy())
+        self._encoder = None
         self._make_syndrome_graph()
+
+    @property
+    def encoder(self):
+        if self._encoder is None:
+            self._encoder = self.encoder_type(self.params.copy())
+        return self._encoder
+
+    def _params_validation(self):
+        if "d" not in self.params or "T" not in self.params:
+            raise ValueError("Please include d and T in params.")
 
     @abstractmethod
     def _specify_virtual(self) -> Dict[str, List[TQubit]]:
@@ -422,7 +416,6 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
                 key: syndrome type
                 value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)
         """
-        raise NotImplementedError("Soon!")
         return self.encoder.parse_readout(readout_string, readout_type)
 
     def draw(self, graph: rx.PyGraph) -> None:
