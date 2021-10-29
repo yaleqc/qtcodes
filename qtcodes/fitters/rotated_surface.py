@@ -158,7 +158,7 @@ class RotatedDecoder(LatticeDecoder):
         which is either X or Z.
 
         Args:
-            node ((t, x, y)): Node in graph.
+            node ((height, width)): Node in graph.
             syndrome_graph_key (char): Which X/Z syndrome subgraph these nodes are from.
 
         Returns:
@@ -166,13 +166,16 @@ class RotatedDecoder(LatticeDecoder):
         """
         i = node[0]
         j = node[1]
+
+        dh = self.params["d"][0]
+        dw = self.params["d"][1]
         if syndrome_graph_key == "Z":
-            if i > 0 and i < self.params["d"] - 1 and j < self.params["d"] and j > -1:
+            if i > 0 and i < dh - 1 and j < dw and j > -1:
                 return True
             else:
                 return False
         elif syndrome_graph_key == "X":
-            if j > 0 and j < self.params["d"] - 1 and i < self.params["d"] and i > -1:
+            if j > 0 and j < dw - 1 and i < dh and i > -1:
                 return True
             else:
                 return False
@@ -191,14 +194,15 @@ class RotatedDecoder(LatticeDecoder):
         virtual: Dict[str, List[TQubit]] = {}
         virtual["X"] = []
         virtual["Z"] = []
-        for j in range(0, self.params["d"], 2):
+        for j in range(0, self.params["d"][1], 2):
             # Z virtual nodes
             virtual["Z"].append((-1, -0.5, j - 0.5))  # top
-            virtual["Z"].append((-1, self.params["d"] - 0.5, j + 0.5))  # bottom
+            virtual["Z"].append((-1, self.params["d"][0] - 0.5, j + 0.5))  # bottom
 
+        for j in range(0, self.params["d"][0], 2):
             # X virtual nodes
             virtual["X"].append((-1, j + 0.5, -0.5))  # left
-            virtual["X"].append((-1, j - 0.5, self.params["d"] - 0.5))  # right
+            virtual["X"].append((-1, j - 0.5, self.params["d"][1] - 0.5))  # right
         return virtual
 
     def _is_crossing_readout_path(
