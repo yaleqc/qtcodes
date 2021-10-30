@@ -15,10 +15,9 @@ class TopologicalRegister:
 
     def __init__(
         self,
-        num_tqubits: int,
         circ: QuantumCircuit = None,
-        ctype: str = XXZZ,
-        params: Optional[Dict[str, int]] = None,
+        ctype: List[str] = [XXZZ],
+        params: Optional[List[Dict[str, int]]] = None,
         name: str = "treg",
     ):
         """
@@ -29,7 +28,7 @@ class TopologicalRegister:
                 QuantumCircuit on top of which the topological qubit is built.
                 This is often shared amongst multiple TQubits.
                 If none is provided, then a new QuantumCircuit is initialized and stored.
-            type (str):
+            ctype (str):
                 Specifies the type of TopologicalQubit
                 Must be a value of the blueprint dictionary
             params (Dict[str,int]):
@@ -40,35 +39,45 @@ class TopologicalRegister:
                 Prepended to all registers.
 
         """
-        self.params = params if params else {"d": 3}
+        self.params = params if params else [{"d": 3}]*len(ctype)
         self.name = name
-
         self.n = 0
-
         # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
         self.circ = QuantumCircuit() if circ is None else circ
-
-        if ctype not in blueprint:
-            raise ValueError(
-                "Please choose a Topological Qubit type from: "
-                + str(list(blueprint.keys()))
-            )
-        self.tqubit_type = blueprint[ctype]
+        self.tqubit_types = []
         self.tqubits: Dict[str, Dict[int, Type[Any]]] = {}
-        for _ in range(num_tqubits):
-            self.add_tqubit("data")
-
-    def add_tqubit(self, sub_register: str) -> None:
-        if sub_register not in self.tqubits:
-            self.tqubits[sub_register] = {}
-        self.tqubits[sub_register][self.n] = self.tqubit_type(
-            params=self.params, name=self.name + "_" + str(self.n), circ=self.circ
-        )
-        self.n += 1
-
+        self.add_tqubits("data", ctype, params)
+    
+    def add_tqubits(
+        self, 
+        sub_register: str, 
+        ctype: List[str] = [XXZZ], 
+        params: Optional[List[Dict[str, int]]] = None
+    ) -> None:
+        params = params if params else [{"d": 3}]*len(ctype)
+        if len(params) != len(ctype):
+            raise IndexError(
+                "Please match the number of params with the number of Topological Qubits added: Current number of params - " + str(len(params)) + ", Current number of Topological Qubits: " + str(len(ctype)) 
+            )
+        for i in range(len(ctype)):
+            if ctype[i] not in blueprint:
+                raise ValueError(
+                    "Please choose a Topological Qubit type from: "
+                    + str(list(blueprint.keys()))
+                )
+        for i in range(len(ctype)):
+            if sub_register not in self.tqubits:
+                self.tqubits[sub_register] = {}
+            self.tqubits[sub_register][self.n] = blueprint[ctype[i]](
+                params=self.params[i], name=self.name + "_" + str(self.n), circ=self.circ
+            )
+            self.tqubit_types.append(ctype[i])
+            self.n += 1
+    '''
     def add_tqubits(self, sub_register: str, num_tqubits: int) -> None:
         for _ in range(num_tqubits):
             self.add_tqubit(sub_register)
+    '''
 
     def __getitem__(self, key: Union[str, int]):
         """
@@ -212,13 +221,29 @@ class TopologicalCircuit:
         self,
         control: Union[TopologicalQubit, int],
         target: Union[TopologicalQubit, int],
+        ctype: Optional[str] = None,
+        params: Optional[Dict[str, int]] = None
+
     ):
+        #default ctype and params
+        if ctype:
+            ctype=[ctype]
+        elif isinstance(control, int):
+            ctype=[self.treg.tqubit_types[control]]
+        else:
+            if isinstance(control, RepetitionQubit):
+                ctype=[REPETITION]
+            elif isinstance(control, XXZZQubit):
+                ctype=[XXZZ]
+            else:
+                ctype=[XZZX]
+        params = [params] if params else [{"d": 3}]
 
         # get qubits
         control = self._get_index(control)
         target = self._get_index(target)
         if "ancilla" not in self.treg.tqubits:
-            self.treg.add_tqubit("ancilla")
+            self.treg.add_tqubits("ancilla", ctype, params)
         ancilla = cast(TopologicalQubit, list(self.treg["ancilla"].values())[-1])
 
         # prepare bits
