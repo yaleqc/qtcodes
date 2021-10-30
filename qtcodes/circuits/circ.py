@@ -73,12 +73,7 @@ class TopologicalRegister:
             )
             self.tqubit_types.append(ctype[i])
             self.n += 1
-    '''
-    def add_tqubits(self, sub_register: str, num_tqubits: int) -> None:
-        for _ in range(num_tqubits):
-            self.add_tqubit(sub_register)
-    '''
-
+            
     def __getitem__(self, key: Union[str, int]):
         """
         Allows us to return the nth element of TopologicalRegister as a list.
