@@ -10,6 +10,7 @@ from qtcodes.fitters.lattice_decoder import (
     TQubit,
     TQubitLoc,
 )
+from qtcodes.circuits.base import LatticeError
 
 
 class RotatedDecoder(LatticeDecoder):
@@ -22,6 +23,23 @@ class RotatedDecoder(LatticeDecoder):
     # so we can use XXZZQubit, need to generalize
     encoder_type = XXZZQubit
     syndrome_graph_keys = ["X", "Z"]
+
+    def _params_validation(self):
+        super()._params_validation()
+
+        # validation
+        if isinstance(self.params["d"], float) or isinstance(self.params["d"], int):
+            self.params["d"] = (int(self.params["d"]), int(self.params["d"]))
+
+        if len(self.params["d"]) != 2:
+            raise LatticeError(
+                "Please provide a code height and width in parameter d: e.g. (3,7)."
+            )
+
+        if self.params["d"][0] % 2 != 1:
+            raise LatticeError("Surface code height must be odd!")
+        if self.params["d"][1] % 2 != 1:
+            raise LatticeError("Surface code width must be odd!")
 
     def _make_syndrome_graph(self) -> None:
         """
@@ -158,7 +176,7 @@ class RotatedDecoder(LatticeDecoder):
         which is either X or Z.
 
         Args:
-            node ((t, x, y)): Node in graph.
+            node ((height, width)): Node in graph.
             syndrome_graph_key (char): Which X/Z syndrome subgraph these nodes are from.
 
         Returns:
@@ -166,14 +184,16 @@ class RotatedDecoder(LatticeDecoder):
         """
         i = node[0]
         j = node[1]
-        d = self.params["d"][0]
+
+        dh = self.params["d"][0]
+        dw = self.params["d"][1]
         if syndrome_graph_key == "Z":
-            if i > 0 and i < d - 1 and j < d and j > -1:
+            if i > 0 and i < dh - 1 and j < dw and j > -1:
                 return True
             else:
                 return False
         elif syndrome_graph_key == "X":
-            if j > 0 and j < d - 1 and i < d and i > -1:
+            if j > 0 and j < dw - 1 and i < dh and i > -1:
                 return True
             else:
                 return False
@@ -192,15 +212,15 @@ class RotatedDecoder(LatticeDecoder):
         virtual: Dict[str, List[TQubit]] = {}
         virtual["X"] = []
         virtual["Z"] = []
-        d = self.params["d"][0]
-        for j in range(0, d, 2):
+        for j in range(0, self.params["d"][1], 2):
             # Z virtual nodes
             virtual["Z"].append((-1, -0.5, j - 0.5))  # top
-            virtual["Z"].append((-1, d - 0.5, j + 0.5))  # bottom
+            virtual["Z"].append((-1, self.params["d"][0] - 0.5, j + 0.5))  # bottom
 
+        for j in range(0, self.params["d"][0], 2):
             # X virtual nodes
             virtual["X"].append((-1, j + 0.5, -0.5))  # left
-            virtual["X"].append((-1, j - 0.5, d - 0.5))  # right
+            virtual["X"].append((-1, j - 0.5, self.params["d"][1] - 0.5))  # right
         return virtual
 
     def _is_crossing_readout_path(

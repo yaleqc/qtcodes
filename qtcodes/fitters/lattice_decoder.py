@@ -34,14 +34,24 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
 
     def __init__(self, params: Dict) -> None:
         super().__init__(params)
-        if "d" not in self.params or "T" not in self.params:
-            raise ValueError("Please include d and T in params.")
+        self._params_validation()
+
         for syndrome_graph_key in self.syndrome_graph_keys:
             self.S[syndrome_graph_key] = rx.PyGraph(multigraph=False)
             self.node_map[syndrome_graph_key] = {}
         self.virtual = self._specify_virtual()
-        self.encoder = self.encoder_type(params.copy())
+        self._encoder = None
         self._make_syndrome_graph()
+
+    @property
+    def encoder(self):
+        if self._encoder is None:
+            self._encoder = self.encoder_type(self.params.copy())
+        return self._encoder
+
+    def _params_validation(self):
+        if "d" not in self.params or "T" not in self.params:
+            raise ValueError("Please include d and T in params.")
 
     @abstractmethod
     def _specify_virtual(self) -> Dict[str, List[TQubit]]:
