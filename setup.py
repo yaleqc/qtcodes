@@ -11,7 +11,6 @@ REQUIREMENTS = [
     "retworkx>=0.10.0",
     "qiskit",
     "tqdm",
-    "pydot",
     "pylatexenc",
     "IPython",
 ]
