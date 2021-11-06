@@ -45,7 +45,7 @@ class _XXXX(_Stabilizer):
 
 class _ZZZZ(_Stabilizer):
     """
-    Z-syndrome plaquette of the rotated surface code.
+    Z-syndrome plaquette of the rotated CSS (XXXX/ZZZZ) surface code.
     """
 
     def entangle(self) -> None:
@@ -78,35 +78,21 @@ class _XXZZLattice(_RotatedLattice):
     stabilizer_shortnames = {"mx": _XXXX, "mz": _ZZZZ}
 
     def reset_x(self) -> None:
-        """
-        Initialize/reset to a logical |x+> state.
-        """
         self.circ.reset(self.qregisters["data"])
         self.circ.h(self.qregisters["data"])
         self.circ.barrier()
 
     def reset_z(self) -> None:
-        """
-        Initialize/reset to a logical |z+> state.
-        """
         self.circ.reset(self.qregisters["data"])
         self.circ.barrier()
 
     def x(self) -> None:
-        """
-        Logical X operator on the qubit.
-        Uses the left-most column.
-        """
-        for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
+        for i in range(0, self.params["num_data"], self.params["d"][self.W]):
             self.circ.x(self.qregisters["data"][i])
         self.circ.barrier()
 
     def z(self) -> None:
-        """
-        Logical Z operator on the qubit.
-        Uses the top-most row.
-        """
-        for i in range(int(self.params["d"][1])):
+        for i in range(self.params["d"][self.W]):
             self.circ.z(self.qregisters["data"][i])
         self.circ.barrier()
 
@@ -115,7 +101,7 @@ class _XXZZLattice(_RotatedLattice):
         Classically conditioned logical X operator on the topological qubit.
         Defined as the left-most column.
         """
-        for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
+        for i in range(0, self.params["num_data"], self.params["d"][self.W]):
             self.circ.x(self.qregisters["data"][i]).c_if(classical, val)
         self.circ.barrier()
 
@@ -125,7 +111,7 @@ class _XXZZLattice(_RotatedLattice):
         Defined as the top-most row.
         """
 
-        for i in range(int(self.params["d"][1])):
+        for i in range(self.params["d"][self.W]):
             self.circ.z(self.qregisters["data"][i]).c_if(classical, val)
         self.circ.barrier()
 
@@ -142,7 +128,7 @@ class _XXZZLattice(_RotatedLattice):
         """
         if control:
             # Taking left-most column
-            for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
+            for i in range(0, self.params["num_data"], self.params["d"][self.W]):
                 self.circ.cx(control, self.qregisters["data"][i])
             self.circ.barrier()
         elif target:
@@ -159,15 +145,11 @@ class _XXZZLattice(_RotatedLattice):
         """
         self.circ.reset(self.qregisters["ancilla"])
         self.circ.h(self.qregisters["ancilla"])
-        for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
+        for i in range(0, self.params["num_data"], self.params["d"][self.W]):
             self.circ.cx(self.qregisters["ancilla"], self.qregisters["data"][i])
         self.circ.h(self.qregisters["ancilla"])
 
     def readout_x(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
-        """
-        Convenience method to read-out the logical-X projection.
-        Uses the left-most column.
-        """
         if not readout_creg:
             self.params["num_readout"] += 1
             creg_name = self.name + "_readout_" + str(self.params["num_readout"])
@@ -189,14 +171,10 @@ class _XXZZLattice(_RotatedLattice):
         Uses the top-most row.
         """
         self.circ.reset(self.qregisters["ancilla"])
-        for i in range(int(self.params["d"][1])):
+        for i in range(self.params["d"][self.W]):
             self.circ.cx(self.qregisters["data"][i], self.qregisters["ancilla"])
 
     def readout_z(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
-        """
-        Convenience method to read-out the logical-Z projection.
-        Uses the top-most row.
-        """
         if not readout_creg:
             self.params["num_readout"] += 1
             creg_name = self.name + "_readout_" + str(self.params["num_readout"])
@@ -211,12 +189,6 @@ class _XXZZLattice(_RotatedLattice):
         self.circ.barrier()
 
     def lattice_readout_x(self) -> None:
-        """
-        Readout all data qubits that constitute the lattice.
-        This readout can be used to extract a final round of X stabilizer measurments,
-        as well as a logical X readout.
-        """
-
         self.params["num_lattice_readout"] += 1
         creg_name = (
             self.name + "_lattice_readout_" + str(self.params["num_lattice_readout"])
@@ -232,11 +204,6 @@ class _XXZZLattice(_RotatedLattice):
         self.circ.barrier()
 
     def lattice_readout_z(self) -> None:
-        """
-        Readout all data qubits that constitute the lattice.
-        This readout can be used to extract a final round of Z stabilizer measurments,
-        as well as a logical Z readout.
-        """
         self.params["num_lattice_readout"] += 1
         creg_name = (
             self.name + "_lattice_readout_" + str(self.params["num_lattice_readout"])
@@ -253,7 +220,7 @@ class _XXZZLattice(_RotatedLattice):
 
 class XXZZQubit(RotatedQubit):
     """
-    A single logical surface code qubit.
+    A single logical XXZZ surface code qubit.
     """
 
     lattice_type = _XXZZLattice
