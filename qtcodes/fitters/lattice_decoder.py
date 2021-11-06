@@ -442,7 +442,8 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
             self.draw3D(graph)
             return
 
-        scale = 5 / math.sqrt(len(graph.nodes()))
+        node_count = len(graph.nodes())
+        scale = 5 / (math.sqrt(node_count) if node_count > 0 else 5)
         dpi = dpi if dpi is not None else 150 / scale
         node_size = node_size if node_size is not None else 1750 * scale
         font_size = font_size if font_size is not None else 6 * scale
@@ -459,7 +460,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
             with_labels=True,
             pos=positions,
             labels=str,
-            edge_labels=str,
+            edge_labels=lambda e: str(np.around(e, 3)),
             node_size=node_size,
             node_color="lightblue",
             font_size=font_size,
