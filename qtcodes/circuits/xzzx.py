@@ -53,27 +53,16 @@ class _XZZXLattice(_RotatedLattice):
     stabilizer_shortnames = {"mx": _XZZX, "mz": _XZZX}
 
     def reset_x(self):
-        """
-        Initialize/reset to a logical |x+> state.
-        """
         self.circ.reset(self.qregisters["data"])
         self.circ.h(self.qregisters["data"][1::2])  # H|0> = |+>
 
     def reset_z(self):
-        """
-        Initialize/reset to a logical |z+> state.
-        """
         self.circ.reset(self.qregisters["data"])
         self.circ.h(self.qregisters["data"][0::2])  # H|0> = |+>
 
     def x(self) -> None:
-        """
-        Logical X operator on the qubit.
-        Defined as the left-most column.
-        """
-
         # Taking left-most column
-        for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
+        for i in range(0, self.params["num_data"], self.params["d"][self.W]):
             if i % 2 == 1:
                 self.circ.x(self.qregisters["data"][i])
             else:
@@ -81,13 +70,8 @@ class _XZZXLattice(_RotatedLattice):
         self.circ.barrier()
 
     def z(self) -> None:
-        """
-        Logical Z operator on the qubit.
-        Defined as the top-most row.
-        """
-
         # Taking top-most row
-        for i in range(int(self.params["d"][1])):
+        for i in range(self.params["d"][self.W]):
             if i % 2 == 0:
                 self.circ.x(self.qregisters["data"][i])
             else:
@@ -101,7 +85,7 @@ class _XZZXLattice(_RotatedLattice):
         """
 
         # Taking left-most column
-        for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
+        for i in range(0, self.params["num_data"], self.params["d"][self.W]):
             if i % 2 == 1:
                 self.circ.x(self.qregisters["data"][i]).c_if(classical, val)
             else:
@@ -115,7 +99,7 @@ class _XZZXLattice(_RotatedLattice):
         """
 
         # Taking top-most row
-        for i in range(int(self.params["d"][1])):
+        for i in range(self.params["d"][self.W]):
             if i % 2 == 0:
                 self.circ.x(self.qregisters["data"][i]).c_if(classical, val)
             else:
@@ -135,7 +119,7 @@ class _XZZXLattice(_RotatedLattice):
         """
         if control:
             # Taking left-most column
-            for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
+            for i in range(0, self.params["num_data"], self.params["d"][self.W]):
                 if i % 2 == 1:
                     self.circ.cx(control, self.qregisters["data"][i])
                 else:
@@ -174,10 +158,6 @@ class _XZZXLattice(_RotatedLattice):
         )
 
     def readout_x(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
-        """
-        Convenience method to read-out the logical-X projection.
-        Defined as the left-most column.
-        """
         if not readout_creg:
             self.params["num_readout"] += 1
             creg_name = self.name + "_readout_" + str(self.params["num_readout"])
@@ -201,7 +181,7 @@ class _XZZXLattice(_RotatedLattice):
         self.circ.reset(self.qregisters["ancilla"])
 
         # Taking top-most row
-        data_qubit_indxs = list(range(int(self.params["d"][1])))
+        data_qubit_indxs = list(range(self.params["d"][self.W]))
 
         # X Readout
         x_readout_indxs = [i for i in data_qubit_indxs if i % 2 == 0]
@@ -218,10 +198,6 @@ class _XZZXLattice(_RotatedLattice):
         )
 
     def readout_z(self, readout_creg: Optional[ClassicalRegister] = None) -> None:
-        """
-        Convenience method to read-out the logical-Z projection.
-        Defined as the top-most row.
-        """
         if not readout_creg:
             self.params["num_readout"] += 1
             creg_name = self.name + "_readout_" + str(self.params["num_readout"])
@@ -236,12 +212,6 @@ class _XZZXLattice(_RotatedLattice):
         self.circ.barrier()
 
     def lattice_readout_x(self) -> None:
-        """
-        Readout all data qubits that constitute the lattice.
-        This readout can be used to extract a final round of A stabilizer measurments,
-        as well as a logical X readout.
-        """
-
         self.params["num_lattice_readout"] += 1
 
         creg_name = (
@@ -260,12 +230,6 @@ class _XZZXLattice(_RotatedLattice):
         self.circ.barrier()
 
     def lattice_readout_z(self) -> None:
-        """
-        Readout all data qubits that constitute the lattice.
-        This readout can be used to extract a final round of B stabilizer measurments,
-        as well as a logical Z readout.
-        """
-
         self.params["num_lattice_readout"] += 1
         creg_name = (
             self.name + "_lattice_readout_" + str(self.params["num_lattice_readout"])
@@ -285,8 +249,7 @@ class _XZZXLattice(_RotatedLattice):
 
 class XZZXQubit(RotatedQubit):
     """
-    A single logical surface code qubit. At the physical level, this wraps a
-    circuit, so we chose to subclass and extend TopologicalQubit which extends QuantumCircuit.
+    A single, logical XZZX surface code qubit.
     """
 
     lattice_type = _XZZXLattice

@@ -220,7 +220,7 @@ class _XXZZLattice(_RotatedLattice):
 
 class XXZZQubit(RotatedQubit):
     """
-    A single logical XXZZ surface code qubit.
+    A single, logical XXZZ surface code qubit.
     """
 
     lattice_type = _XXZZLattice
