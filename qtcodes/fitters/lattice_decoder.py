@@ -8,9 +8,10 @@ from itertools import combinations
 from typing import Tuple, List, Dict, Optional, Union, cast
 from IPython.display import Image, display
 
-import pydot
 import retworkx as rx
+from retworkx.visualization import mpl_draw
 import numpy as np
+from matplotlib import figure, axes
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from qtcodes.fitters.base import TopologicalDecoder
@@ -408,35 +409,54 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
         """
         return self.encoder.parse_readout(readout_string, readout_type)
 
-    def draw(self, graph: rx.PyGraph) -> None:
+    def draw(
+        self,
+        graph: rx.PyGraph,
+        dpi: Optional[int] = None,
+        node_size: Optional[int] = None,
+        font_size: Optional[float] = None,
+    ) -> Tuple[figure.Figure, axes.Axes]:
         """
         Plots 2D graphs in IPython/Jupyter.
 
         Args:
             graph (rx.PyGraph): graph to be plotted
+            dpi (int): dpi used for Figure. Defaults to dynamically sized value based on node count.
+            node_size (int): size of node used for `mpl_draw`. Defaults to dynamically sized value based on node count.
+            font_size (float): font size used for `mpl_draw`. Defaults to dynamically sized value based on node count.
+
+        Returns:
+            (figure, axes): A matplotlib Figure and Axes object
         """
         if self.params["T"] > 1:
             self.draw3D(graph)
             return
-        pdot = pydot.graph_from_dot_data(
-            graph.to_dot(
-                edge_attr=lambda e: {
-                    "label": str(round(float(e), 3)),
-                    "fontsize": "8",
-                },
-                node_attr=lambda n: {
-                    "label": str(n),
-                    "pos": f'"{n[2]},{-1.0*n[1]}!"',
-                    "fontsize": "8",
-                    "color": "black",
-                    "fillcolor": "lightblue",
-                    "style": "filled",
-                },
-                graph_attr={"outputorder": "edgesfirst"},
-            )
-        )[0]
-        plt_image = Image(pdot.create_png(prog="fdp"))
-        display(plt_image)
+
+        scale = 5 / math.sqrt(len(graph.nodes()))
+        dpi = dpi if dpi is not None else 150 / scale
+        node_size = node_size if node_size is not None else 1750 * scale
+        font_size = font_size if font_size is not None else 6 * scale
+
+        positions = {}
+        for idx, node in enumerate(graph.nodes()):
+            positions[idx] = [node[2], -node[1]]
+
+        fig = plt.figure(dpi=dpi)
+        ax = fig.subplots()
+        mpl_draw(
+            graph,
+            ax=ax,
+            with_labels=True,
+            pos=positions,
+            labels=str,
+            edge_labels=str,
+            node_size=node_size,
+            node_color="lightblue",
+            font_size=font_size,
+            alpha=0.8,
+        )
+        fig.tight_layout()
+        return (fig, ax)
 
     def draw3D(self, graph: rx.PyGraph, angle: Optional[List[float]] = None) -> None:
         """Plots a graph with edge labels in 3D.
