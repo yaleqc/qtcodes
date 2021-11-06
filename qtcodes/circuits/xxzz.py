@@ -97,7 +97,7 @@ class _XXZZLattice(_RotatedLattice):
         Logical X operator on the qubit.
         Uses the left-most column.
         """
-        for i in range(0, int(self.params["num_data"]), int(self.params["d"])):
+        for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
             self.circ.x(self.qregisters["data"][i])
         self.circ.barrier()
 
@@ -106,7 +106,7 @@ class _XXZZLattice(_RotatedLattice):
         Logical Z operator on the qubit.
         Uses the top-most row.
         """
-        for i in range(int(self.params["d"])):
+        for i in range(int(self.params["d"][1])):
             self.circ.z(self.qregisters["data"][i])
         self.circ.barrier()
 
@@ -115,7 +115,7 @@ class _XXZZLattice(_RotatedLattice):
         Classically conditioned logical X operator on the topological qubit.
         Defined as the left-most column.
         """
-        for i in range(0, int(self.params["num_data"]), int(self.params["d"])):
+        for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
             self.circ.x(self.qregisters["data"][i]).c_if(classical, val)
         self.circ.barrier()
 
@@ -125,7 +125,7 @@ class _XXZZLattice(_RotatedLattice):
         Defined as the top-most row.
         """
 
-        for i in range(int(self.params["d"])):
+        for i in range(int(self.params["d"][1])):
             self.circ.z(self.qregisters["data"][i]).c_if(classical, val)
         self.circ.barrier()
 
@@ -142,7 +142,7 @@ class _XXZZLattice(_RotatedLattice):
         """
         if control:
             # Taking left-most column
-            for i in range(0, int(self.params["num_data"]), int(self.params["d"])):
+            for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
                 self.circ.cx(control, self.qregisters["data"][i])
             self.circ.barrier()
         elif target:
@@ -159,7 +159,7 @@ class _XXZZLattice(_RotatedLattice):
         """
         self.circ.reset(self.qregisters["ancilla"])
         self.circ.h(self.qregisters["ancilla"])
-        for i in range(0, int(self.params["num_data"]), int(self.params["d"])):
+        for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
             self.circ.cx(self.qregisters["ancilla"], self.qregisters["data"][i])
         self.circ.h(self.qregisters["ancilla"])
 
@@ -189,7 +189,7 @@ class _XXZZLattice(_RotatedLattice):
         Uses the top-most row.
         """
         self.circ.reset(self.qregisters["ancilla"])
-        for i in range(int(self.params["d"][0])):
+        for i in range(int(self.params["d"][1])):
             self.circ.cx(self.qregisters["data"][i], self.qregisters["ancilla"])
 
     def readout_z(self, readout_creg: Optional[ClassicalRegister] = None) -> None:

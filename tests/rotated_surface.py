@@ -8,7 +8,7 @@ import unittest
 from qiskit import execute, Aer
 
 sys.path.insert(0, "../")
-from qtcodes import XXZZQubit, RotatedDecoder
+from qtcodes import XZZXQubit, RotatedDecoder
 
 
 class TestXXZZ(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestXXZZ(unittest.TestCase):
     """
 
     def setUp(self):
-        self.params = {"d": (5, 5)}
+        self.params = {"d": (3, 5)}
         self.params["T"] = 1
         self.decoder = RotatedDecoder(self.params)
 
@@ -62,23 +62,24 @@ class TestXXZZ(unittest.TestCase):
                 that would be set off by the specified error
                 on the specified data qubit.
         """
-        d = self.params["d"][0]
-        row = indx // d
-        col = indx % d
+        dh = self.params["d"][0]
+        dw = self.params["d"][1]
+        row = indx // dw
+        col = indx % dw
         if error_type == "x":
             parity = 2 * (indx % 2) - 1  # Even is -1, Odd is 1
             neighbors = [
                 (0.0, row + parity * 0.5, col - 0.5),
                 (0.0, row - parity * 0.5, col + 0.5),
             ]
-            return [x for x in neighbors if x[1] > 0 and x[1] < d - 1]
+            return [x for x in neighbors if x[1] > 0 and x[1] < dh - 1]
         elif error_type == "z":
             parity = 2 * (indx % 2) - 1  # Even is -1, Odd is 1
             neighbors = [
                 (0.0, row - parity * 0.5, col - 0.5),
                 (0.0, row + parity * 0.5, col + 0.5),
             ]
-            return [x for x in neighbors if x[2] > 0 and x[2] < d - 1]
+            return [x for x in neighbors if x[2] > 0 and x[2] < dw - 1]
         return []
 
     def test_single_errors(self):
@@ -96,7 +97,7 @@ class TestXXZZ(unittest.TestCase):
         for i in range(self.params["d"][0] * self.params["d"][1]):
             for error in ["x", "z"]:
                 # Set up circuit
-                qubit = XXZZQubit(self.params)
+                qubit = XZZXQubit(self.params)
                 qubit.reset_z()
                 qubit.stabilize()
                 qubit.circ.__getattribute__(error)(

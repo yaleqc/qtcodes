@@ -37,7 +37,7 @@ class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
     """
 
     def __init__(
-        self, params: Dict[str, float], name: str, circ: QuantumCircuit,
+        self, params: Dict[str, Any], name: str, circ: QuantumCircuit,
     ):
         """
         Initializes this Topological Lattice class.
@@ -56,7 +56,7 @@ class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
 
         self.name = name
         self.circ = circ
-        self.params: Dict[str, float] = params
+        self.params: Dict[str, Any] = params
         self._params_validate_and_generate()
 
         self.qregisters: Dict[str, QuantumRegister] = {}  # quantum

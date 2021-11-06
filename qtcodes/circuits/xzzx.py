@@ -73,7 +73,7 @@ class _XZZXLattice(_RotatedLattice):
         """
 
         # Taking left-most column
-        for i in range(0, int(self.params["num_data"]), int(self.params["d"])):
+        for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
             if i % 2 == 1:
                 self.circ.x(self.qregisters["data"][i])
             else:
@@ -87,7 +87,7 @@ class _XZZXLattice(_RotatedLattice):
         """
 
         # Taking top-most row
-        for i in range(int(self.params["d"])):
+        for i in range(int(self.params["d"][1])):
             if i % 2 == 0:
                 self.circ.x(self.qregisters["data"][i])
             else:
@@ -101,7 +101,7 @@ class _XZZXLattice(_RotatedLattice):
         """
 
         # Taking left-most column
-        for i in range(0, int(self.params["num_data"]), int(self.params["d"])):
+        for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
             if i % 2 == 1:
                 self.circ.x(self.qregisters["data"][i]).c_if(classical, val)
             else:
@@ -115,7 +115,7 @@ class _XZZXLattice(_RotatedLattice):
         """
 
         # Taking top-most row
-        for i in range(int(self.params["d"])):
+        for i in range(int(self.params["d"][1])):
             if i % 2 == 0:
                 self.circ.x(self.qregisters["data"][i]).c_if(classical, val)
             else:
@@ -135,7 +135,7 @@ class _XZZXLattice(_RotatedLattice):
         """
         if control:
             # Taking left-most column
-            for i in range(0, int(self.params["num_data"]), int(self.params["d"])):
+            for i in range(0, int(self.params["num_data"]), int(self.params["d"][1])):
                 if i % 2 == 1:
                     self.circ.cx(control, self.qregisters["data"][i])
                 else:
@@ -156,7 +156,7 @@ class _XZZXLattice(_RotatedLattice):
 
         # Taking left-most column
         data_qubit_indxs = list(
-            range(0, int(self.params["num_data"]), int(self.params["d"]))
+            range(0, int(self.params["num_data"]), int(self.params["d"][1]))
         )
 
         # X Readout
@@ -201,7 +201,7 @@ class _XZZXLattice(_RotatedLattice):
         self.circ.reset(self.qregisters["ancilla"])
 
         # Taking top-most row
-        data_qubit_indxs = list(range(int(self.params["d"])))
+        data_qubit_indxs = list(range(int(self.params["d"][1])))
 
         # X Readout
         x_readout_indxs = [i for i in data_qubit_indxs if i % 2 == 0]

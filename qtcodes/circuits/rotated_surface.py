@@ -445,8 +445,8 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         xor_syndromes = [a ^ b for (a, b) in zip(int_syndromes, int_syndromes[1:])]
 
         mask_z = "1" * num_syn[1]
-        mask_x = mask_z + "0" * num_syn[0]
-        x_syndromes = [(x & int(mask_x, base=2)) >> num_syn[0] for x in xor_syndromes]
+        mask_x = "1" * num_syn[0] + "0" * num_syn[1]
+        x_syndromes = [(x & int(mask_x, base=2)) >> num_syn[1] for x in xor_syndromes]
         z_syndromes = [x & int(mask_z, base=2) for x in xor_syndromes]
 
         X = []

@@ -212,15 +212,19 @@ class RotatedDecoder(LatticeDecoder):
         virtual: Dict[str, List[TQubit]] = {}
         virtual["X"] = []
         virtual["Z"] = []
-        for j in range(0, self.params["d"][1], 2):
+
+        dh = self.params["d"][0]
+        dw = self.params["d"][1]
+
+        for j in range(0, dw, 2):
             # Z virtual nodes
             virtual["Z"].append((-1, -0.5, j - 0.5))  # top
-            virtual["Z"].append((-1, self.params["d"][0] - 0.5, j + 0.5))  # bottom
+            virtual["Z"].append((-1, dh - 0.5, j + 0.5))  # bottom
 
-        for j in range(0, self.params["d"][0], 2):
+        for j in range(0, dh, 2):
             # X virtual nodes
             virtual["X"].append((-1, j + 0.5, -0.5))  # left
-            virtual["X"].append((-1, j - 0.5, self.params["d"][1] - 0.5))  # right
+            virtual["X"].append((-1, j - 0.5, dw - 0.5))  # right
         return virtual
 
     def _is_crossing_readout_path(
