@@ -7,8 +7,10 @@ import sys
 import unittest
 from qiskit import execute, Aer
 
+from qtcodes.circuits import constants
+
 sys.path.insert(0, "../")
-from qtcodes import XZZXQubit, RotatedDecoder
+from qtcodes import XXZZQubit, RotatedDecoder
 
 
 class TestXXZZ(unittest.TestCase):
@@ -62,8 +64,9 @@ class TestXXZZ(unittest.TestCase):
                 that would be set off by the specified error
                 on the specified data qubit.
         """
-        dh = self.params["d"][0]
-        dw = self.params["d"][1]
+        d = self.params["d"]
+        dh = d[constants.DH]
+        dw = d[constants.DW]
         row = indx // dw
         col = indx % dw
         if error_type == "x":
@@ -94,10 +97,11 @@ class TestXXZZ(unittest.TestCase):
             syndrome node parser is working correctly.
         """
         # set up circuit
-        for i in range(self.params["d"][0] * self.params["d"][1]):
+        d = self.params["d"]
+        for i in range(d[constants.DH] * d[constants.DW]):
             for error in ["x", "z"]:
                 # Set up circuit
-                qubit = XZZXQubit(self.params)
+                qubit = XXZZQubit(self.params)
                 qubit.reset_z()
                 qubit.stabilize()
                 qubit.circ.__getattribute__(error)(

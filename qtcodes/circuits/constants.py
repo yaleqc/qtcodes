@@ -10,6 +10,9 @@ REPETITION = "Repetition"
 XXZZ = "XXZZ"
 XZZX = "XZZX"
 
+# for params["d"]
+DH = 0
+DW = 1
 
 blueprint: Dict[str, Type[Any]] = {
     REPETITION: RepetitionQubit,

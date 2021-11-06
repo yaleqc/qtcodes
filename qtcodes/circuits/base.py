@@ -36,6 +36,39 @@ class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
     This abstract class contains a blueprint for lattice construction.
     """
 
+    # Constants
+    @property
+    def H(self):
+        """Constant for lattice height"""
+        return 0
+
+    @property
+    def W(self):
+        """Constant for lattice width"""
+        return 1
+
+    @property
+    @staticmethod
+    def ROWS():
+        """Constant for lattice height"""
+        return 0
+
+    @property
+    @staticmethod
+    def COLS():
+        """Constant for lattice width"""
+        return 1
+
+    @property
+    def SYNX(self):
+        """Constant for X syndromes index"""
+        return 0
+
+    @property
+    def SYNZ(self):
+        """Constant for Z syndromes index"""
+        return 1
+
     def __init__(
         self, params: Dict[str, Any], name: str, circ: QuantumCircuit,
     ):
@@ -43,9 +76,9 @@ class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
         Initializes this Topological Lattice class.
 
         Args:
-            params (Dict[str,int]):
+            params (Dict[str,int or Tuple(int, int)]):
                 Contains params such as d, where d is the number of
-                physical "data" qubits lining a row or column of the lattice.
+                physical "data" qubits lining rows / columns of the lattice.
             name (str):
                 Useful when combining multiple TopologicalQubits together.
                 Prepended to all registers.
@@ -65,7 +98,7 @@ class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
 
         assert "data" in self.qregisters, "There should be a data qubits register."
 
-        # add registerse to circ
+        # add quantum/classical registers to circuit
         registers = list(self.qregisters.values()) + list(self.cregisters.values())
         self.circ.add_register(*registers)
 
@@ -77,7 +110,7 @@ class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
         Validate and generate params.
 
         E.g.
-        self.params["num_syn"] = params["d"] - 1
+        self.params["num_data"] = self.params["d"][self.H] * self.params["d"][self.W]
         """
 
     @abstractmethod
@@ -272,7 +305,7 @@ class TopologicalQubit(Generic[TQubit], metaclass=ABCMeta):
         # == None is necessary, as `not QuantumCircuit()` is True
         circ = QuantumCircuit() if circ is None else circ
         params = params if params else {}
-        self.lattice = self.lattice_type(params, name, circ)
+        self.lattice: _TopologicalLattice = self.lattice_type(params, name, circ)
         self.name = name
         self.circ = circ
 
