@@ -2,6 +2,7 @@
 """
 Graph decoder for surface codes
 """
+from numbers import Number
 from typing import Tuple, List, Dict
 
 from qtcodes.circuits.xxzz import XXZZQubit
@@ -28,8 +29,9 @@ class RotatedDecoder(LatticeDecoder):
         super()._params_validation()
 
         # validation
-        if isinstance(self.params["d"], float) or isinstance(self.params["d"], int):
-            self.params["d"] = (int(self.params["d"]), int(self.params["d"]))
+        if isinstance(self.params["d"], Number):
+            d = int(self.params["d"])
+            self.params["d"] = (d, d)
 
         if len(self.params["d"]) != 2:
             raise LatticeError(

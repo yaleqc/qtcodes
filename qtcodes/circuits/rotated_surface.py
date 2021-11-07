@@ -100,12 +100,18 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
         self.qregisters["data"] = QuantumRegister(
             self.params["num_data"], name=self.name + "_data"
         )
-        self.qregisters["mz"] = QuantumRegister(
-            self.params["num_syn"][self.SYNZ], name=self.name + "_mz"
-        )
-        self.qregisters["mx"] = QuantumRegister(
-            self.params["num_syn"][self.SYNX], name=self.name + "_mx"
-        )
+
+        num_syn = self.params["num_syn"]
+        if num_syn[self.SYNZ] > 0:
+            self.qregisters["mz"] = QuantumRegister(
+                num_syn[self.SYNZ], name=self.name + "_mz"
+            )
+
+        if num_syn[self.SYNX] > 0:
+            self.qregisters["mx"] = QuantumRegister(
+                num_syn[self.SYNX], name=self.name + "_mx"
+            )
+
         self.qregisters["ancilla"] = QuantumRegister(1, name=self.name + "_ancilla")
 
     def _set_geometry(self) -> None:
@@ -503,17 +509,21 @@ class RotatedQubit(TopologicalQubit[TQubit], metaclass=ABCMeta):
         self.lattice.entangle()
 
         # measure syndromes
-        self.circ.measure(
-            self.lattice.qregisters["mz"],
-            syndrome_readouts[0 : num_syn[self.lattice.SYNZ]],
-        )
-        self.circ.measure(
-            self.lattice.qregisters["mx"],
-            syndrome_readouts[
-                num_syn[self.lattice.SYNZ] : num_syn[self.lattice.SYNZ]
-                + num_syn[self.lattice.SYNX]
-            ],
-        )
-        self.circ.reset(self.lattice.qregisters["mz"])
-        self.circ.reset(self.lattice.qregisters["mx"])
+        if num_syn[self.lattice.SYNZ] > 0:
+            self.circ.measure(
+                self.lattice.qregisters["mz"],
+                syndrome_readouts[0 : num_syn[self.lattice.SYNZ]],
+            )
+        if num_syn[self.lattice.SYNX] > 0:
+            self.circ.measure(
+                self.lattice.qregisters["mx"],
+                syndrome_readouts[
+                    num_syn[self.lattice.SYNZ] : num_syn[self.lattice.SYNZ]
+                    + num_syn[self.lattice.SYNX]
+                ],
+            )
+        if num_syn[self.lattice.SYNZ] > 0:
+            self.circ.reset(self.lattice.qregisters["mz"])
+        if num_syn[self.lattice.SYNX] > 0:
+            self.circ.reset(self.lattice.qregisters["mx"])
         self.circ.barrier()

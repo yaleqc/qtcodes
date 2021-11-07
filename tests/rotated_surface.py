@@ -10,10 +10,9 @@ from qiskit import execute, Aer
 
 from qtcodes.circuits import constants
 from qtcodes.circuits.base import TQubit
-from qtcodes.circuits.xzzx import XZZXQubit
 
 sys.path.insert(0, "../")
-from qtcodes import XXZZQubit, RotatedDecoder
+from qtcodes import XXZZQubit, XZZXQubit, RotatedDecoder
 
 
 class TestBase(metaclass=ABCMeta):
@@ -100,6 +99,12 @@ class TestBase(metaclass=ABCMeta):
         d = self.params["d"]
         for i in range(d[constants.DH] * d[constants.DW]):
             for error in ["x", "z"]:
+                if error == "x" and d[constants.DH] == 1:
+                    continue
+
+                if error == "z" and d[constants.DW] == 1:
+                    continue
+
                 # Set up circuit
                 qubit = self.encoder_type(self.params)
                 qubit.reset_z()
@@ -140,6 +145,7 @@ class TestBase(metaclass=ABCMeta):
                         self.assertIn(x, expected_neighbors)
 
 
+# @unittest.skip("temporarily")
 class TestSquareXXZZ(TestBase, unittest.TestCase):
     """
     Unit tests for the XXZZ (CSS) Rotated Surface Code
@@ -153,6 +159,7 @@ class TestSquareXXZZ(TestBase, unittest.TestCase):
         self.decoder = RotatedDecoder(self.params)
 
 
+# @unittest.skip("temporarily")
 class TestRectangularXXZZ(TestBase, unittest.TestCase):
     """
     Unit tests for the XXZZ (CSS) Rotated Surface Code
@@ -162,6 +169,20 @@ class TestRectangularXXZZ(TestBase, unittest.TestCase):
 
     def setUp(self):
         self.params = {"d": (3, 5)}
+        self.params["T"] = 1
+        self.decoder = RotatedDecoder(self.params)
+
+
+# @unittest.skip("temporarily")
+class Test1DXXZZ(TestBase, unittest.TestCase):
+    """
+    Unit tests for the XXZZ (CSS) Rotated Surface Code
+    """
+
+    encoder_type = XXZZQubit
+
+    def setUp(self):
+        self.params = {"d": (5, 1)}
         self.params["T"] = 1
         self.decoder = RotatedDecoder(self.params)
 
