@@ -1,27 +1,27 @@
 """
-Unittests for the rotated surface codes
+Unit tests for the rotated surface codes
 
 python -m unittest tests/rotated_surface.py
 """
+from abc import ABCMeta
 import sys
 import unittest
 from qiskit import execute, Aer
 
 from qtcodes.circuits import constants
+from qtcodes.circuits.base import TQubit
+from qtcodes.circuits.xzzx import XZZXQubit
 
 sys.path.insert(0, "../")
 from qtcodes import XXZZQubit, RotatedDecoder
 
 
-class TestXXZZ(unittest.TestCase):
+class TestBase(metaclass=ABCMeta):
     """
-    Unittests for the XXZZ (CSS) Rotated Surface Code
+    Abstract base class for testing
     """
 
-    def setUp(self):
-        self.params = {"d": (3, 5)}
-        self.params["T"] = 1
-        self.decoder = RotatedDecoder(self.params)
+    encoder_type: TQubit = None
 
     def get_logical_error_rate(
         self, readout_strings, correct_logical_value, err_prob=None
@@ -101,7 +101,7 @@ class TestXXZZ(unittest.TestCase):
         for i in range(d[constants.DH] * d[constants.DW]):
             for error in ["x", "z"]:
                 # Set up circuit
-                qubit = XXZZQubit(self.params)
+                qubit = self.encoder_type(self.params)
                 qubit.reset_z()
                 qubit.stabilize()
                 qubit.circ.__getattribute__(error)(
@@ -138,6 +138,60 @@ class TestXXZZ(unittest.TestCase):
                     nodes = sum(list(processed_results.values()), [])
                     for x in nodes:
                         self.assertIn(x, expected_neighbors)
+
+
+class TestSquareXXZZ(TestBase, unittest.TestCase):
+    """
+    Unit tests for the XXZZ (CSS) Rotated Surface Code
+    """
+
+    encoder_type = XXZZQubit
+
+    def setUp(self):
+        self.params = {"d": (5, 5)}
+        self.params["T"] = 1
+        self.decoder = RotatedDecoder(self.params)
+
+
+class TestRectangularXXZZ(TestBase, unittest.TestCase):
+    """
+    Unit tests for the XXZZ (CSS) Rotated Surface Code
+    """
+
+    encoder_type = XXZZQubit
+
+    def setUp(self):
+        self.params = {"d": (3, 5)}
+        self.params["T"] = 1
+        self.decoder = RotatedDecoder(self.params)
+
+
+@unittest.skip("Currently failing")
+class TestSquareXZZX(TestBase, unittest.TestCase):
+    """
+    Unit tests for the XZZX Rotated Surface Code
+    """
+
+    encoder_type = XZZXQubit
+
+    def setUp(self):
+        self.params = {"d": (5, 5)}
+        self.params["T"] = 1
+        self.decoder = RotatedDecoder(self.params)
+
+
+@unittest.skip("Currently failing")
+class TestRectangularXZZX(TestBase, unittest.TestCase):
+    """
+    Unit tests for the XZZX Rotated Surface Code
+    """
+
+    encoder_type = XZZXQubit
+
+    def setUp(self):
+        self.params = {"d": (3, 5)}
+        self.params["T"] = 1
+        self.decoder = RotatedDecoder(self.params)
 
 
 # %%
