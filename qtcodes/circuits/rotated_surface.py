@@ -327,7 +327,7 @@ class _RotatedLattice(_TopologicalLattice[TQubit], metaclass=ABCMeta):
             z_stabilizer = str(stabilizer_val) + z_stabilizer
 
         stabilizer_str = (
-            previous_syndrome_string[: self.params["num_syn"][self.SYNZ]] + z_stabilizer
+            previous_syndrome_string[: self.params["num_syn"][self.SYNX]] + z_stabilizer
         )
         # X_{N}X_{N-1}...X_{0}Z_{N}Z_{N-1}...Z_{0}, where
         # X_{N}X_{N-1}...X_{0} is copied from previous syndrome measurement string

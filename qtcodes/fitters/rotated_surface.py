@@ -12,6 +12,7 @@ from qtcodes.fitters.lattice_decoder import (
     TQubitLoc,
 )
 from qtcodes.circuits.base import LatticeError
+from qtcodes.common import constants
 
 
 class RotatedDecoder(LatticeDecoder):
@@ -38,9 +39,12 @@ class RotatedDecoder(LatticeDecoder):
                 "Please provide a code height and width in parameter d: e.g. (3,7)."
             )
 
-        if self.params["d"][0] % 2 != 1:
+        dh = self.params["d"][constants.DH]
+        dw = self.params["d"][constants.DW]
+
+        if dh % 2 != 1:
             raise LatticeError("Surface code height must be odd!")
-        if self.params["d"][1] % 2 != 1:
+        if dw % 2 != 1:
             raise LatticeError("Surface code width must be odd!")
 
     def _make_syndrome_graph(self) -> None:
@@ -187,8 +191,8 @@ class RotatedDecoder(LatticeDecoder):
         i = node[0]
         j = node[1]
 
-        dh = self.params["d"][0]
-        dw = self.params["d"][1]
+        dh = self.params["d"][constants.DH]
+        dw = self.params["d"][constants.DW]
         if syndrome_graph_key == "Z":
             if i > 0 and i < dh - 1 and j < dw and j > -1:
                 return True
@@ -215,8 +219,8 @@ class RotatedDecoder(LatticeDecoder):
         virtual["X"] = []
         virtual["Z"] = []
 
-        dh = self.params["d"][0]
-        dw = self.params["d"][1]
+        dh = self.params["d"][constants.DH]
+        dw = self.params["d"][constants.DW]
 
         for j in range(0, dw, 2):
             # Z virtual nodes

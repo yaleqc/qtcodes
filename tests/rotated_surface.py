@@ -8,7 +8,7 @@ import sys
 import unittest
 from qiskit import execute, Aer
 
-from qtcodes.circuits import constants
+from qtcodes.common import constants
 from qtcodes.circuits.base import TQubit
 
 sys.path.insert(0, "../")

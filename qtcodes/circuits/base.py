@@ -6,6 +6,8 @@ from typing import TypeVar, Tuple, Dict, List, Generic, Optional, Type, Any
 from qiskit import QuantumRegister, QuantumCircuit, ClassicalRegister
 from qiskit.circuit.quantumregister import Qubit
 
+from qtcodes.common.constants import DH, DW
+
 TQubit = TypeVar("TQubit")
 
 
@@ -38,34 +40,22 @@ class _TopologicalLattice(Generic[TQubit], metaclass=ABCMeta):
 
     # Constants
     @property
-    def H(self):
+    def H(self) -> int:
         """Constant for lattice height"""
-        return 0
+        return DH
 
     @property
-    def W(self):
+    def W(self) -> int:
         """Constant for lattice width"""
-        return 1
+        return DW
 
     @property
-    @staticmethod
-    def ROWS():
-        """Constant for lattice height"""
-        return 0
-
-    @property
-    @staticmethod
-    def COLS():
-        """Constant for lattice width"""
-        return 1
-
-    @property
-    def SYNX(self):
+    def SYNX(self) -> int:
         """Constant for X syndromes index"""
         return 0
 
     @property
-    def SYNZ(self):
+    def SYNZ(self) -> int:
         """Constant for Z syndromes index"""
         return 1
 

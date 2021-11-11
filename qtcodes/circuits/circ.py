@@ -5,7 +5,8 @@ from typing import Union, Dict, cast, Optional, Any, Tuple, List, Type
 from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.circuit.classicalregister import ClassicalRegister
 from qtcodes.circuits.base import TopologicalQubit
-from qtcodes.circuits.constants import *
+from qtcodes.common.constants import *
+from qtcodes.circuits.qubit_types import str2qtype
 
 
 class TopologicalRegister:
@@ -48,12 +49,12 @@ class TopologicalRegister:
         # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
         self.circ = QuantumCircuit() if circ is None else circ
 
-        if ctype not in blueprint:
+        if ctype not in str2qtype:
             raise ValueError(
                 "Please choose a Topological Qubit type from: "
-                + str(list(blueprint.keys()))
+                + str(list(str2qtype.keys()))
             )
-        self.tqubit_type = blueprint[ctype]
+        self.tqubit_type = str2qtype[ctype]
         self.tqubits: Dict[str, Dict[int, Type[Any]]] = {}
         for _ in range(num_tqubits):
             self.add_tqubit("data")
