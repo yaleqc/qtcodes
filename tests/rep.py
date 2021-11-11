@@ -1,5 +1,7 @@
 """
 Unittests for the rotated surface codes
+
+python -m unittest tests/rep.py
 """
 import sys
 import unittest
@@ -11,7 +13,7 @@ from qtcodes import RepetitionQubit, RepetitionDecoder
 
 class TestRep(unittest.TestCase):
     """
-    Unittests for the XXZZ (CSS) Rotated Surface Code
+    Test the Repetition Rotated Surface Code
     """
 
     def setUp(self):
@@ -69,7 +71,11 @@ class TestRep(unittest.TestCase):
 
                 # Simulate
                 results = (
-                    execute(qubit.circ, Aer.get_backend("aer_simulator"), shots=1000,)
+                    execute(
+                        qubit.circ,
+                        Aer.get_backend("aer_simulator"),
+                        shots=1000,
+                    )
                     .result()
                     .get_counts()
                 )

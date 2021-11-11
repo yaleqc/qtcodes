@@ -37,7 +37,7 @@ setup(
     author="Shantanu Jha",
     author_email="shantanu.rajesh.jha@gmail.com",
     license="Apache 2.0",
-    packages=find_namespace_packages(exclude=["test*", "tutorials*", "data*"]),
+    packages=find_namespace_packages(exclude=["tests*", "tutorials*", "data*"]),
     install_requires=REQUIREMENTS,
     classifiers=[
         "Environment :: Console",
@@ -60,7 +60,7 @@ setup(
         "Documentation": "https://github.com/yaleqc/qtcodes",
         "Source Code": "https://github.com/yaleqc/qtcodes",
         "Tutorials": "https://github.com/yaleqc/qtcodes/tutorials",
-        "Tests": "https://github.com/yaleqc/qtcodes/test",
+        "Tests": "https://github.com/yaleqc/qtcodes/tests",
     },
     include_package_data=True,
 )

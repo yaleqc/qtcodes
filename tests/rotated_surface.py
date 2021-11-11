@@ -1,23 +1,26 @@
 """
-Unittests for the rotated surface codes
+Unit tests for the rotated surface codes
+
+python -m unittest tests/rotated_surface.py
 """
+from abc import ABCMeta
 import sys
 import unittest
 from qiskit import execute, Aer
 
+from qtcodes.common import constants
+from qtcodes.circuits.base import TQubit
+
 sys.path.insert(0, "../")
-from qtcodes import XXZZQubit, RotatedDecoder
+from qtcodes import XXZZQubit, XZZXQubit, RotatedDecoder
 
 
-class TestXXZZ(unittest.TestCase):
+class TestBase(metaclass=ABCMeta):
     """
-    Unittests for the XXZZ (CSS) Rotated Surface Code
+    Abstract base class for testing
     """
 
-    def setUp(self):
-        self.params = {"d": 5}
-        self.params["T"] = 1
-        self.decoder = RotatedDecoder(self.params)
+    encoder_type: TQubit = None
 
     def get_logical_error_rate(
         self, readout_strings, correct_logical_value, err_prob=None
@@ -61,22 +64,24 @@ class TestXXZZ(unittest.TestCase):
                 on the specified data qubit.
         """
         d = self.params["d"]
-        row = indx // d
-        col = indx % d
+        dh = d[constants.DH]
+        dw = d[constants.DW]
+        row = indx // dw
+        col = indx % dw
         if error_type == "x":
             parity = 2 * (indx % 2) - 1  # Even is -1, Odd is 1
             neighbors = [
                 (0.0, row + parity * 0.5, col - 0.5),
                 (0.0, row - parity * 0.5, col + 0.5),
             ]
-            return [x for x in neighbors if x[1] > 0 and x[1] < d - 1]
+            return [x for x in neighbors if x[1] > 0 and x[1] < dh - 1]
         elif error_type == "z":
             parity = 2 * (indx % 2) - 1  # Even is -1, Odd is 1
             neighbors = [
                 (0.0, row - parity * 0.5, col - 0.5),
                 (0.0, row + parity * 0.5, col + 0.5),
             ]
-            return [x for x in neighbors if x[2] > 0 and x[2] < d - 1]
+            return [x for x in neighbors if x[2] > 0 and x[2] < dw - 1]
         return []
 
     def test_single_errors(self):
@@ -90,11 +95,27 @@ class TestXXZZ(unittest.TestCase):
         2.  Checking if the _string2node readout string to
             syndrome node parser is working correctly.
         """
+        print(
+            "\n"
+            + 9 * "="
+            + "\n"
+            + self.__class__.__name__
+            + ": "
+            + str(self.params)
+            + "\n"
+        )
         # set up circuit
-        for i in range(self.params["d"] ** 2):
+        d = self.params["d"]
+        for i in range(d[constants.DH] * d[constants.DW]):
             for error in ["x", "z"]:
+                if error == "x" and d[constants.DH] == 1:
+                    continue
+
+                if error == "z" and d[constants.DW] == 1:
+                    continue
+
                 # Set up circuit
-                qubit = XXZZQubit(self.params)
+                qubit = self.encoder_type(self.params)
                 qubit.reset_z()
                 qubit.stabilize()
                 qubit.circ.__getattribute__(error)(
@@ -131,6 +152,109 @@ class TestXXZZ(unittest.TestCase):
                     nodes = sum(list(processed_results.values()), [])
                     for x in nodes:
                         self.assertIn(x, expected_neighbors)
+
+
+class TestSquareXXZZ(TestBase, unittest.TestCase):
+    """
+    Unit tests for the XXZZ (CSS) Rotated Surface Code
+    """
+
+    encoder_type = XXZZQubit
+
+    def setUp(self):
+        self.params = {"d": (5, 5)}
+        self.params["T"] = 1
+        self.decoder = RotatedDecoder(self.params)
+
+
+class TestRectangularXXZZ(TestBase, unittest.TestCase):
+    """
+    Unit tests for the XXZZ (CSS) Rotated Surface Code
+    """
+
+    encoder_type = XXZZQubit
+
+    def setUp(self):
+        self.params = {"d": (3, 5)}
+        self.params["T"] = 1
+        self.decoder = RotatedDecoder(self.params)
+
+
+class Test1DXXZZ(TestBase, unittest.TestCase):
+    """
+    Unit tests for the XXZZ (CSS) Rotated Surface Code
+    """
+
+    encoder_type = XXZZQubit
+
+    def setUp(self):
+        self.params = {"d": (5, 1)}
+        self.params["T"] = 1
+        self.decoder = RotatedDecoder(self.params)
+
+
+class TestXZZX(TestBase, metaclass=ABCMeta):
+    encoder_type = XZZXQubit
+
+    def get_neighbors(self, indx: int, error_type: str):
+        """
+        Returns the syndrome node positions given some data qubit index
+        and error_type on that data qubit.
+
+        Args:
+            indx (int): index of data qubit
+            error_type (str): either "x" or "z" error on data qubit
+
+        Returns:
+            neighbors (List[Tuple[float]]):
+                List of neighboring syndrome nodes
+                that would be set off by the specified error
+                on the specified data qubit.
+        """
+        d = self.params["d"]
+        dw = d[constants.DW]
+        row = indx // dw
+        col = indx % dw
+
+        valid_syndrome = lambda x: self.decoder._valid_syndrome(
+            x, "X"
+        ) or self.decoder._valid_syndrome(x, "Z")
+
+        if error_type == "x":
+            neighbors = [
+                (0.0, row - 0.5, col + 0.5),
+                (0.0, row + 0.5, col - 0.5),
+            ]
+            return [x for x in neighbors if valid_syndrome(x[1:])]
+        elif error_type == "z":
+            neighbors = [
+                (0.0, row - 0.5, col - 0.5),
+                (0.0, row + 0.5, col + 0.5),
+            ]
+            return [x for x in neighbors if valid_syndrome(x[1:])]
+        return []
+
+
+class TestSquareXZZX(TestXZZX, unittest.TestCase):
+    """
+    Unit tests for the XZZX Rotated Surface Code
+    """
+
+    def setUp(self):
+        self.params = {"d": (5, 5)}
+        self.params["T"] = 1
+        self.decoder = RotatedDecoder(self.params)
+
+
+class TestRectangularXZZX(TestXZZX, unittest.TestCase):
+    """
+    Unit tests for the XZZX Rotated Surface Code
+    """
+
+    def setUp(self):
+        self.params = {"d": (3, 5)}
+        self.params["T"] = 1
+        self.decoder = RotatedDecoder(self.params)
 
 
 # %%

@@ -82,9 +82,7 @@ class _RepetitionLattice(_TopologicalLattice):
         # calculated params
         self.params["T"] = -1  # -1 until a stabilizer round is added!
         self.params["num_readout"] = -1  # -1 until a logical readout is performed!
-        self.params[
-            "num_lattice_readout"
-        ] = -1  # -1 until a lattice readout is performed!
+        self.params["num_lattice_readout"] = -1  # -1 until a lattice readout is performed!
         self.params["num_data"] = self.params["d"]
         self.params["num_syn"] = self.params["d"] - 1
 
@@ -148,7 +146,9 @@ class _RepetitionLattice(_TopologicalLattice):
                     self.qregisters["data"][idx] if idx is not None else None
                     for idx in idx_list[1:]
                 ]
-                plaquette = [syn,] + plaquette
+                plaquette = [
+                    syn,
+                ] + plaquette
                 qubit_indices.append(plaquette)
                 stabilizers.append(stabilizer_cls)
         return qubit_indices, stabilizers
@@ -316,7 +316,10 @@ class _RepetitionLattice(_TopologicalLattice):
         creg_name = (
             self.name + "_lattice_readout_" + str(self.params["num_lattice_readout"])
         )
-        readout = ClassicalRegister(self.params["num_data"], name=creg_name,)
+        readout = ClassicalRegister(
+            self.params["num_data"],
+            name=creg_name,
+        )
         self.circ.add_register(readout)
         self.cregisters[creg_name] = readout
 
@@ -335,7 +338,10 @@ class _RepetitionLattice(_TopologicalLattice):
         creg_name = (
             self.name + "_lattice_readout_" + str(self.params["num_lattice_readout"])
         )
-        readout = ClassicalRegister(self.params["num_data"], name=creg_name,)
+        readout = ClassicalRegister(
+            self.params["num_data"],
+            name=creg_name,
+        )
 
         self.circ.add_register(readout)
 
@@ -378,7 +384,9 @@ class _RepetitionLattice(_TopologicalLattice):
                 logical_readout,
                 final_stabilizer,
             ) = self.extract_final_stabilizer_and_logical_readout_z(chunks[0])
-            chunks = [final_stabilizer,] + chunks[1:]
+            chunks = [
+                final_stabilizer,
+            ] + chunks[1:]
         else:
             logical_readout = int(chunks[0])
             chunks = chunks[1:]
@@ -423,7 +431,8 @@ class RepetitionQubit(TopologicalQubit):
 
         # measure syndromes
         self.circ.measure(
-            self.lattice.qregisters["mz"], syndrome_readouts,
+            self.lattice.qregisters["mz"],
+            syndrome_readouts,
         )
         self.circ.reset(self.lattice.qregisters["mz"])
         self.circ.barrier()
