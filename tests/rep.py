@@ -6,6 +6,9 @@ python -m unittest tests/rep.py
 import sys
 import unittest
 from qiskit import execute, Aer
+from qtcodes.common import constants
+
+from qtcodes.fitters.rotated_surface import RotatedDecoder
 
 sys.path.insert(0, "../")
 from qtcodes import RepetitionQubit, RepetitionDecoder
@@ -57,7 +60,8 @@ class TestRep(unittest.TestCase):
             and predict the correct logical readout value.
         """
         # set up circuit
-        for i in range(self.params["d"]):
+        d = self.params["d"]
+        for i in range(d[constants.DH] * d[constants.DW]):
             for error in ["x"]:
                 # Set up circuit
                 qubit = RepetitionQubit(self.params)
@@ -71,11 +75,7 @@ class TestRep(unittest.TestCase):
 
                 # Simulate
                 results = (
-                    execute(
-                        qubit.circ,
-                        Aer.get_backend("aer_simulator"),
-                        shots=1000,
-                    )
+                    execute(qubit.circ, Aer.get_backend("aer_simulator"), shots=1000,)
                     .result()
                     .get_counts()
                 )
