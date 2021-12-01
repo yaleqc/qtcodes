@@ -81,7 +81,7 @@ We can, for example, create a tcirc and treg out of two `RepetitionQubit`s.
 
 ```python
 from qtcodes import TopologicalRegister, TopologicalCircuit
-treg = TopologicalRegister(2, ctype="Repetition", params={"d": 3})
+treg = TopologicalRegister(ctypes=[REPETITION, REPETITION], params=[{"d": 3}, {"d": 3}])
 circ = TopologicalCircuit(treg)
 circ.x(treg[0])
 circ.stabilize(treg[1])
