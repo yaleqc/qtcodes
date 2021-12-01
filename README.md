@@ -150,13 +150,13 @@ Explore the benchmarking [tools](https://github.com/yaleqc/qtcodes/tree/master/q
 
 ## Acknowledgements
 
-**Core Devs:** [Shantanu Jha](https://github.com/Phionx), [Jessie Chen](https://github.com/JazzyCH), [Aaron Householder](https://github.com/aaronhouseholder), [Allen Mi](https://github.com/Allenator)
+**Core Devs:** [Shantanu Jha](https://github.com/Phionx), [Amir Ebrahimi](https://github.com/amirebrahimi), [Jeffrey Gong](https://github.com/jeffreyjgong)
 
 Thanks to our mentor [James Wootton](https://github.com/quantumjim) (IBM) for invaluable feedback and support since the inception of this project at the IBM Qiskit - Summer Jam Hackathon 2020.
 
 Thanks also to [Matthew Treinish](https://github.com/mtreinish) from the [retworkx](https://github.com/Qiskit/retworkx) team for helping onboard and support this project.
 
-**Alums:** [Henry Liu](https://github.com/liuhenry), [Shraddha Singh](https://github.com/shraggy), [Will Sun](https://github.com/muirheadmaster), [Andy Ding](https://github.com/ZhenghaoDing)
+**Alums:** [Henry Liu](https://github.com/liuhenry), [Shraddha Singh](https://github.com/shraggy), [Will Sun](https://github.com/muirheadmaster), [Andy Ding](https://github.com/ZhenghaoDing), [Jessie Chen](https://github.com/JazzyCH), [Aaron Householder](https://github.com/aaronhouseholder), [Allen Mi](https://github.com/Allenator)
 
 
 ## References
