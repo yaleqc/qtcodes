@@ -16,64 +16,66 @@ class TopologicalRegister:
     def __init__(
         self,
         circ: QuantumCircuit = None,
-        ctype: List[str] = [XXZZ],
+        ctypes: Optional[List[str]] = None,
         params: Optional[List[Dict[str, int]]] = None,
         name: str = "treg",
     ):
         """
         Args:
-            num_tqubits (int):
-                The number of topological qubits to be stored in the register.
             circ (QuantumCircuit):
                 QuantumCircuit on top of which the topological qubit is built.
                 This is often shared amongst multiple TQubits.
                 If none is provided, then a new QuantumCircuit is initialized and stored.
-            ctype (str):
-                Specifies the type of TopologicalQubit
-                Must be a value of the blueprint dictionary
-            params (Dict[str,int]):
-                 Contains params such as d, where d is the number of
+            ctypes (List[str]):
+                Specifies the types of the TQubits being added
+            params (List[Dict[str,int]]):
+                 Contains a list of params such as d, where d is the number of
                  physical "data" qubits lining a row or column of the lattice.
             name (str):
                 Useful when combining multiple TopologicalQubits together.
                 Prepended to all registers.
 
         """
-        self.params = params if params else [{"d": 3}]*len(ctype)
+        ctypes = [] if ctypes is None else ctypes
+        params = [] if params is None else params
+        self.params = []    
         self.name = name
         self.n = 0
         # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
         self.circ = QuantumCircuit() if circ is None else circ
-        self.tqubit_types = []
         self.tqubits: Dict[str, Dict[int, Type[Any]]] = {}
-        self.add_tqubits("data", ctype, params)
+        self.add_tqubits("data", ctypes, params)
     
     def add_tqubits(
         self, 
         sub_register: str, 
-        ctype: List[str] = [XXZZ], 
+        ctypes: Optional[List[str]] = None, 
         params: Optional[List[Dict[str, int]]] = None
     ) -> None:
-        params = params if params else [{"d": 3}]*len(ctype)
-        if len(params) != len(ctype):
-            raise IndexError(
-                "Please match the number of params with the number of Topological Qubits added: Current number of params - " + str(len(params)) + ", Current number of Topological Qubits: " + str(len(ctype)) 
+        """
+        Allows us to add logical qubits to TopologicalRegister
+        """
+        params = [] if params is None else params
+        ctypes = [] if ctypes is None else ctypes
+        if len(params) != len(ctypes):
+            raise ValueError(
+                "Please match the number of params with the number of Topological Qubits added: Current number of params - " + str(len(params)) + ", Current number of Topological Qubits: " + str(len(ctypes)) 
             )
-        for i in range(len(ctype)):
-            if ctype[i] not in blueprint:
+        for i in range(len(ctypes)):
+            if ctypes[i] not in blueprint:
                 raise ValueError(
                     "Please choose a Topological Qubit type from: "
                     + str(list(blueprint.keys()))
                 )
-        for i in range(len(ctype)):
+        for i in range(len(ctypes)):
             if sub_register not in self.tqubits:
                 self.tqubits[sub_register] = {}
-            self.tqubits[sub_register][self.n] = blueprint[ctype[i]](
-                params=self.params[i], name=self.name + "_" + str(self.n), circ=self.circ
+            self.tqubits[sub_register][self.n] = blueprint[ctypes[i]](
+                params=params[i], name=self.name + "_" + str(self.n), circ=self.circ
             )
-            self.tqubit_types.append(ctype[i])
+            self.params.append(params[i])
             self.n += 1
-            
+
     def __getitem__(self, key: Union[str, int]):
         """
         Allows us to return the nth element of TopologicalRegister as a list.
@@ -220,25 +222,36 @@ class TopologicalCircuit:
         params: Optional[Dict[str, int]] = None
 
     ):
+        """
+        CNOT operator on control and target topological qubit
+
+        Args: 
+            control (Union[TopologicalQubit, int]):
+                Either already a TopologicalQubit or an int index in treg
+            target (Union[TopologicalQubit, int]):
+                Either already a TopologicalQubit or an int index in treg
+            ctype (Optional[str]):
+                Specifies the logical type of ancilla bit
+            params (Optional[Dict[str, int]]):
+                Specifies the parameters of the ancilla bit
+        """
+
         #default ctype and params
-        if ctype:
-            ctype=[ctype]
-        elif isinstance(control, int):
-            ctype=[self.treg.tqubit_types[control]]
+        if ctype is not None or params is not None:
+            if ctype is None or params is None:
+                raise ValueError("Please provide both a ctype and params or neither to use the control qubit ctype and params by default.")
+            ctypes = [ctype]
+            params_list = [params]
         else:
-            if isinstance(control, RepetitionQubit):
-                ctype=[REPETITION]
-            elif isinstance(control, XXZZQubit):
-                ctype=[XXZZ]
-            else:
-                ctype=[XZZX]
-        params = [params] if params else [{"d": 3}]
+            control_q = self._get_index(control)
+            ctypes = [type(control_q)]
+            params_list = [control_q.lattice.params]
 
         # get qubits
         control = self._get_index(control)
         target = self._get_index(target)
         if "ancilla" not in self.treg.tqubits:
-            self.treg.add_tqubits("ancilla", ctype, params)
+            self.treg.add_tqubits("ancilla", ctypes, params_list)
         ancilla = cast(TopologicalQubit, list(self.treg["ancilla"].values())[-1])
 
         # prepare bits
@@ -367,6 +380,7 @@ class TopologicalCircuit:
         Convenience method to draw underlying quantum circuit.
         """
         return self.circ.draw(**kwargs)
+    #def draw_condense(self, **kwargs):
 
     def __str__(self):
         return self.circ.__str__()
