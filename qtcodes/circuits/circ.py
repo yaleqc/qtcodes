@@ -244,7 +244,7 @@ class TopologicalCircuit:
             params_list = [params]
         else:
             control_q = self._get_index(control)
-            ctypes = [type(control_q)]
+            ctypes = [type(control_q).__name__.replace('Qubit', '')]
             params_list = [control_q.lattice.params]
 
         # get qubits
