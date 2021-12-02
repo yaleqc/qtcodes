@@ -44,7 +44,6 @@ class TopologicalRegister:
         self.n = 0
         # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
         self.circ = QuantumCircuit() if circ is None else circ
-<<<<<<< HEAD
         self.tqubits: Dict[str, Dict[int, Type[Any]]] = {}
         self.add_tqubits("data", ctypes, params)
     
@@ -77,30 +76,6 @@ class TopologicalRegister:
             )
             self.params.append(params[i])
             self.n += 1
-=======
-
-        if ctype not in str2qtype:
-            raise ValueError(
-                "Please choose a Topological Qubit type from: "
-                + str(list(str2qtype.keys()))
-            )
-        self.tqubit_type = str2qtype[ctype]
-        self.tqubits: Dict[str, Dict[int, Type[Any]]] = {}
-        for _ in range(num_tqubits):
-            self.add_tqubit("data")
-
-    def add_tqubit(self, sub_register: str) -> None:
-        if sub_register not in self.tqubits:
-            self.tqubits[sub_register] = {}
-        self.tqubits[sub_register][self.n] = self.tqubit_type(
-            params=self.params, name=self.name + "_" + str(self.n), circ=self.circ
-        )
-        self.n += 1
-
-    def add_tqubits(self, sub_register: str, num_tqubits: int) -> None:
-        for _ in range(num_tqubits):
-            self.add_tqubit(sub_register)
->>>>>>> 85f1fed792017892dc3367d157d695b8ba3572ef
 
     def __getitem__(self, key: Union[str, int]):
         """
