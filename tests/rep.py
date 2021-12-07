@@ -6,6 +6,7 @@ python -m unittest tests/rep.py
 import sys
 import unittest
 from qiskit import execute, Aer
+from qtcodes.circuits.base import LatticeError
 from qtcodes.common import constants
 
 from qtcodes.fitters.rotated_surface import RotatedDecoder
@@ -91,6 +92,34 @@ class TestRep(unittest.TestCase):
                     0,
                     f"Decoding did not work for an {error} Error on the {i}th data qubit.",
                 )
+
+
+class TestRepExceptions(unittest.TestCase):
+    """
+    Test the Repetition Rotated Surface Code exceptions if wrong arguments are passed
+    """
+
+    def test_wrong_argument_type(self):
+        self.params = {}
+        self.params["d"] = "3,1"
+        self.params["T"] = 1
+
+        with self.assertRaises(LatticeError):
+            self.qubit = RepetitionQubit(self.params)
+
+        with self.assertRaises(LatticeError):
+            self.decoder = RepetitionDecoder(self.params)
+
+    def test_wrong_width(self):
+        self.params = {}
+        self.params["d"] = (3, 2)
+        self.params["T"] = 1
+
+        with self.assertRaises(LatticeError):
+            self.qubit = RepetitionQubit(self.params)
+
+        with self.assertRaises(LatticeError):
+            self.decoder = RepetitionDecoder(self.params)
 
 
 # %%

@@ -435,6 +435,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
             dpi (int): dpi used for Figure. Defaults to dynamically sized value based on node count.
             node_size (int): size of node used for `mpl_draw`. Defaults to dynamically sized value based on node count.
             font_size (float): font size used for `mpl_draw`. Defaults to dynamically sized value based on node count.
+            show (bool): whether to display the plot automatically. Defaults to True.
 
         Returns:
             (figure, axes): A matplotlib Figure and Axes object

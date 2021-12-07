@@ -3,9 +3,12 @@
 Graph decoder for rep code
 """
 from numbers import Number
+from typing import Tuple
 
 from qtcodes.circuits.repetition import RepetitionQubit
 from qtcodes.fitters.rotated_surface import RotatedDecoder
+from qtcodes.circuits.base import LatticeError
+from qtcodes.common import constants
 
 
 class RepetitionDecoder(RotatedDecoder):
@@ -24,7 +27,14 @@ class RepetitionDecoder(RotatedDecoder):
         elif isinstance(self.params["d"], Number):
             d = int(self.params["d"])
             self.params["d"] = (d, 1)
+        elif isinstance(self.params["d"], Tuple):
+            if self.params["d"][constants.DW] != 1:
+                raise LatticeError(
+                    "Repetition qubits can only have width 1 in parameter d: e.g. (3,1)."
+                )
         else:
-            self.params["d"] = (self.params["d"][0], 1)
+            raise LatticeError(
+                "Please provide a valid height in parameter d: e.g. 3 or (3,1)."
+            )
 
         super()._params_validation()
