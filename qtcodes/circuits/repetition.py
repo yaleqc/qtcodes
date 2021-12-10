@@ -24,6 +24,11 @@ class RepetitionQubit(XXZZQubit):
         name: str = "tq",
         circ: Optional[QuantumCircuit] = None,
     ) -> None:
+        params = self._validate_params(params)
+        super().__init__(params, name, circ)
+
+    @staticmethod
+    def _validate_params(params: Optional[Dict[str, int]]) -> Dict[str, int]:
         params = params if params else {}
 
         if "phase-flip-protected" not in params:
@@ -44,20 +49,21 @@ class RepetitionQubit(XXZZQubit):
         elif isinstance(params["d"], Tuple):
             if not params["phase-flip-protected"] and params["d"][constants.DW] != 1:
                 raise LatticeError(
-                    "Repetition qubits can only have width 1 in parameter d: e.g. (3,1)."
+                    "Bit-flip protected repetition qubits can only have width 1 in parameter d: e.g. (3,1). If you "
+                    + "intend to create a phase-flip protected repetition qubit (e.g. with d=(1,3)), then please set the "
+                    + "phase-flip-protected flag parameter to True."
                 )
             if params["phase-flip-protected"] and params["d"][constants.DH] != 1:
                 raise LatticeError(
-                    "Phase-flip protected repetition qubits can only have height 1 in parameter d: e.g. (1,3)."
+                    "Phase-flip protected repetition qubits can only have height 1 in parameter d: e.g. (1,3). If you "
+                    + "intend to create a bit-flip protected repetition qubit (e.g. with d=(1,3)), then please set the "
+                    + "phase-flip-protected flag parameter to False."
                 )
         else:
-            if params["phase-flip-protected"]:
-                raise LatticeError(
-                    "Please provide a valid width in parameter d: e.g. 3 or (1,3)."
-                )
-            else:
-                raise LatticeError(
-                    "Please provide a valid height in parameter d: e.g. 3 or (3,1)."
-                )
+            raise LatticeError(
+                "Please specify either an integer value (e.g. 3) or tuple (e.g. (3, 1)) for parameter d. If you intend "
+                + "to create a phase-flip protected repetition qubit (e.g. with d=(1,3)), then please set the "
+                + "phase-flip-protected flag parameter to True."
+            )
 
-        super().__init__(params, name, circ)
+        return params
