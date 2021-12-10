@@ -16,60 +16,84 @@ class TopologicalRegister:
 
     def __init__(
         self,
-        num_tqubits: int,
         circ: QuantumCircuit = None,
-        ctype: str = XXZZ,
-        params: Optional[Dict[str, int]] = None,
+        ctypes: Optional[List[str]] = None,
+        params: Optional[List[Dict[str, int]]] = None,
         name: str = "treg",
     ):
         """
         Args:
-            num_tqubits (int):
-                The number of topological qubits to be stored in the register.
             circ (QuantumCircuit):
                 QuantumCircuit on top of which the topological qubit is built.
                 This is often shared amongst multiple TQubits.
                 If none is provided, then a new QuantumCircuit is initialized and stored.
-            type (str):
-                Specifies the type of TopologicalQubit
-                Must be a value of the blueprint dictionary
-            params (Dict[str,int]):
-                 Contains params such as d, where d is the number of
+            ctypes (List[str]):
+                Specifies the types of the TQubits being added
+            params (List[Dict[str,int]]):
+                 Contains a list of params such as d, where d is the number of
                  physical "data" qubits lining a row or column of the lattice.
             name (str):
                 Useful when combining multiple TopologicalQubits together.
                 Prepended to all registers.
 
         """
-        self.params = params if params else {"d": 3}
+        ctypes = [] if ctypes is None else ctypes
+        params = [] if params is None else params
+        self.params = []    
         self.name = name
-
         self.n = 0
-
         # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
         self.circ = QuantumCircuit() if circ is None else circ
-
-        if ctype not in str2qtype:
-            raise ValueError(
-                "Please choose a Topological Qubit type from: "
-                + str(list(str2qtype.keys()))
-            )
-        self.tqubit_type = str2qtype[ctype]
         self.tqubits: Dict[str, Dict[int, Type[Any]]] = {}
-        for _ in range(num_tqubits):
-            self.add_tqubit("data")
+        self.add_tqubits("data", ctypes, params)
+    
+    def add_tqubits(
+        self, 
+        sub_register: str, 
+        ctypes: Optional[List[str]] = None, 
+        params: Optional[List[Dict[str, int]]] = None
+    ) -> None:
+        """
+        Args: 
+            sub_register (str):
+                Specifies the subregister
+            ctypes: (List[str]):
+                Specifies the types of the TQubits being added
+            params: (List[Dict[str, int]]):
+                Contains a list of params for each TQubit being added
+        """
+        params = [] if params is None else params
+        ctypes = [] if ctypes is None else ctypes
+        if len(params) != len(ctypes):
+            raise ValueError(
+                "Please match the number of params with the number of Topological Qubits added: Current number of params - " + str(len(params)) + ", Current number of Topological Qubits: " + str(len(ctypes)) 
+            )
+        for i in range(len(ctypes)):
+            if ctypes[i] not in str2qtype:
+                raise ValueError(
+                    "Please choose a Topological Qubit type from: "
+                    + str(list(str2qtype.keys()))
+                )
+        for i in range(len(ctypes)):
+            self.add_tqubit(self, sub_register, ctypes[i], params[i]);
 
-    def add_tqubit(self, sub_register: str) -> None:
+    def add_tqubit(self, sub_register: str, ctype: str, params: Dict[str, int]):
+        """
+        Args: 
+            sub_register (str):
+                Specifies the subregister
+            ctype (str):
+                Specifies the type of TQubit being added
+            params (Dict[str, int]):
+                Specifies the params for the Tqubit being added
+        """
         if sub_register not in self.tqubits:
             self.tqubits[sub_register] = {}
-        self.tqubits[sub_register][self.n] = self.tqubit_type(
-            params=self.params, name=self.name + "_" + str(self.n), circ=self.circ
+        self.tqubits[sub_register][self.n] = str2qtype[ctype](
+            params, name=self.name + "_" + str(self.n), circ=self.circ
         )
-        self.n += 1
-
-    def add_tqubits(self, sub_register: str, num_tqubits: int) -> None:
-        for _ in range(num_tqubits):
-            self.add_tqubit(sub_register)
+        self.params.append(params)
+        self.n += 1      
 
     def __getitem__(self, key: Union[str, int]):
         """
@@ -213,13 +237,37 @@ class TopologicalCircuit:
         self,
         control: Union[TopologicalQubit, int],
         target: Union[TopologicalQubit, int],
+        ancilla_ctype: Optional[str] = None,
+        ancilla_params: Optional[Dict[str, int]] = None
+
     ):
+        """
+        CNOT operator on control and target topological qubit
+
+        Args: 
+            control (Union[TopologicalQubit, int]):
+                Either already a TopologicalQubit or an int index in treg
+            target (Union[TopologicalQubit, int]):
+                Either already a TopologicalQubit or an int index in treg
+            ancilla_ctype (Optional[str]):
+                Specifies the logical type of ancilla bit
+            ancilla_params (Optional[Dict[str, int]]):
+                Specifies the parameters of the ancilla bit
+        """
+
+        #default ctype and params
+        if (ancilla_ctype is not None) ^ (ancilla_params is not None):
+            raise ValueError("Please provide both a ctype and params or neither to use the control qubit ctype and params by default.")
+        elif ancilla_ctype is None:
+            control_q = self._get_index(control)
+            ancilla_ctype = type(control_q).__name__.replace('Qubit', '')
+            ancilla_params = control_q.lattice.params
 
         # get qubits
         control = self._get_index(control)
         target = self._get_index(target)
         if "ancilla" not in self.treg.tqubits:
-            self.treg.add_tqubit("ancilla")
+            self.treg.add_tqubit("ancilla", ancilla_ctype, ancilla_params)
         ancilla = cast(TopologicalQubit, list(self.treg["ancilla"].values())[-1])
 
         # prepare bits
