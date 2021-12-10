@@ -69,13 +69,16 @@ class TopologicalRegister:
                     + str(list(str2qtype.keys()))
                 )
         for i in range(len(ctypes)):
-            if sub_register not in self.tqubits:
-                self.tqubits[sub_register] = {}
-            self.tqubits[sub_register][self.n] = str2qtype[ctypes[i]](
-                params=params[i], name=self.name + "_" + str(self.n), circ=self.circ
-            )
-            self.params.append(params[i])
-            self.n += 1
+            self.add_tqubit(self, sub_register, ctypes[i], params[i]);
+
+    def add_tqubit(self, sub_register: str, ctype: str, params: Dict[str, int]):
+        if sub_register not in self.tqubits:
+            self.tqubits[sub_register] = {}
+        self.tqubits[sub_register][self.n] = str2qtype[ctype](
+            params, name=self.name + "_" + str(self.n), circ=self.circ
+        )
+        self.params.append(params)
+        self.n += 1      
 
     def __getitem__(self, key: Union[str, int]):
         """
@@ -219,8 +222,8 @@ class TopologicalCircuit:
         self,
         control: Union[TopologicalQubit, int],
         target: Union[TopologicalQubit, int],
-        ctype: Optional[str] = None,
-        params: Optional[Dict[str, int]] = None
+        ancilla_ctype: Optional[str] = None,
+        ancilla_params: Optional[Dict[str, int]] = None
 
     ):
         """
@@ -231,28 +234,25 @@ class TopologicalCircuit:
                 Either already a TopologicalQubit or an int index in treg
             target (Union[TopologicalQubit, int]):
                 Either already a TopologicalQubit or an int index in treg
-            ctype (Optional[str]):
+            ancilla_ctype (Optional[str]):
                 Specifies the logical type of ancilla bit
-            params (Optional[Dict[str, int]]):
+            ancilla_params (Optional[Dict[str, int]]):
                 Specifies the parameters of the ancilla bit
         """
 
         #default ctype and params
-        if ctype is not None or params is not None:
-            if ctype is None or params is None:
-                raise ValueError("Please provide both a ctype and params or neither to use the control qubit ctype and params by default.")
-            ctypes = [ctype]
-            params_list = [params]
-        else:
+        if (ancilla_ctype is not None) ^ (ancilla_params is not None):
+            raise ValueError("Please provide both a ctype and params or neither to use the control qubit ctype and params by default.")
+        elif ancilla_ctype is None:
             control_q = self._get_index(control)
-            ctypes = [type(control_q).__name__.replace('Qubit', '')]
-            params_list = [control_q.lattice.params]
+            ancilla_ctype = type(control_q).__name__.replace('Qubit', '')
+            ancilla_params = control_q.lattice.params
 
         # get qubits
         control = self._get_index(control)
         target = self._get_index(target)
         if "ancilla" not in self.treg.tqubits:
-            self.treg.add_tqubits("ancilla", ctypes, params_list)
+            self.treg.add_tqubit("ancilla", ancilla_ctype, ancilla_params)
         ancilla = cast(TopologicalQubit, list(self.treg["ancilla"].values())[-1])
 
         # prepare bits
@@ -381,7 +381,6 @@ class TopologicalCircuit:
         Convenience method to draw underlying quantum circuit.
         """
         return self.circ.draw(**kwargs)
-    #def draw_condense(self, **kwargs):
 
     def __str__(self):
         return self.circ.__str__()
