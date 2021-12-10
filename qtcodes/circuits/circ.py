@@ -54,7 +54,13 @@ class TopologicalRegister:
         params: Optional[List[Dict[str, int]]] = None
     ) -> None:
         """
-        Allows us to add logical qubits to TopologicalRegister
+        Args: 
+            sub_register (str):
+                Specifies the subregister
+            ctypes: (List[str]):
+                Specifies the types of the TQubits being added
+            params: (List[Dict[str, int]]):
+                Contains a list of params for each TQubit being added
         """
         params = [] if params is None else params
         ctypes = [] if ctypes is None else ctypes
@@ -72,6 +78,15 @@ class TopologicalRegister:
             self.add_tqubit(self, sub_register, ctypes[i], params[i]);
 
     def add_tqubit(self, sub_register: str, ctype: str, params: Dict[str, int]):
+        """
+        Args: 
+            sub_register (str):
+                Specifies the subregister
+            ctype (str):
+                Specifies the type of TQubit being added
+            params (Dict[str, int]):
+                Specifies the params for the Tqubit being added
+        """
         if sub_register not in self.tqubits:
             self.tqubits[sub_register] = {}
         self.tqubits[sub_register][self.n] = str2qtype[ctype](
