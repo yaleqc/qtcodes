@@ -425,6 +425,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
         dpi: Optional[int] = None,
         node_size: Optional[int] = None,
         font_size: Optional[float] = None,
+        show: Optional[bool] = True,
     ) -> Tuple[figure.Figure, axes.Axes]:
         """
         Plots 2D graphs in IPython/Jupyter.
@@ -434,6 +435,7 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
             dpi (int): dpi used for Figure. Defaults to dynamically sized value based on node count.
             node_size (int): size of node used for `mpl_draw`. Defaults to dynamically sized value based on node count.
             font_size (float): font size used for `mpl_draw`. Defaults to dynamically sized value based on node count.
+            show (bool): whether to display the plot automatically. Defaults to True.
 
         Returns:
             (figure, axes): A matplotlib Figure and Axes object
@@ -467,6 +469,8 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
             alpha=0.8,
         )
         fig.tight_layout()
+        if not show:
+            plt.close(fig)
         return (fig, ax)
 
     def draw3D(self, graph: rx.PyGraph, angle: Optional[List[float]] = None) -> None:
@@ -494,7 +498,8 @@ class LatticeDecoder(TopologicalDecoder[TQubit], metaclass=ABCMeta):
         # 3D network plot
         with plt.style.context(("ggplot")):
             fig = plt.figure(figsize=(20, 14))
-            ax = Axes3D(fig)
+            ax = Axes3D(fig, auto_add_to_figure=False)
+            fig.add_axes(ax)
 
             # Loop on the nodes and look up in pos dictionary to extract the x,y,z coordinates of each node
             for node in graph.nodes():

@@ -56,7 +56,7 @@ class RotatedDecoder(LatticeDecoder):
         Returns:
         """
         start_nodes = {"Z": (0.5, 0.5), "X": (0.5, 1.5)}
-        for syndrome_graph_key in ["X", "Z"]:
+        for syndrome_graph_key in self.syndrome_graph_keys:
             # subgraphs for each time step
             for t in range(0, self.params["T"]):
                 start_node = start_nodes[syndrome_graph_key]
