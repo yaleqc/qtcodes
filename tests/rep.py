@@ -54,7 +54,7 @@ class TestRep(unittest.TestCase):
     def test_single_errors_rep(self):
         """
         Setting up a |+z> state, stabilizing twice, and reading out logical Z.
-        Inserting X gates on each data qubit between tbe two stabilizer measurement rounds.
+        Inserting X gates on each data qubit between the two stabilizer measurement rounds.
 
         Then, testing:
         1.  The MWPM decoder is able to correct these single qubit errors
@@ -122,7 +122,7 @@ class TestPhaseFlipProtectedRep(unittest.TestCase):
         for readout, count in readout_strings.items():
             total_count += count
             predicted_logical_value = self.decoder.correct_readout(
-                readout, "Z", err_prob=err_prob
+                readout, "X", err_prob=err_prob
             )
             if predicted_logical_value != correct_logical_value:
                 total_errors += count
@@ -131,8 +131,8 @@ class TestPhaseFlipProtectedRep(unittest.TestCase):
 
     def test_single_errors_rep(self):
         """
-        Setting up a |+z> state, stabilizing twice, and reading out logical Z.
-        Inserting Z gates on each data qubit between tbe two stabilizer measurement rounds.
+        Setting up a |+x> state, stabilizing twice, and reading out logical X.
+        Inserting Z gates on each data qubit between the two stabilizer measurement rounds.
 
         Then, testing:
         1.  The MWPM decoder is able to correct these single qubit errors
@@ -144,13 +144,13 @@ class TestPhaseFlipProtectedRep(unittest.TestCase):
             for error in ["z"]:
                 # Set up circuit
                 qubit = RepetitionQubit(self.params)
-                qubit.reset_z()
+                qubit.reset_x()
                 qubit.stabilize()
                 qubit.circ.__getattribute__(error)(
                     qubit.lattice.qregisters["data"][i]
                 )  # error
                 qubit.stabilize()
-                qubit.readout_z()
+                qubit.readout_x()
 
                 # Simulate
                 results = (
