@@ -39,22 +39,22 @@ class TopologicalRegister:
         """
         ctypes = [] if ctypes is None else ctypes
         params = [] if params is None else params
-        self.params = []    
+        self.params = []
         self.name = name
         self.n = 0
         # == None is necessary, as "not circ" is true for circ=QuantumCircuit()
         self.circ = QuantumCircuit() if circ is None else circ
         self.tqubits: Dict[str, Dict[int, Type[Any]]] = {}
         self.add_tqubits("data", ctypes, params)
-    
+
     def add_tqubits(
-        self, 
-        sub_register: str, 
-        ctypes: Optional[List[str]] = None, 
-        params: Optional[List[Dict[str, int]]] = None
+        self,
+        sub_register: str,
+        ctypes: Optional[List[str]] = None,
+        params: Optional[List[Dict[str, int]]] = None,
     ) -> None:
         """
-        Args: 
+        Args:
             sub_register (str):
                 Specifies the subregister
             ctypes: (List[str]):
@@ -66,7 +66,10 @@ class TopologicalRegister:
         ctypes = [] if ctypes is None else ctypes
         if len(params) != len(ctypes):
             raise ValueError(
-                "Please match the number of params with the number of Topological Qubits added: Current number of params - " + str(len(params)) + ", Current number of Topological Qubits: " + str(len(ctypes)) 
+                "Please match the number of params with the number of Topological Qubits added: Current number of params - "
+                + str(len(params))
+                + ", Current number of Topological Qubits: "
+                + str(len(ctypes))
             )
         for i in range(len(ctypes)):
             if ctypes[i] not in str2qtype:
@@ -75,11 +78,11 @@ class TopologicalRegister:
                     + str(list(str2qtype.keys()))
                 )
         for i in range(len(ctypes)):
-            self.add_tqubit(self, sub_register, ctypes[i], params[i]);
+            self.add_tqubit(sub_register, ctypes[i], params[i])
 
     def add_tqubit(self, sub_register: str, ctype: str, params: Dict[str, int]):
         """
-        Args: 
+        Args:
             sub_register (str):
                 Specifies the subregister
             ctype (str):
@@ -93,7 +96,7 @@ class TopologicalRegister:
             params, name=self.name + "_" + str(self.n), circ=self.circ
         )
         self.params.append(params)
-        self.n += 1      
+        self.n += 1
 
     def __getitem__(self, key: Union[str, int]):
         """
@@ -238,13 +241,12 @@ class TopologicalCircuit:
         control: Union[TopologicalQubit, int],
         target: Union[TopologicalQubit, int],
         ancilla_ctype: Optional[str] = None,
-        ancilla_params: Optional[Dict[str, int]] = None
-
+        ancilla_params: Optional[Dict[str, int]] = None,
     ):
         """
         CNOT operator on control and target topological qubit
 
-        Args: 
+        Args:
             control (Union[TopologicalQubit, int]):
                 Either already a TopologicalQubit or an int index in treg
             target (Union[TopologicalQubit, int]):
@@ -255,12 +257,14 @@ class TopologicalCircuit:
                 Specifies the parameters of the ancilla bit
         """
 
-        #default ctype and params
+        # default ctype and params
         if (ancilla_ctype is not None) ^ (ancilla_params is not None):
-            raise ValueError("Please provide both a ctype and params or neither to use the control qubit ctype and params by default.")
+            raise ValueError(
+                "Please provide both a ctype and params or neither to use the control qubit ctype and params by default."
+            )
         elif ancilla_ctype is None:
             control_q = self._get_index(control)
-            ancilla_ctype = type(control_q).__name__.replace('Qubit', '')
+            ancilla_ctype = type(control_q).__name__.replace("Qubit", "")
             ancilla_params = control_q.lattice.params
 
         # get qubits

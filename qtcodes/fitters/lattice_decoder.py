@@ -6,7 +6,6 @@ import math
 from abc import abstractmethod, ABCMeta
 from itertools import combinations
 from typing import Tuple, List, Dict, Optional, Union, cast
-from IPython.display import Image, display
 
 import retworkx as rx
 from retworkx.visualization import mpl_draw

@@ -3,17 +3,13 @@ Unittests for the rotated surface codes
 
 python -m unittest tests/rep.py
 """
-import sys
+
 import unittest
-from qiskit import execute, Aer
 from qtcodes.circuits.base import LatticeError
 from qtcodes.circuits.xxzz import XXZZQubit
-from qtcodes.common import constants
 
-from qtcodes.fitters.rotated_surface import RotatedDecoder
 from tests.base import TestBase
 
-sys.path.insert(0, "../")
 from qtcodes import RepetitionQubit, RepetitionDecoder
 
 
