@@ -2,11 +2,9 @@
 """
 benchmarking class for qtcodes
 """
-import sys
-import os
+
 import glob
 
-sys.path.insert(0, ".." + os.sep)
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -106,6 +104,7 @@ class TopologicalBenchmark:
                     self.circ,
                     Aer.get_backend("aer_simulator"),
                     noise_model=self.noise_model_func(physical_error_rate),
+                    optimization_level=0,
                     shots=shots,
                 )
                 .result()
@@ -183,6 +182,7 @@ class TopologicalBenchmark:
                 self.circ,
                 Aer.get_backend("aer_simulator"),
                 noise_model=self.noise_model_func(physical_error_rate),
+                optimization_level=0,
                 shots=shots,
             )
             .result()
@@ -226,7 +226,7 @@ class TopologicalAnalysis:
 
     def load_data(self):
         data = np.load(self.filename)
-        self.params["d"] = int(data["d"])
+        self.params["d"] = (int(data["d"][0]), (data["d"][1]))
         self.params["T"] = int(data["T"])
         self.data["physical_error_rates"] = data["physical_error_rates"]  # TODO
         self.data["logical_error_rates"] = data["logical_error_rates"]  # TODO
@@ -260,8 +260,10 @@ class TopologicalBatchAnalysis:
 
         # sort analysis by increasing "d"
         sorted_indxs = np.argsort(
-            np.array([analysis.params["d"] for analysis in self.analyses])
+            np.array([analysis.params["d"][0] for analysis in self.analyses])
         )
+        # TODO: generalize for rectangular lattices
+
         sorted_analyses = [self.analyses[i] for i in sorted_indxs]
         self.analyses = sorted_analyses
 

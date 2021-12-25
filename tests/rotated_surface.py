@@ -4,13 +4,12 @@ Unit tests for the rotated surface codes
 python -m unittest tests/rotated_surface.py
 """
 from abc import ABCMeta
-import sys
 import unittest
 
 from qtcodes.common import constants
 from tests.base import TestBase
 
-sys.path.insert(0, "../")
+
 from qtcodes import XXZZQubit, XZZXQubit, RotatedDecoder
 
 

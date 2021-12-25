@@ -2,13 +2,9 @@
 """
 Graph decoder for rep code
 """
-from numbers import Number
-from typing import Tuple
 
 from qtcodes.circuits.repetition import RepetitionQubit
 from qtcodes.fitters.rotated_surface import RotatedDecoder
-from qtcodes.circuits.base import LatticeError
-from qtcodes.common import constants
 
 
 class RepetitionDecoder(RotatedDecoder):

@@ -2,13 +2,12 @@
 Simulation script to demonstrate XZZX Threshold
 """
 
-import sys
-import os
+
 from tqdm import tqdm
 from qiskit.providers.aer.noise.errors import pauli_error
 from qiskit.providers.aer.noise import NoiseModel
 
-sys.path.insert(0, ".." + os.sep + ".." + os.sep + ".." + os.sep)
+
 from qtcodes import TopologicalBenchmark
 from qtcodes import RotatedDecoder, XZZXQubit
 

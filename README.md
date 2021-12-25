@@ -7,15 +7,21 @@
 
 ## Installation
 
+*Conda users, please make sure to `conda install pip` before running any pip installation if you want to install `qtcodes` into your conda environment.*
+
 `qtcodes` is published on PyPI. So, to install, simply run:
 
-```
+```bash
 pip install qtcodes
 ```
+If you also want to download the dependencies needed to run optional tutorials, please use `pip install qtcodes[dev]` or `pip install 'qtcodes[dev]'` (for `zsh` users).
 
-This will install a precompiled version of `qtcodes` into your python environment.
 
+To check if the installation was successful, run:
 
+```python
+>>> import qtcodes as qtc
+```
 
 ## Building from source
 
@@ -27,11 +33,18 @@ cd qtcodes
 pip install --upgrade .
 ```
 
-To check if the installation was successful, run:
+If you also want to download the dependencies needed to run optional tutorials, please use `pip install --upgrade .[dev]` or `pip install --upgrade '.[dev]'` (for `zsh` users).
 
-```python
->>> import qtcodes as qtc
+
+#### Installation for Devs
+
+If you intend to contribute to this project, please install `qtcodes` in editable mode as follows:
+```bash
+git clone https://github.com/yaleqc/qtcodes.git
+cd qtcodes
+pip install -e .[dev]
 ```
+Please use `pip install -e '.[dev]'` if you are a `zsh` user.
 
 ---
 

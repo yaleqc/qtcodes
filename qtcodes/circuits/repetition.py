@@ -2,7 +2,7 @@
 Repetition Code Encoder Classes
 """
 from numbers import Number
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, Tuple, Optional
 from qiskit import QuantumCircuit
 
 from qtcodes.circuits.xxzz import XXZZQubit

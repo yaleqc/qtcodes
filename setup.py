@@ -15,6 +15,10 @@ REQUIREMENTS = [
     "IPython",
 ]
 
+EXTRA_REQUIREMENTS = {
+    "dev": ["jupyterlab>=3.1.0", "mypy", "pylint", "black"],
+}
+
 # Read long description from README.
 README_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "README.md")
 with open(README_PATH) as readme_file:
@@ -39,6 +43,7 @@ setup(
     license="Apache 2.0",
     packages=find_namespace_packages(exclude=["tests*", "tutorials*", "data*"]),
     install_requires=REQUIREMENTS,
+    extras_require=EXTRA_REQUIREMENTS,
     classifiers=[
         "Environment :: Console",
         "License :: OSI Approved :: Apache Software License",
@@ -59,8 +64,8 @@ setup(
         "Bug Tracker": "https://github.com/yaleqc/qtcodes/issues",
         "Documentation": "https://github.com/yaleqc/qtcodes",
         "Source Code": "https://github.com/yaleqc/qtcodes",
-        "Tutorials": "https://github.com/yaleqc/qtcodes/tutorials",
-        "Tests": "https://github.com/yaleqc/qtcodes/tests",
+        "Tutorials": "https://github.com/yaleqc/qtcodes/tree/master/tutorials",
+        "Tests": "https://github.com/yaleqc/qtcodes/tree/master/tests",
     },
     include_package_data=True,
 )
