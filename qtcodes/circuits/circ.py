@@ -124,7 +124,13 @@ class TopologicalCircuit:
         self.qreg: Dict[str, QuantumRegister] = {}
         self.creg: Dict[str, ClassicalRegister] = {}
         self.circ = treg.circ
-
+        
+    def __getitem__(self, key: Union[str, int]):
+        """
+        Allows us to return the nth element of TopologicalRegister as a list.
+        """
+        return self.treg[key]
+        
     def add_creg(self, size=None, name=None, bits=None, override: bool = False) -> None:
         if name in self.creg and not override:
             return
