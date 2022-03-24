@@ -1,0 +1,2747 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.2.7">
+    
+    
+      
+        <title>circ - qtcodes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.9d5733d3.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.e6a45f82.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#qtcodes.circuits.circ" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="qtcodes" class="md-header__button md-logo" aria-label="qtcodes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            qtcodes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              circ
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="qtcodes" class="md-nav__button md-logo" aria-label="qtcodes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    qtcodes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../setup/" class="md-nav__link">
+        Setup
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Code Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Code Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Code Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" checked>
+      
+      
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../">qtcodes</a>
+          
+            <label for="__nav_3_1">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="qtcodes" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          qtcodes
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_1" type="checkbox" id="__nav_3_1_1" checked>
+      
+      
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../">circuits</a>
+          
+            <label for="__nav_3_1_1">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="circuits" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_1">
+          <span class="md-nav__icon md-icon"></span>
+          circuits
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../base/" class="md-nav__link">
+        base
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          circ
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        circ
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ" class="md-nav__link">
+    qtcodes.circuits.circ
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit" class="md-nav__link">
+    TopologicalCircuit
+  </a>
+  
+    <nav class="md-nav" aria-label="TopologicalCircuit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.cx" class="md-nav__link">
+    cx()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.draw" class="md-nav__link">
+    draw()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.id" class="md-nav__link">
+    id()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.id_data" class="md-nav__link">
+    id_data()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.measure_lattice_x" class="md-nav__link">
+    measure_lattice_x()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.measure_lattice_z" class="md-nav__link">
+    measure_lattice_z()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.measure_x" class="md-nav__link">
+    measure_x()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.measure_z" class="md-nav__link">
+    measure_z()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.parse_readout" class="md-nav__link">
+    parse_readout()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.reset_x" class="md-nav__link">
+    reset_x()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.reset_z" class="md-nav__link">
+    reset_z()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.stabilize" class="md-nav__link">
+    stabilize()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.x" class="md-nav__link">
+    x()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.z" class="md-nav__link">
+    z()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalRegister" class="md-nav__link">
+    TopologicalRegister
+  </a>
+  
+    <nav class="md-nav" aria-label="TopologicalRegister">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalRegister.__getitem__" class="md-nav__link">
+    __getitem__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalRegister.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalRegister.add_tqubit" class="md-nav__link">
+    add_tqubit()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalRegister.add_tqubits" class="md-nav__link">
+    add_tqubits()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../qubit_types/" class="md-nav__link">
+        qubit_types
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../repetition/" class="md-nav__link">
+        repetition
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rotated_surface/" class="md-nav__link">
+        rotated_surface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xxzz/" class="md-nav__link">
+        xxzz
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xzzx/" class="md-nav__link">
+        xzzx
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_2" type="checkbox" id="__nav_3_1_2" >
+      
+      
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../common/">common</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="common" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_2">
+          <span class="md-nav__icon md-icon"></span>
+          common
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../common/constants/" class="md-nav__link">
+        constants
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_3" type="checkbox" id="__nav_3_1_3" >
+      
+      
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../fitters/">fitters</a>
+          
+            <label for="__nav_3_1_3">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="fitters" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_3">
+          <span class="md-nav__icon md-icon"></span>
+          fitters
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fitters/base/" class="md-nav__link">
+        base
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fitters/lattice_decoder/" class="md-nav__link">
+        lattice_decoder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fitters/repetition/" class="md-nav__link">
+        repetition
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fitters/rotated_surface/" class="md-nav__link">
+        rotated_surface
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_4" type="checkbox" id="__nav_3_1_4" >
+      
+      
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../tools/">tools</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="tools" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_4">
+          <span class="md-nav__icon md-icon"></span>
+          tools
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/benchmarking/" class="md-nav__link">
+        benchmarking
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ" class="md-nav__link">
+    qtcodes.circuits.circ
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit" class="md-nav__link">
+    TopologicalCircuit
+  </a>
+  
+    <nav class="md-nav" aria-label="TopologicalCircuit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.cx" class="md-nav__link">
+    cx()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.draw" class="md-nav__link">
+    draw()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.id" class="md-nav__link">
+    id()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.id_data" class="md-nav__link">
+    id_data()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.measure_lattice_x" class="md-nav__link">
+    measure_lattice_x()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.measure_lattice_z" class="md-nav__link">
+    measure_lattice_z()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.measure_x" class="md-nav__link">
+    measure_x()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.measure_z" class="md-nav__link">
+    measure_z()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.parse_readout" class="md-nav__link">
+    parse_readout()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.reset_x" class="md-nav__link">
+    reset_x()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.reset_z" class="md-nav__link">
+    reset_z()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.stabilize" class="md-nav__link">
+    stabilize()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.x" class="md-nav__link">
+    x()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalCircuit.z" class="md-nav__link">
+    z()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalRegister" class="md-nav__link">
+    TopologicalRegister
+  </a>
+  
+    <nav class="md-nav" aria-label="TopologicalRegister">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalRegister.__getitem__" class="md-nav__link">
+    __getitem__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalRegister.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalRegister.add_tqubit" class="md-nav__link">
+    add_tqubit()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.circuits.circ.TopologicalRegister.add_tqubits" class="md-nav__link">
+    add_tqubits()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+  <h1>circ</h1>
+
+<div class="doc doc-object doc-module">
+
+<a id="qtcodes.circuits.circ"></a>
+    <div class="doc doc-contents first">
+
+      <p>Topological Circuit and Register</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h2 id="qtcodes.circuits.circ.TopologicalCircuit" class="doc doc-heading">
+        <code>
+TopologicalCircuit        </code>
+
+
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p>TopologicalCircuit is like a QuantumCircuit built on Topological Qubits.
+Shares the same QuantumCircuit object created in TopologicalRegister.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">TopologicalCircuit</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TopologicalCircuit is like a QuantumCircuit built on Topological Qubits.</span>
+<span class="sd">    Shares the same QuantumCircuit object created in TopologicalRegister.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">treg</span><span class="p">:</span> <span class="n">TopologicalRegister</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treg</span> <span class="o">=</span> <span class="n">treg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qreg</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">QuantumRegister</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ClassicalRegister</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circ</span> <span class="o">=</span> <span class="n">treg</span><span class="o">.</span><span class="n">circ</span>
+
+    <span class="k">def</span> <span class="nf">add_creg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">override</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">creg</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">override</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">creg</span> <span class="o">=</span> <span class="n">ClassicalRegister</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">bits</span><span class="o">=</span><span class="n">bits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">creg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">add_register</span><span class="p">(</span><span class="n">creg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_qreg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">override</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">qreg</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">override</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">qreg</span> <span class="o">=</span> <span class="n">QuantumRegister</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">bits</span><span class="o">=</span><span class="n">bits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qreg</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">qreg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">add_register</span><span class="p">(</span><span class="n">qreg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TopologicalQubit</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Takes in either a TopologicalQubit or an int, and returns a TopologicalQubit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tqubit (TopologicalQubit):</span>
+<span class="sd">                Returns the corresponding TopologicalQubit from treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tqubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">tqubit</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">)</span>
+            <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">treg</span><span class="p">[</span><span class="n">tqubit</span><span class="p">]</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tqubit</span>
+
+    <span class="k">def</span> <span class="nf">stabilize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run a single round of stabilization (entangle and measure) on the tqubit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="n">tqubit</span><span class="o">.</span><span class="n">stabilize</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts an identity on the data and syndrome qubits.</span>
+<span class="sd">        This allows us to create an isolated noise model by inserting errors only on identity gates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="n">tqubit</span><span class="o">.</span><span class="n">id</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">id_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts an identity on the data qubits only.</span>
+<span class="sd">        This allows us to create an isolated noise model by inserting errors only on identity gates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="n">tqubit</span><span class="o">.</span><span class="n">id_data</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">reset_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize/reset to a logical |x+&gt; state on the tqubit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="n">tqubit</span><span class="o">.</span><span class="n">reset_x</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">reset_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize/reset to a logical |z+&gt; state on the tqubit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="n">tqubit</span><span class="o">.</span><span class="n">reset_z</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Logical X operator on the topological qubit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="n">tqubit</span><span class="o">.</span><span class="n">x</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Logical Z operator on the topological qubit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="n">tqubit</span><span class="o">.</span><span class="n">z</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">cx</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">control</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">ancilla_ctype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ancilla_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        CNOT operator on control and target topological qubit</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            control (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">            target (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">            ancilla_ctype (Optional[str]):</span>
+<span class="sd">                Specifies the logical type of ancilla bit</span>
+<span class="sd">            ancilla_params (Optional[Dict[str, int]]):</span>
+<span class="sd">                Specifies the parameters of the ancilla bit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># default ctype and params</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ancilla_ctype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">ancilla_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Please provide both a ctype and params or neither to use the control qubit ctype and params by default.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ancilla_ctype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">control_q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
+            <span class="n">ancilla_ctype</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">control_q</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Qubit&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">ancilla_params</span> <span class="o">=</span> <span class="n">control_q</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">params</span>
+
+        <span class="c1"># get qubits</span>
+        <span class="n">control</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;ancilla&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treg</span><span class="o">.</span><span class="n">tqubits</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">treg</span><span class="o">.</span><span class="n">add_tqubit</span><span class="p">(</span><span class="s2">&quot;ancilla&quot;</span><span class="p">,</span> <span class="n">ancilla_ctype</span><span class="p">,</span> <span class="n">ancilla_params</span><span class="p">)</span>
+        <span class="n">ancilla</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">treg</span><span class="p">[</span><span class="s2">&quot;ancilla&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># prepare bits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_creg</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;m1&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_creg</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;m2&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_creg</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;m3&quot;</span><span class="p">)</span>
+
+        <span class="c1"># prepare ancilla</span>
+        <span class="n">ancilla</span><span class="o">.</span><span class="n">reset_x</span><span class="p">()</span>
+
+        <span class="c1"># Z (control) x Z (ancilla)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_qreg</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;cnot_readout&quot;</span><span class="p">)</span>
+
+        <span class="n">readout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qreg</span><span class="p">[</span><span class="s2">&quot;cnot_readout&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Z x Z</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">readout</span><span class="p">)</span>
+        <span class="n">control</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">readout</span><span class="p">)</span>
+        <span class="n">ancilla</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">readout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">readout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m1&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># X x X</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">readout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">h</span><span class="p">(</span><span class="n">readout</span><span class="p">)</span>
+        <span class="n">target</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="n">control</span><span class="o">=</span><span class="n">readout</span><span class="p">)</span>
+        <span class="n">ancilla</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="n">control</span><span class="o">=</span><span class="n">readout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">h</span><span class="p">(</span><span class="n">readout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">readout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m2&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># Z</span>
+        <span class="n">ancilla</span><span class="o">.</span><span class="n">readout_z</span><span class="p">(</span><span class="n">readout_creg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m3&quot;</span><span class="p">])</span>
+
+        <span class="c1"># classical conditioned</span>
+        <span class="n">control</span><span class="o">.</span><span class="n">z_c_if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m2&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">target</span><span class="o">.</span><span class="n">x_c_if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m1&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">target</span><span class="o">.</span><span class="n">x_c_if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m3&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">measure_x</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">readout_creg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClassicalRegister</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convenience method to read-out the logical-X projection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="n">tqubit</span><span class="o">.</span><span class="n">readout_x</span><span class="p">(</span><span class="n">readout_creg</span><span class="o">=</span><span class="n">readout_creg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">measure_z</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">readout_creg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClassicalRegister</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convenience method to read-out the logical-Z projection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="n">tqubit</span><span class="o">.</span><span class="n">readout_z</span><span class="p">(</span><span class="n">readout_creg</span><span class="o">=</span><span class="n">readout_creg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">measure_lattice_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Readout all data qubits that constitute the lattice.</span>
+<span class="sd">        This readout can be used to extract a final round of stabilizer measurments,</span>
+<span class="sd">        as well as a logical X readout.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="n">tqubit</span><span class="o">.</span><span class="n">lattice_readout_x</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">measure_lattice_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Readout all data qubits that constitute the lattice.</span>
+<span class="sd">        This readout can be used to extract a final round of stabilizer measurments,</span>
+<span class="sd">        as well as a logical Z readout.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="n">tqubit</span><span class="o">.</span><span class="n">lattice_readout_z</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">parse_readout</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">readout_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">readout_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Z&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method to turn a result string (e.g. 1 10100000 10010000) into an</span>
+<span class="sd">        appropriate logical readout value and XOR-ed syndrome locations</span>
+<span class="sd">        according to our grid coordinate convention, based on the topological qubit of choice.</span>
+
+<span class="sd">        The implementation varies with different topological qubits,</span>
+<span class="sd">        but here&#39;s an example from the rotated surface code:</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">                Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">            readout_string (str):</span>
+<span class="sd">                Readout of the form &quot;0 00000000 00000000&quot; (logical_readout syndrome_1 syndrome_0)</span>
+<span class="sd">                or of the form &quot;000000000 00000000 00000000&quot; (lattice_readout syndrome_1 syndrome_0)</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            logical_readout (int):</span>
+<span class="sd">                logical readout value</span>
+<span class="sd">            syndromes (Dict[str, List[TQubit]]]):</span>
+<span class="sd">                key: syndrome type</span>
+<span class="sd">                value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tqubit</span><span class="o">.</span><span class="n">parse_readout</span><span class="p">(</span><span class="n">readout_string</span><span class="p">,</span> <span class="n">readout_type</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convenience method to draw underlying quantum circuit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.cx" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">cx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">ancilla_ctype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ancilla_params</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>CNOT operator on control and target topological qubit</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>control</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>target</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>ancilla_ctype</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>Specifies the logical type of ancilla bit</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>ancilla_params</code></td>
+        <td><code>Optional[Dict[str, int]]</code></td>
+        <td><p>Specifies the parameters of the ancilla bit</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">cx</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">control</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">ancilla_ctype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ancilla_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    CNOT operator on control and target topological qubit</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        control (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        target (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        ancilla_ctype (Optional[str]):</span>
+<span class="sd">            Specifies the logical type of ancilla bit</span>
+<span class="sd">        ancilla_params (Optional[Dict[str, int]]):</span>
+<span class="sd">            Specifies the parameters of the ancilla bit</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># default ctype and params</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ancilla_ctype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">ancilla_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Please provide both a ctype and params or neither to use the control qubit ctype and params by default.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ancilla_ctype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">control_q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
+        <span class="n">ancilla_ctype</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">control_q</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Qubit&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">ancilla_params</span> <span class="o">=</span> <span class="n">control_q</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">params</span>
+
+    <span class="c1"># get qubits</span>
+    <span class="n">control</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;ancilla&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treg</span><span class="o">.</span><span class="n">tqubits</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treg</span><span class="o">.</span><span class="n">add_tqubit</span><span class="p">(</span><span class="s2">&quot;ancilla&quot;</span><span class="p">,</span> <span class="n">ancilla_ctype</span><span class="p">,</span> <span class="n">ancilla_params</span><span class="p">)</span>
+    <span class="n">ancilla</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">treg</span><span class="p">[</span><span class="s2">&quot;ancilla&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># prepare bits</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_creg</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;m1&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_creg</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;m2&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_creg</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;m3&quot;</span><span class="p">)</span>
+
+    <span class="c1"># prepare ancilla</span>
+    <span class="n">ancilla</span><span class="o">.</span><span class="n">reset_x</span><span class="p">()</span>
+
+    <span class="c1"># Z (control) x Z (ancilla)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_qreg</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;cnot_readout&quot;</span><span class="p">)</span>
+
+    <span class="n">readout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qreg</span><span class="p">[</span><span class="s2">&quot;cnot_readout&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Z x Z</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">readout</span><span class="p">)</span>
+    <span class="n">control</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">readout</span><span class="p">)</span>
+    <span class="n">ancilla</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">readout</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">readout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m1&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># X x X</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">readout</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">h</span><span class="p">(</span><span class="n">readout</span><span class="p">)</span>
+    <span class="n">target</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="n">control</span><span class="o">=</span><span class="n">readout</span><span class="p">)</span>
+    <span class="n">ancilla</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="n">control</span><span class="o">=</span><span class="n">readout</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">h</span><span class="p">(</span><span class="n">readout</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">readout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m2&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># Z</span>
+    <span class="n">ancilla</span><span class="o">.</span><span class="n">readout_z</span><span class="p">(</span><span class="n">readout_creg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m3&quot;</span><span class="p">])</span>
+
+    <span class="c1"># classical conditioned</span>
+    <span class="n">control</span><span class="o">.</span><span class="n">z_c_if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m2&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">target</span><span class="o">.</span><span class="n">x_c_if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m1&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">target</span><span class="o">.</span><span class="n">x_c_if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">creg</span><span class="p">[</span><span class="s2">&quot;m3&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.draw" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Convenience method to draw underlying quantum circuit.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convenience method to draw underlying quantum circuit.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">circ</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.id" class="doc doc-heading">
+<code class="highlight language-python"><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Inserts an identity on the data and syndrome qubits.
+This allows us to create an isolated noise model by inserting errors only on identity gates.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inserts an identity on the data and syndrome qubits.</span>
+<span class="sd">    This allows us to create an isolated noise model by inserting errors only on identity gates.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="n">tqubit</span><span class="o">.</span><span class="n">id</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.id_data" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">id_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Inserts an identity on the data qubits only.
+This allows us to create an isolated noise model by inserting errors only on identity gates.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">id_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inserts an identity on the data qubits only.</span>
+<span class="sd">    This allows us to create an isolated noise model by inserting errors only on identity gates.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="n">tqubit</span><span class="o">.</span><span class="n">id_data</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.measure_lattice_x" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">measure_lattice_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Readout all data qubits that constitute the lattice.
+This readout can be used to extract a final round of stabilizer measurments,
+as well as a logical X readout.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">measure_lattice_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Readout all data qubits that constitute the lattice.</span>
+<span class="sd">    This readout can be used to extract a final round of stabilizer measurments,</span>
+<span class="sd">    as well as a logical X readout.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="n">tqubit</span><span class="o">.</span><span class="n">lattice_readout_x</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.measure_lattice_z" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">measure_lattice_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Readout all data qubits that constitute the lattice.
+This readout can be used to extract a final round of stabilizer measurments,
+as well as a logical Z readout.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">measure_lattice_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Readout all data qubits that constitute the lattice.</span>
+<span class="sd">    This readout can be used to extract a final round of stabilizer measurments,</span>
+<span class="sd">    as well as a logical Z readout.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="n">tqubit</span><span class="o">.</span><span class="n">lattice_readout_z</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.measure_x" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">measure_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">,</span> <span class="n">readout_creg</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Convenience method to read-out the logical-X projection.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">measure_x</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">readout_creg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClassicalRegister</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convenience method to read-out the logical-X projection.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="n">tqubit</span><span class="o">.</span><span class="n">readout_x</span><span class="p">(</span><span class="n">readout_creg</span><span class="o">=</span><span class="n">readout_creg</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.measure_z" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">measure_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">,</span> <span class="n">readout_creg</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Convenience method to read-out the logical-Z projection.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">measure_z</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">readout_creg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClassicalRegister</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convenience method to read-out the logical-Z projection.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="n">tqubit</span><span class="o">.</span><span class="n">readout_z</span><span class="p">(</span><span class="n">readout_creg</span><span class="o">=</span><span class="n">readout_creg</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.parse_readout" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">parse_readout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">,</span> <span class="n">readout_string</span><span class="p">,</span> <span class="n">readout_type</span><span class="o">=</span><span class="s1">&#39;Z&#39;</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Helper method to turn a result string (e.g. 1 10100000 10010000) into an
+appropriate logical readout value and XOR-ed syndrome locations
+according to our grid coordinate convention, based on the topological qubit of choice.</p>
+<p>The implementation varies with different topological qubits,
+but here's an example from the rotated surface code:</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>readout_string</code></td>
+        <td><code>str</code></td>
+        <td><p>Readout of the form "0 00000000 00000000" (logical_readout syndrome_1 syndrome_0)
+or of the form "000000000 00000000 00000000" (lattice_readout syndrome_1 syndrome_0)</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>logical_readout (int)</code></td>
+      <td><p>logical readout value
+syndromes (Dict[str, List[TQubit]]]):
+    key: syndrome type
+    value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">parse_readout</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">readout_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">readout_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Z&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper method to turn a result string (e.g. 1 10100000 10010000) into an</span>
+<span class="sd">    appropriate logical readout value and XOR-ed syndrome locations</span>
+<span class="sd">    according to our grid coordinate convention, based on the topological qubit of choice.</span>
+
+<span class="sd">    The implementation varies with different topological qubits,</span>
+<span class="sd">    but here&#39;s an example from the rotated surface code:</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">        readout_string (str):</span>
+<span class="sd">            Readout of the form &quot;0 00000000 00000000&quot; (logical_readout syndrome_1 syndrome_0)</span>
+<span class="sd">            or of the form &quot;000000000 00000000 00000000&quot; (lattice_readout syndrome_1 syndrome_0)</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        logical_readout (int):</span>
+<span class="sd">            logical readout value</span>
+<span class="sd">        syndromes (Dict[str, List[TQubit]]]):</span>
+<span class="sd">            key: syndrome type</span>
+<span class="sd">            value: (time, row, col) of parsed syndrome hits (changes between consecutive rounds)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tqubit</span><span class="o">.</span><span class="n">parse_readout</span><span class="p">(</span><span class="n">readout_string</span><span class="p">,</span> <span class="n">readout_type</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.reset_x" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">reset_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Initialize/reset to a logical |x+&gt; state on the tqubit.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">reset_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize/reset to a logical |x+&gt; state on the tqubit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="n">tqubit</span><span class="o">.</span><span class="n">reset_x</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.reset_z" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">reset_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Initialize/reset to a logical |z+&gt; state on the tqubit.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">reset_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize/reset to a logical |z+&gt; state on the tqubit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="n">tqubit</span><span class="o">.</span><span class="n">reset_z</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.stabilize" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">stabilize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Run a single round of stabilization (entangle and measure) on the tqubit.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">stabilize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run a single round of stabilization (entangle and measure) on the tqubit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="n">tqubit</span><span class="o">.</span><span class="n">stabilize</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.x" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Logical X operator on the topological qubit.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logical X operator on the topological qubit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="n">tqubit</span><span class="o">.</span><span class="n">x</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalCircuit.z" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Logical Z operator on the topological qubit.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tqubit</code></td>
+        <td><code>Union[TopologicalQubit, int]</code></td>
+        <td><p>Either already a TopologicalQubit or an int index in treg</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tqubit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TopologicalQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logical Z operator on the topological qubit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tqubit (Union[TopologicalQubit, int]):</span>
+<span class="sd">            Either already a TopologicalQubit or an int index in treg</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tqubit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">(</span><span class="n">tqubit</span><span class="p">)</span>
+    <span class="n">tqubit</span><span class="o">.</span><span class="n">z</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h2 id="qtcodes.circuits.circ.TopologicalRegister" class="doc doc-heading">
+        <code>
+TopologicalRegister        </code>
+
+
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p>A blueprint for a TopologicalRegister that stores topological qubit(s)</p>
+
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">TopologicalRegister</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A blueprint for a TopologicalRegister that stores topological qubit(s)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">circ</span><span class="p">:</span> <span class="n">QuantumCircuit</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ctypes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;treg&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            circ (QuantumCircuit):</span>
+<span class="sd">                QuantumCircuit on top of which the topological qubit is built.</span>
+<span class="sd">                This is often shared amongst multiple TQubits.</span>
+<span class="sd">                If none is provided, then a new QuantumCircuit is initialized and stored.</span>
+<span class="sd">            ctypes (List[str]):</span>
+<span class="sd">                Specifies the types of the TQubits being added</span>
+<span class="sd">            params (List[Dict[str,int]]):</span>
+<span class="sd">                 Contains a list of params such as d, where d is the number of</span>
+<span class="sd">                 physical &quot;data&quot; qubits lining a row or column of the lattice.</span>
+<span class="sd">            name (str):</span>
+<span class="sd">                Useful when combining multiple TopologicalQubits together.</span>
+<span class="sd">                Prepended to all registers.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctypes</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">ctypes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ctypes</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># == None is necessary, as &quot;not circ&quot; is true for circ=QuantumCircuit()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circ</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">()</span> <span class="k">if</span> <span class="n">circ</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">circ</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_tqubits</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_tqubits</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sub_register</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ctypes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            sub_register (str):</span>
+<span class="sd">                Specifies the subregister</span>
+<span class="sd">            ctypes: (List[str]):</span>
+<span class="sd">                Specifies the types of the TQubits being added</span>
+<span class="sd">            params: (List[Dict[str, int]]):</span>
+<span class="sd">                Contains a list of params for each TQubit being added</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">params</span>
+        <span class="n">ctypes</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">ctypes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ctypes</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ctypes</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Please match the number of params with the number of Topological Qubits added: Current number of params - &quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+                <span class="o">+</span> <span class="s2">&quot;, Current number of Topological Qubits: &quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ctypes</span><span class="p">))</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ctypes</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">ctypes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">str2qtype</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Please choose a Topological Qubit type from: &quot;</span>
+                    <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">str2qtype</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+                <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ctypes</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_tqubit</span><span class="p">(</span><span class="n">sub_register</span><span class="p">,</span> <span class="n">ctypes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">add_tqubit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_register</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ctype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            sub_register (str):</span>
+<span class="sd">                Specifies the subregister</span>
+<span class="sd">            ctype (str):</span>
+<span class="sd">                Specifies the type of TQubit being added</span>
+<span class="sd">            params (Dict[str, int]):</span>
+<span class="sd">                Specifies the params for the Tqubit being added</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sub_register</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="p">[</span><span class="n">sub_register</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="p">[</span><span class="n">sub_register</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">str2qtype</span><span class="p">[</span><span class="n">ctype</span><span class="p">](</span>
+            <span class="n">params</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">),</span> <span class="n">circ</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">circ</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows us to return the nth element of TopologicalRegister as a list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">sub_reg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">sub_reg</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">sub_reg</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Key not found!&quot;</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalRegister.__getitem__" class="doc doc-heading">
+<code class="highlight language-python"><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-special"><code>special</code></small>
+  </span>
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Allows us to return the nth element of TopologicalRegister as a list.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Allows us to return the nth element of TopologicalRegister as a list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">sub_reg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">sub_reg</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">sub_reg</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Key not found!&quot;</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalRegister.__init__" class="doc doc-heading">
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">circ</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;treg&#39;</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-special"><code>special</code></small>
+  </span>
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>circ</code></td>
+        <td><code>QuantumCircuit</code></td>
+        <td><p>QuantumCircuit on top of which the topological qubit is built.
+This is often shared amongst multiple TQubits.
+If none is provided, then a new QuantumCircuit is initialized and stored.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>ctypes</code></td>
+        <td><code>List[str]</code></td>
+        <td><p>Specifies the types of the TQubits being added</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>params</code></td>
+        <td><code>List[Dict[str,int]]</code></td>
+        <td><p>Contains a list of params such as d, where d is the number of
+ physical "data" qubits lining a row or column of the lattice.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>name</code></td>
+        <td><code>str</code></td>
+        <td><p>Useful when combining multiple TopologicalQubits together.
+Prepended to all registers.</p></td>
+        <td><code>&#39;treg&#39;</code></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">circ</span><span class="p">:</span> <span class="n">QuantumCircuit</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ctypes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;treg&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        circ (QuantumCircuit):</span>
+<span class="sd">            QuantumCircuit on top of which the topological qubit is built.</span>
+<span class="sd">            This is often shared amongst multiple TQubits.</span>
+<span class="sd">            If none is provided, then a new QuantumCircuit is initialized and stored.</span>
+<span class="sd">        ctypes (List[str]):</span>
+<span class="sd">            Specifies the types of the TQubits being added</span>
+<span class="sd">        params (List[Dict[str,int]]):</span>
+<span class="sd">             Contains a list of params such as d, where d is the number of</span>
+<span class="sd">             physical &quot;data&quot; qubits lining a row or column of the lattice.</span>
+<span class="sd">        name (str):</span>
+<span class="sd">            Useful when combining multiple TopologicalQubits together.</span>
+<span class="sd">            Prepended to all registers.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ctypes</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">ctypes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ctypes</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">params</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># == None is necessary, as &quot;not circ&quot; is true for circ=QuantumCircuit()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">circ</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">()</span> <span class="k">if</span> <span class="n">circ</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">circ</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_tqubits</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalRegister.add_tqubit" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">add_tqubit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_register</span><span class="p">,</span> <span class="n">ctype</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>sub_register</code></td>
+        <td><code>str</code></td>
+        <td><p>Specifies the subregister</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>ctype</code></td>
+        <td><code>str</code></td>
+        <td><p>Specifies the type of TQubit being added</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>params</code></td>
+        <td><code>Dict[str, int]</code></td>
+        <td><p>Specifies the params for the Tqubit being added</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_tqubit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_register</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ctype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        sub_register (str):</span>
+<span class="sd">            Specifies the subregister</span>
+<span class="sd">        ctype (str):</span>
+<span class="sd">            Specifies the type of TQubit being added</span>
+<span class="sd">        params (Dict[str, int]):</span>
+<span class="sd">            Specifies the params for the Tqubit being added</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sub_register</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="p">[</span><span class="n">sub_register</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tqubits</span><span class="p">[</span><span class="n">sub_register</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">str2qtype</span><span class="p">[</span><span class="n">ctype</span><span class="p">](</span>
+        <span class="n">params</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">),</span> <span class="n">circ</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">circ</span>
+    <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.circuits.circ.TopologicalRegister.add_tqubits" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">add_tqubits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_register</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>sub_register</code></td>
+        <td><code>str</code></td>
+        <td><p>Specifies the subregister</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>ctypes</code></td>
+        <td><code>Optional[List[str]]</code></td>
+        <td><p>(List[str]):
+Specifies the types of the TQubits being added</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>params</code></td>
+        <td><code>Optional[List[Dict[str, int]]]</code></td>
+        <td><p>(List[Dict[str, int]]):
+Contains a list of params for each TQubit being added</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/circuits/circ.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_tqubits</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">sub_register</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ctypes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        sub_register (str):</span>
+<span class="sd">            Specifies the subregister</span>
+<span class="sd">        ctypes: (List[str]):</span>
+<span class="sd">            Specifies the types of the TQubits being added</span>
+<span class="sd">        params: (List[Dict[str, int]]):</span>
+<span class="sd">            Contains a list of params for each TQubit being added</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">params</span>
+    <span class="n">ctypes</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">ctypes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ctypes</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ctypes</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Please match the number of params with the number of Topological Qubits added: Current number of params - &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+            <span class="o">+</span> <span class="s2">&quot;, Current number of Topological Qubits: &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ctypes</span><span class="p">))</span>
+        <span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ctypes</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">ctypes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">str2qtype</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Please choose a Topological Qubit type from: &quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">str2qtype</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+            <span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ctypes</span><span class="p">)):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_tqubit</span><span class="p">(</span><span class="n">sub_register</span><span class="p">,</span> <span class="n">ctypes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../base/" class="md-footer__link md-footer__link--prev" aria-label="Previous: base" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              base
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../qubit_types/" class="md-footer__link md-footer__link--next" aria-label="Next: qubit_types" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              qubit_types
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../../../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../../../assets/javascripts/workers/search.5e67fbfe.min.js"}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.e87a5f81.min.js"></script>
+      
+    
+  </body>
+</html>

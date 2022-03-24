@@ -1,0 +1,1590 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.2.7">
+    
+    
+      
+        <title>base - qtcodes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.9d5733d3.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.e6a45f82.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#qtcodes.fitters.base" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="qtcodes" class="md-header__button md-logo" aria-label="qtcodes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            qtcodes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              base
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="qtcodes" class="md-nav__button md-logo" aria-label="qtcodes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    qtcodes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../setup/" class="md-nav__link">
+        Setup
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Code Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Code Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Code Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" checked>
+      
+      
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../">qtcodes</a>
+          
+            <label for="__nav_3_1">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="qtcodes" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          qtcodes
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_1" type="checkbox" id="__nav_3_1_1" >
+      
+      
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../circuits/">circuits</a>
+          
+            <label for="__nav_3_1_1">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="circuits" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_1">
+          <span class="md-nav__icon md-icon"></span>
+          circuits
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../circuits/base/" class="md-nav__link">
+        base
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../circuits/circ/" class="md-nav__link">
+        circ
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../circuits/qubit_types/" class="md-nav__link">
+        qubit_types
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../circuits/repetition/" class="md-nav__link">
+        repetition
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../circuits/rotated_surface/" class="md-nav__link">
+        rotated_surface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../circuits/xxzz/" class="md-nav__link">
+        xxzz
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../circuits/xzzx/" class="md-nav__link">
+        xzzx
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_2" type="checkbox" id="__nav_3_1_2" >
+      
+      
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../common/">common</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="common" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_2">
+          <span class="md-nav__icon md-icon"></span>
+          common
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../common/constants/" class="md-nav__link">
+        constants
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_3" type="checkbox" id="__nav_3_1_3" checked>
+      
+      
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../">fitters</a>
+          
+            <label for="__nav_3_1_3">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="fitters" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_3">
+          <span class="md-nav__icon md-icon"></span>
+          fitters
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          base
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        base
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base" class="md-nav__link">
+    qtcodes.fitters.base
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder" class="md-nav__link">
+    TopologicalDecoder
+  </a>
+  
+    <nav class="md-nav" aria-label="TopologicalDecoder">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.encoder_type" class="md-nav__link">
+    encoder_type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.correct_readout" class="md-nav__link">
+    correct_readout()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.correct_readout_look_up_table" class="md-nav__link">
+    correct_readout_look_up_table()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.parse_readout" class="md-nav__link">
+    parse_readout()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.reset_look_up_table" class="md-nav__link">
+    reset_look_up_table()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.set_look_up_table" class="md-nav__link">
+    set_look_up_table()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lattice_decoder/" class="md-nav__link">
+        lattice_decoder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../repetition/" class="md-nav__link">
+        repetition
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rotated_surface/" class="md-nav__link">
+        rotated_surface
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_4" type="checkbox" id="__nav_3_1_4" >
+      
+      
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../tools/">tools</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="tools" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_4">
+          <span class="md-nav__icon md-icon"></span>
+          tools
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/benchmarking/" class="md-nav__link">
+        benchmarking
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base" class="md-nav__link">
+    qtcodes.fitters.base
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder" class="md-nav__link">
+    TopologicalDecoder
+  </a>
+  
+    <nav class="md-nav" aria-label="TopologicalDecoder">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.encoder_type" class="md-nav__link">
+    encoder_type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.correct_readout" class="md-nav__link">
+    correct_readout()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.correct_readout_look_up_table" class="md-nav__link">
+    correct_readout_look_up_table()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.parse_readout" class="md-nav__link">
+    parse_readout()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.reset_look_up_table" class="md-nav__link">
+    reset_look_up_table()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qtcodes.fitters.base.TopologicalDecoder.set_look_up_table" class="md-nav__link">
+    set_look_up_table()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+  <h1>base</h1>
+
+<div class="doc doc-object doc-module">
+
+<a id="qtcodes.fitters.base"></a>
+    <div class="doc doc-contents first">
+
+      <p>Base Topological Decoder Classes</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h2 id="qtcodes.fitters.base.TopologicalDecoder" class="doc doc-heading">
+        <code>
+TopologicalDecoder            (<span title="typing.Generic">Generic</span>)
+        </code>
+
+
+
+</h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Abstract class for topological code MWPM decoders to implement.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/fitters/base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">TopologicalDecoder</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TQubit</span><span class="p">],</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract class for topological code MWPM decoders to implement.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">encoder_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        TopologicalQubit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">rx</span><span class="o">.</span><span class="n">PyGraph</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="n">TQubit</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table_shots</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_look_up_table</span><span class="p">()</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_make_syndrome_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct syndrome graphs used for MWPM decoding.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">correct_readout</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">syndromes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">TQubit</span><span class="p">]]],</span>
+        <span class="n">logical_readout_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">logical_qubit_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">err_prob</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            syndromes (Union[str, Dict[str, List[TQubit]]]): either...</span>
+<span class="sd">                (Dict[str, List[TQubit]]]):</span>
+<span class="sd">                    key (str): syndrome type</span>
+<span class="sd">                    value (TQubit): syndrome node hits (changes between consecutive rounds)</span>
+<span class="sd">                (str): readout string</span>
+<span class="sd">            logical_qubit_value (Optional[int]): measured logical qubit value</span>
+<span class="sd">            logical_readout_type (str): logical readout type (e.g. &quot;X&quot; or &quot;Z&quot;)</span>
+<span class="sd">            err_prob (Optional[float]): Probability of IID data qubit X/Z flip. Defaults to None.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            logical_qubit_value (int): The most probable encoded value of the logical qubit.</span>
+<span class="sd">        Additional Information:</span>
+<span class="sd">            This method can be used to benchmark logical error rates, as well as perform fault tolerant readout.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">parse_readout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">readout_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">TQubit</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converte between readout_string to logical_readout and syndrome nodes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            readout_string (str): readout string from quantum circuit</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            logical_readout (int): logical readout value from readout</span>
+<span class="sd">            syndromes (Dict):</span>
+<span class="sd">                key (str): syndrome type key</span>
+<span class="sd">                val (List[TQubit]): list of syndrome nodes hit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_make_error_graph</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">TQubit</span><span class="p">],</span>
+        <span class="n">syndrome_graph_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">err_prob</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">rx</span><span class="o">.</span><span class="n">PyGraph</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates error syndrome subgraph from list of syndrome nodes. The output of</span>
+<span class="sd">        this function is a graph that&#39;s ready for minimum weight perfect matching (MWPM).</span>
+
+<span class="sd">        If err_prob is specified, we adjust the shortest distance between syndrome</span>
+<span class="sd">        nodes by the degeneracy of the error path.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            nodes ([TQubit,]): List of changes of syndrome nodes in time.</span>
+<span class="sd">            syndrome_graph_key (char): Which syndrome subgraph these nodes are from.</span>
+<span class="sd">            err_prob (Optional[float]): Probability of IID data qubit X/Z flip. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            error_graph (rx.PyGraph): Nodes are syndromes, edges are proxy for error probabilities</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_run_mwpm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matching_graph</span><span class="p">:</span> <span class="n">rx</span><span class="o">.</span><span class="n">PyGraph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">TQubit</span><span class="p">,</span> <span class="n">TQubit</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return matches of minimum weight perfect matching (MWPM) on matching_graph.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            matching_graph (rx.PyGraph): Graph to run MWPM.</span>
+<span class="sd">            floats (bool):</span>
+<span class="sd">                whether or not the graph contains float edge weights</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            [(TQubit, TQubit),]: List of matchings found from MWPM</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">reset_look_up_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Empty look up table used to reset the self.look_up_table</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (Dict[str, Dict[int, Dict[str, int]]]):</span>
+<span class="sd">                key (str): logical_readout_type</span>
+<span class="sd">                val: key (int): logical_qubit_value</span>
+<span class="sd">                     val: key (str): readout_string</span>
+<span class="sd">                          val (int): counts</span>
+<span class="sd">            (Dict[str, Dict[int, int]]):</span>
+<span class="sd">                key (str): logical_readout_type</span>
+<span class="sd">                val: key (int): logical_qubit_value</span>
+<span class="sd">                     val (int): total_counts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">{},</span> <span class="mi">1</span><span class="p">:</span> <span class="p">{}},</span>
+            <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">{},</span> <span class="mi">1</span><span class="p">:</span> <span class="p">{}},</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table_shots</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+            <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">set_look_up_table</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">logical_readout_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">logical_qubit_value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">results</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Used to set look up table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            logical_readout_type (str): &quot;X&quot; or &quot;Z&quot;</span>
+<span class="sd">            logical_qubit_value (int): 0 or 1</span>
+<span class="sd">            results:</span>
+<span class="sd">                key (str): readout_string</span>
+<span class="sd">                val (int): counts</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table</span><span class="p">[</span><span class="n">logical_readout_type</span><span class="p">][</span><span class="n">logical_qubit_value</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table_shots</span><span class="p">[</span><span class="n">logical_readout_type</span><span class="p">][</span><span class="n">logical_qubit_value</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_run_look_up</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">syndromes</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">logical_readout_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">p_i</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates conditional prob p(|i&gt; | syndromes) by look up table decoding.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            syndromes (str):</span>
+<span class="sd">                Readout of the form &quot;0 00000000 00000000&quot; (logical_readout syndrome_1 syndrome_0)</span>
+<span class="sd">                or of the form &quot;000000000 00000000 00000000&quot; (lattice_readout syndrome_1 syndrome_0)</span>
+<span class="sd">            logical_readout_type (str): &quot;X&quot; or &quot;Z&quot;</span>
+<span class="sd">            p_i (Optional[List[float]]): p_i[i] is the posterior probability that the logical qubit is |i&gt;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            p_i_given_s (List[float]):</span>
+<span class="sd">                p(i|s) conditional probability that given syndromes s, the qubit is in |i&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">p_s_given_i</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="mf">0.0</span><span class="p">,</span>
+            <span class="mf">0.0</span><span class="p">,</span>
+        <span class="p">]</span>  <span class="c1"># p_s_given_i[i] is the prob that syndromes s was produced by |i&gt;, i.e. p(s|i)</span>
+        <span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">syndromes</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table</span><span class="p">[</span><span class="n">logical_readout_type</span><span class="p">][</span><span class="n">log</span><span class="p">]:</span>
+                <span class="n">p_s_given_i</span><span class="p">[</span><span class="n">log</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table</span><span class="p">[</span><span class="n">logical_readout_type</span><span class="p">][</span><span class="n">log</span><span class="p">][</span><span class="n">syndromes</span><span class="p">]</span>
+                    <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table_shots</span><span class="p">[</span><span class="n">logical_readout_type</span><span class="p">][</span><span class="n">log</span><span class="p">]</span>
+                <span class="p">)</span>
+
+        <span class="c1"># posterior prob that the qubit in |i&gt;, i.e. p(i)</span>
+        <span class="n">p_i</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">p_i</span> <span class="k">else</span> <span class="n">p_i</span>
+
+        <span class="c1"># p(s) = sum_i p(s|i)p(i)</span>
+        <span class="n">p_s</span> <span class="o">=</span> <span class="n">p_s_given_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">p_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">p_s_given_i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">p_i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># p(i|s) = p(s|i)p(i)/p(s), Bayes Rule</span>
+        <span class="n">p_i_given_s</span> <span class="o">=</span> <span class="p">[</span><span class="n">p_s_given_i</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">p_i</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">p_s</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">p_i_given_s</span>
+
+    <span class="k">def</span> <span class="nf">correct_readout_look_up_table</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">syndromes</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">logical_readout_type</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates most likely logical_qubit_value by look up table decoding.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            syndromes (str):</span>
+<span class="sd">                Readout of the form &quot;0 00000000 00000000&quot; (logical_readout syndrome_1 syndrome_0)</span>
+<span class="sd">                or of the form &quot;000000000 00000000 00000000&quot; (lattice_readout syndrome_1 syndrome_0)</span>
+<span class="sd">            logical_readout_type (str): &quot;X&quot; or &quot;Z&quot;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            logical_qubit_value (int):</span>
+<span class="sd">                most probable original logical qubit value from look up table decoding</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p_i_given_s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_look_up</span><span class="p">(</span><span class="n">syndromes</span><span class="p">,</span> <span class="n">logical_readout_type</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">p_i_given_s</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">p_i_given_s</span><span class="p">))</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="qtcodes.fitters.base.TopologicalDecoder.encoder_type" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">encoder_type</span><span class="p">:</span> <span class="n">Type</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-readonly"><code>readonly</code></small>
+  </span>
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>TopologicalQubit</p>
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.fitters.base.TopologicalDecoder.correct_readout" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">correct_readout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">syndromes</span><span class="p">,</span> <span class="n">logical_readout_type</span><span class="p">,</span> <span class="n">logical_qubit_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">err_prob</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>syndromes</code></td>
+        <td><code>Union[str, Dict[str, List[TQubit]]]</code></td>
+        <td><p>either...
+(Dict[str, List[TQubit]]]):
+    key (str): syndrome type
+    value (TQubit): syndrome node hits (changes between consecutive rounds)
+(str): readout string</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>logical_qubit_value</code></td>
+        <td><code>Optional[int]</code></td>
+        <td><p>measured logical qubit value</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>logical_readout_type</code></td>
+        <td><code>str</code></td>
+        <td><p>logical readout type (e.g. "X" or "Z")</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>err_prob</code></td>
+        <td><code>Optional[float]</code></td>
+        <td><p>Probability of IID data qubit X/Z flip. Defaults to None.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>logical_qubit_value (int)</code></td>
+      <td><p>The most probable encoded value of the logical qubit.</p></td>
+    </tr>
+  </tbody>
+</table>      <p>Additional Information:
+    This method can be used to benchmark logical error rates, as well as perform fault tolerant readout.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/fitters/base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@abstractmethod</span>
+<span class="k">def</span> <span class="nf">correct_readout</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">syndromes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">TQubit</span><span class="p">]]],</span>
+    <span class="n">logical_readout_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">logical_qubit_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">err_prob</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        syndromes (Union[str, Dict[str, List[TQubit]]]): either...</span>
+<span class="sd">            (Dict[str, List[TQubit]]]):</span>
+<span class="sd">                key (str): syndrome type</span>
+<span class="sd">                value (TQubit): syndrome node hits (changes between consecutive rounds)</span>
+<span class="sd">            (str): readout string</span>
+<span class="sd">        logical_qubit_value (Optional[int]): measured logical qubit value</span>
+<span class="sd">        logical_readout_type (str): logical readout type (e.g. &quot;X&quot; or &quot;Z&quot;)</span>
+<span class="sd">        err_prob (Optional[float]): Probability of IID data qubit X/Z flip. Defaults to None.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        logical_qubit_value (int): The most probable encoded value of the logical qubit.</span>
+<span class="sd">    Additional Information:</span>
+<span class="sd">        This method can be used to benchmark logical error rates, as well as perform fault tolerant readout.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.fitters.base.TopologicalDecoder.correct_readout_look_up_table" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">correct_readout_look_up_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">syndromes</span><span class="p">,</span> <span class="n">logical_readout_type</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Calculates most likely logical_qubit_value by look up table decoding.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>syndromes</code></td>
+        <td><code>str</code></td>
+        <td><p>Readout of the form "0 00000000 00000000" (logical_readout syndrome_1 syndrome_0)
+or of the form "000000000 00000000 00000000" (lattice_readout syndrome_1 syndrome_0)</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>logical_readout_type</code></td>
+        <td><code>str</code></td>
+        <td><p>"X" or "Z"</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>logical_qubit_value (int)</code></td>
+      <td><p>most probable original logical qubit value from look up table decoding</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/fitters/base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">correct_readout_look_up_table</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">syndromes</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">logical_readout_type</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates most likely logical_qubit_value by look up table decoding.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        syndromes (str):</span>
+<span class="sd">            Readout of the form &quot;0 00000000 00000000&quot; (logical_readout syndrome_1 syndrome_0)</span>
+<span class="sd">            or of the form &quot;000000000 00000000 00000000&quot; (lattice_readout syndrome_1 syndrome_0)</span>
+<span class="sd">        logical_readout_type (str): &quot;X&quot; or &quot;Z&quot;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        logical_qubit_value (int):</span>
+<span class="sd">            most probable original logical qubit value from look up table decoding</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">p_i_given_s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_look_up</span><span class="p">(</span><span class="n">syndromes</span><span class="p">,</span> <span class="n">logical_readout_type</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">p_i_given_s</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">p_i_given_s</span><span class="p">))</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.fitters.base.TopologicalDecoder.parse_readout" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">parse_readout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">readout_string</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Converte between readout_string to logical_readout and syndrome nodes.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>readout_string</code></td>
+        <td><code>str</code></td>
+        <td><p>readout string from quantum circuit</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>logical_readout (int)</code></td>
+      <td><p>logical readout value from readout
+syndromes (Dict):
+    key (str): syndrome type key
+    val (List[TQubit]): list of syndrome nodes hit</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/fitters/base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@abstractmethod</span>
+<span class="k">def</span> <span class="nf">parse_readout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">readout_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">TQubit</span><span class="p">]]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converte between readout_string to logical_readout and syndrome nodes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        readout_string (str): readout string from quantum circuit</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        logical_readout (int): logical readout value from readout</span>
+<span class="sd">        syndromes (Dict):</span>
+<span class="sd">            key (str): syndrome type key</span>
+<span class="sd">            val (List[TQubit]): list of syndrome nodes hit</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.fitters.base.TopologicalDecoder.reset_look_up_table" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">reset_look_up_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Empty look up table used to reset the self.look_up_table</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>(Dict[str, Dict[int, Dict[str, int]]])</code></td>
+      <td><p>key (str): logical_readout_type
+    val: key (int): logical_qubit_value
+         val: key (str): readout_string
+              val (int): counts
+(Dict[str, Dict[int, int]]):
+    key (str): logical_readout_type
+    val: key (int): logical_qubit_value
+         val (int): total_counts</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/fitters/base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">reset_look_up_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Empty look up table used to reset the self.look_up_table</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (Dict[str, Dict[int, Dict[str, int]]]):</span>
+<span class="sd">            key (str): logical_readout_type</span>
+<span class="sd">            val: key (int): logical_qubit_value</span>
+<span class="sd">                 val: key (str): readout_string</span>
+<span class="sd">                      val (int): counts</span>
+<span class="sd">        (Dict[str, Dict[int, int]]):</span>
+<span class="sd">            key (str): logical_readout_type</span>
+<span class="sd">            val: key (int): logical_qubit_value</span>
+<span class="sd">                 val (int): total_counts</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">{},</span> <span class="mi">1</span><span class="p">:</span> <span class="p">{}},</span>
+        <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">{},</span> <span class="mi">1</span><span class="p">:</span> <span class="p">{}},</span>
+    <span class="p">}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table_shots</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+        <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+    <span class="p">}</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="qtcodes.fitters.base.TopologicalDecoder.set_look_up_table" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">set_look_up_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logical_readout_type</span><span class="p">,</span> <span class="n">logical_qubit_value</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span></code>
+
+
+</h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Used to set look up table.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>logical_readout_type</code></td>
+        <td><code>str</code></td>
+        <td><p>"X" or "Z"</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>logical_qubit_value</code></td>
+        <td><code>int</code></td>
+        <td><p>0 or 1</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>results</code></td>
+        <td><code>Dict[str, int]</code></td>
+        <td><p>key (str): readout_string
+val (int): counts</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>qtcodes/fitters/base.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">set_look_up_table</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">logical_readout_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">logical_qubit_value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">results</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Used to set look up table.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        logical_readout_type (str): &quot;X&quot; or &quot;Z&quot;</span>
+<span class="sd">        logical_qubit_value (int): 0 or 1</span>
+<span class="sd">        results:</span>
+<span class="sd">            key (str): readout_string</span>
+<span class="sd">            val (int): counts</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table</span><span class="p">[</span><span class="n">logical_readout_type</span><span class="p">][</span><span class="n">logical_qubit_value</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">look_up_table_shots</span><span class="p">[</span><span class="n">logical_readout_type</span><span class="p">][</span><span class="n">logical_qubit_value</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: fitters" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              fitters
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../lattice_decoder/" class="md-footer__link md-footer__link--next" aria-label="Next: lattice_decoder" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              lattice_decoder
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../../../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../../../assets/javascripts/workers/search.5e67fbfe.min.js"}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.e87a5f81.min.js"></script>
+      
+    
+  </body>
+</html>
