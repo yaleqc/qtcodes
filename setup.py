@@ -16,7 +16,18 @@ REQUIREMENTS = [
 ]
 
 EXTRA_REQUIREMENTS = {
-    "dev": ["jupyterlab>=3.1.0", "mypy", "pylint", "black"],
+    "dev": [
+        "jupyterlab>=3.1.0",
+        "mypy",
+        "pylint",
+        "black",
+        "mkdocs",
+        "mkdocs-material",
+        "mkdocs-gen-files",
+        "mkdocs-literate-nav",
+        "mkdocs-section-index",
+        "mkdocstrings",
+    ],
 }
 
 # Read long description from README.
