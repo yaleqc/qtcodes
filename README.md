@@ -46,6 +46,13 @@ pip install -e .[dev]
 ```
 Please use `pip install -e '.[dev]'` if you are a `zsh` user.
 
+#### Building documentation locally
+
+Set yourself up to use the `[dev]` dependencies. Then, from the command line run:
+```bash
+mkdocs build
+```
+
 ---
 
 ## Motivation
