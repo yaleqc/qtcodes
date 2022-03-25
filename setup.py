@@ -73,7 +73,7 @@ setup(
     python_requires=">=3.6",
     project_urls={
         "Bug Tracker": "https://github.com/yaleqc/qtcodes/issues",
-        "Documentation": "https://github.com/yaleqc/qtcodes",
+        "Documentation": "https://yaleqc.com/qtcodes/",
         "Source Code": "https://github.com/yaleqc/qtcodes",
         "Tutorials": "https://github.com/yaleqc/qtcodes/tree/master/tutorials",
         "Tests": "https://github.com/yaleqc/qtcodes/tree/master/tests",
