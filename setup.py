@@ -23,10 +23,10 @@ EXTRA_REQUIREMENTS = {
         "black",
         "mkdocs",
         "mkdocs-material",
-        "mkdocs-gen-files",
         "mkdocs-literate-nav",
         "mkdocs-section-index",
-        "mkdocstrings",
+        "mkdocs-gen-files",
+        "mkdocstrings-python",
     ],
 }
 
@@ -70,7 +70,7 @@ setup(
         "Topic :: Scientific/Engineering",
     ],
     keywords="qiskit topological surface codes qec quantum error correction",
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     project_urls={
         "Bug Tracker": "https://github.com/yaleqc/qtcodes/issues",
         "Documentation": "https://yaleqc.com/qtcodes/",
